@@ -1,26 +1,9 @@
 [
-  {
-    "id": "naruto",
-    "title": "Naruto",
-    "cover": "manga/naruto/cover.jpg",
-    "latest": "Volume 72",
-    "type": "📚 Volumi",
-    "author": "Masashi Kishimoto"
-  },
-  {
-    "id": "one-piece",
-    "title": "One Piece",
-    "cover": "manga/one-piece/cover.jpg",
-    "latest": "Capitolo 1088",
-    "type": "📖 Capitoli",
-    "author": "Eiichiro Oda"
-  },
-  {
-    "id": "jujutsu-kaisen",
-    "title": "Jujutsu Kaisen",
-    "cover": "manga/jujutsu-kaisen/cover.jpg",
-    "latest": "Capitolo 245",
-    "type": "📖 Capitoli",
-    "author": "Gege Akutami"
-  }
+{
+  "id": "Ayashimon",
+  "title": "Ayashimon",
+  "cover": "manga/Ayashimon/cover.jpg",
+  "latest": "Volume 3",
+  "type": "📚 Volumi"
+}
 ]
