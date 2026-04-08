@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin - Aggiungi Manga</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #0f0c29, #302b63);
+      color: white;
+      padding: 2rem;
+    }
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+      background: rgba(0,0,0,0.3);
+      padding: 2rem;
+      border-radius: 20px;
+    }
+    h1 { margin-bottom: 2rem; }
+    .form-group {
+      margin-bottom: 1.5rem;
+    }
+    label {
+      display: block;
+      margin-bottom: 0.5rem;
+      color: #c4b5fd;
+    }
+    input, select {
+      width: 100%;
+      padding: 0.8rem;
+      border-radius: 8px;
+      border: 1px solid rgba(255,255,255,0.2);
+      background: rgba(0,0,0,0.3);
+      color: white;
+      font-size: 1rem;
+    }
+    button {
+      background: #8b5cf6;
+      color: white;
+      border: none;
+      padding: 1rem 2rem;
+      border-radius: 8px;
+      font-size: 1rem;
+      cursor: pointer;
+      width: 100%;
+    }
+    button:hover {
+      background: #a78bfa;
+    }
+    pre {
+      background: rgba(0,0,0,0.5);
+      padding: 1rem;
+      border-radius: 8px;
+      overflow-x: auto;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>➕ Aggiungi Nuovo Manga</h1>
+    
+    <div class="form-group">
+      <label>ID (nome cartella):</label>
+      <input type="text" id="mangaId" placeholder="es: naruto, one-piece">
+    </div>
+    
+    <div class="form-group">
+      <label>Titolo:</label>
+      <input type="text" id="mangaTitle" placeholder="es: Naruto">
+    </div>
+    
+    <div class="form-group">
+      <label>Copertina (percorso):</label>
+      <input type="text" id="mangaCover" placeholder="es: manga/naruto/cover.jpg">
+    </div>
+    
+    <div class="form-group">
+      <label>Ultimo capitolo/volume:</label>
+      <input type="text" id="mangaLatest" placeholder="es: Volume 72">
+    </div>
+    
+    <div class="form-group">
+      <label>Tipo:</label>
+      <select id="mangaType">
+        <option value="📚 Volumi">Volumi</option>
+        <option value="📖 Capitoli">Capitoli</option>
+      </select>
+    </div>
+    
+    <button onclick="generateJSON()">Genera JSON</button>
+    
+    <h3 style="margin-top: 2rem;">Codice da aggiungere a manga.json:</h3>
+    <pre id="jsonOutput"></pre>
+  </div>
+
+  <script>
+    function generateJSON() {
+      const manga = {
+        id: document.getElementById('mangaId').value,
+        title: document.getElementById('mangaTitle').value,
+        cover: document.getElementById('mangaCover').value,
+        latest: document.getElementById('mangaLatest').value,
+        type: document.getElementById('mangaType').value
+      };
+      
+      const json = JSON.stringify(manga, null, 2);
+      document.getElementById('jsonOutput').textContent = json;
+    }
+  </script>
+</body>
+</html>
