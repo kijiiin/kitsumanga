@@ -1,0 +1,18 @@
+[
+  {
+    "id": "jujutsu-kaisen",
+    "title": "Jujutsu Kaisen",
+    "cover": "https://placehold.co/300x400/1a1a2e/a78bfa?text=Jujutsu+Kaisen",
+    "latest": "Capitolo 250",
+    "author": "Gege Akutami",
+    "externalUrl": "https://mangaplus.shueisha.co.jp/titles/100134"
+  },
+  {
+    "id": "chainsaw-man",
+    "title": "Chainsaw Man",
+    "cover": "https://placehold.co/300x400/1a1a2e/a78bfa?text=Chainsaw+Man",
+    "latest": "Capitolo 170",
+    "author": "Tatsuki Fujimoto",
+    "externalUrl": "https://mangaplus.shueisha.co.jp/titles/100037"
+  }
+]
