@@ -15,7 +15,6 @@
       touch-action: pan-y pinch-zoom;
     }
     
-    /* Modalità schermo intero */
     body:fullscreen {
       background: #000;
     }
@@ -29,6 +28,13 @@
     body:-webkit-full-screen .top-bar,
     body:-moz-full-screen .top-bar {
       background: rgba(10, 10, 20, 0.9);
+    }
+    
+    /* Nascondi controlli laterali in fullscreen su mobile */
+    body:fullscreen .bottom-controls,
+    body:-webkit-full-screen .bottom-controls,
+    body:-moz-full-screen .bottom-controls {
+      display: none !important;
     }
     
     .top-bar {
@@ -145,6 +151,7 @@
       opacity: 1;
     }
     
+    /* Bottom controls - solo su desktop, nascosti su mobile */
     .bottom-controls {
       position: fixed;
       bottom: 50%;
@@ -166,6 +173,14 @@
       transform: translateY(50%) translateX(100%);
       pointer-events: none;
     }
+    
+    /* Su mobile nascondi completamente i controlli laterali */
+    @media (max-width: 768px) {
+      .bottom-controls {
+        display: none !important;
+      }
+    }
+    
     .nav-btn {
       background: #6b21a8;
       color: white;
@@ -250,14 +265,37 @@
       transition: opacity 0.3s;
     }
     
+    /* Indicatore pagina mobile (semplice) */
+    .mobile-page-indicator {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0,0,0,0.6);
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      color: #c4b5fd;
+      pointer-events: none;
+      z-index: 999;
+      backdrop-filter: blur(5px);
+      display: none;
+    }
+    
     @media (max-width: 768px) {
       .top-bar { padding: 0.6rem 1rem; }
       .selector-container { width: 100%; margin-top: 0.3rem; }
       .chapter-select { flex: 1; }
-      .bottom-controls { right: 0.5rem; padding: 0.6rem; gap: 0.8rem; }
-      .nav-btn { padding: 0.6rem 0.8rem; min-width: 60px; font-size: 0.75rem; }
-      .page-indicator { font-size: 0.75rem; }
       .fullscreen-btn { padding: 0.4rem 0.8rem; font-size: 0.8rem; }
+      .mobile-page-indicator { display: block; }
+      .swipe-indicator { display: none; }
+    }
+    
+    /* In fullscreen su mobile nascondi anche l'indicatore mobile */
+    body:fullscreen .mobile-page-indicator,
+    body:-webkit-full-screen .mobile-page-indicator,
+    body:-moz-full-screen .mobile-page-indicator {
+      display: none !important;
     }
   </style>
 </head>
@@ -287,6 +325,7 @@
 </div>
 
 <div class="swipe-indicator" id="swipeIndicator">👆 Scorri per cambiare pagina</div>
+<div class="mobile-page-indicator" id="mobilePageIndicator">0 / 0</div>
 
 <script>
   const urlParams = new URLSearchParams(window.location.search);
@@ -321,6 +360,7 @@
   const typeBadge = document.getElementById('typeBadge');
   const selectorLabel = document.getElementById('selectorLabel');
   const pageIndicator = document.getElementById('pageIndicator');
+  const mobilePageIndicator = document.getElementById('mobilePageIndicator');
   const prevBtn = document.getElementById('prevBtn');
   const nextBtn = document.getElementById('nextBtn');
   const swipeIndicator = document.getElementById('swipeIndicator');
@@ -331,7 +371,6 @@
 
   function toggleFullscreen() {
     if (!isFullscreen) {
-      // Entra in schermo intero
       const elem = document.documentElement;
       if (elem.requestFullscreen) {
         elem.requestFullscreen();
@@ -345,7 +384,6 @@
       isFullscreen = true;
       showToast('⛶ Modalità schermo intero - Premi ESC per uscire');
     } else {
-      // Esci dallo schermo intero
       if (document.exitFullscreen) {
         document.exitFullscreen();
       } else if (document.webkitExitFullscreen) {
@@ -359,7 +397,6 @@
     }
   }
 
-  // Ascolta i cambiamenti dello schermo intero
   document.addEventListener('fullscreenchange', updateFullscreenButton);
   document.addEventListener('webkitfullscreenchange', updateFullscreenButton);
   document.addEventListener('mozfullscreenchange', updateFullscreenButton);
@@ -400,16 +437,23 @@
   function resetHideTimer() {
     clearTimeout(hideTimeout);
     topBar.classList.remove('hide');
-    bottomControls.classList.remove('hide');
+    // Su desktop mostra i controlli, su mobile sono già nascosti via CSS
+    if (window.innerWidth > 768) {
+      bottomControls.classList.remove('hide');
+    }
     hideTimeout = setTimeout(() => {
       topBar.classList.add('hide');
-      bottomControls.classList.add('hide');
+      if (window.innerWidth > 768) {
+        bottomControls.classList.add('hide');
+      }
     }, 2500);
   }
   
   function showUI() {
     topBar.classList.remove('hide');
-    bottomControls.classList.remove('hide');
+    if (window.innerWidth > 768) {
+      bottomControls.classList.remove('hide');
+    }
     resetHideTimer();
   }
   
@@ -747,7 +791,9 @@
 
   function updateUI() {
     if (totalPages > 0) {
-      pageIndicator.textContent = `${currentPageIndex + 1} / ${totalPages}`;
+      const text = `${currentPageIndex + 1} / ${totalPages}`;
+      pageIndicator.textContent = text;
+      mobilePageIndicator.textContent = text;
     }
   }
 
@@ -766,7 +812,6 @@
       await prevPage();
       showUI();
     }
-    // Tasto F11 o ESC per gestire schermo intero
     if (e.key === 'F11') {
       e.preventDefault();
       toggleFullscreen();
