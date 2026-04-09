@@ -164,7 +164,7 @@
 <body>
 
 <div class="top-bar">
-  <a href="index.html" class="back-btn">← Libreria</a>
+  <a href="javascript:history.back()" class="back-btn">← Indietro</a>
   <span class="manga-title" id="mangaTitle">Caricamento...</span>
   <span class="type-badge" id="typeBadge"></span>
   <div class="selector-container">
@@ -192,14 +192,17 @@
   const urlParams = new URLSearchParams(window.location.search);
   const mangaId = urlParams.get('manga');
   const mangaTitle = decodeURIComponent(urlParams.get('title') || 'Manga');
+  const preloadNumber = urlParams.get('number'); // Numero volume/capitolo pre-selezionato
+  const preloadType = urlParams.get('type'); // Tipo pre-selezionato (volumes/chapters)
   
   document.getElementById('mangaTitle').textContent = mangaTitle;
   document.title = `${mangaTitle} - KitsuManga`;
 
-  let contentType = null;
-  let currentNumber = 1;
+  let contentType = preloadType || null; // Usa il tipo passato se presente
+  let currentNumber = preloadNumber ? parseInt(preloadNumber) : 1;
   let currentPage = 0;
   let images = [];
+  let allNumbers = []; // Array con tutti i volumi/capitoli disponibili
 
   const container = document.getElementById('pagesContainer');
   const chapterSelect = document.getElementById('chapterSelect');
@@ -210,7 +213,19 @@
   const nextBtn = document.getElementById('nextBtn');
 
   async function detectContentType() {
-    // Prova prima con "volumes"
+    // Se abbiamo già il tipo dall'URL, usalo direttamente
+    if (contentType) {
+      if (contentType === 'volumes') {
+        typeBadge.textContent = '📚 VOLUMI';
+        selectorLabel.textContent = 'Volume:';
+      } else if (contentType === 'chapters') {
+        typeBadge.textContent = '📖 CAPITOLI';
+        selectorLabel.textContent = 'Capitolo:';
+      }
+      return contentType;
+    }
+    
+    // Altrimenti rileva automaticamente
     try {
       const res = await fetch(`manga/${mangaId}/volumes/1/1.jpg`, { method: 'HEAD' });
       if (res.ok) {
@@ -221,7 +236,6 @@
       }
     } catch(e) {}
     
-    // Prova con "chapters"
     try {
       const res = await fetch(`manga/${mangaId}/chapters/1/1.jpg`, { method: 'HEAD' });
       if (res.ok) {
@@ -245,10 +259,9 @@
     chapterSelect.innerHTML = '<option>Ricerca in corso...</option>';
     const numbers = [];
     
-    // Cerco fino al volume/capitolo 200 (modifica se necessario)
+    // Cerco fino al volume/capitolo 200
     for (let num = 1; num <= 200; num++) {
       try {
-        // Provo a vedere se esiste almeno la prima pagina del volume/capitolo
         const testPath = `manga/${mangaId}/${contentType}/${num}/1.jpg`;
         const res = await fetch(testPath, { method: 'HEAD' });
         if (res.ok) {
@@ -256,7 +269,6 @@
           console.log(`Trovato ${contentType} ${num}`);
         }
       } catch(e) {
-        // Ignoro l'errore e continuo con il prossimo
         continue;
       }
     }
@@ -267,10 +279,8 @@
     }
     
     const label = contentType === 'volumes' ? 'Volume' : 'Capitolo';
-    chapterSelect.innerHTML = numbers.map(n => `<option value="${n}">${label} ${n}</option>`).join('');
+    chapterSelect.innerHTML = numbers.map(n => `<option value="${n}" ${n === currentNumber ? 'selected' : ''}>${label} ${n}</option>`).join('');
     chapterSelect.disabled = false;
-    currentNumber = numbers[0]; // Parto dal primo
-    chapterSelect.value = currentNumber;
     
     chapterSelect.onchange = async (e) => {
       currentNumber = parseInt(e.target.value);
@@ -295,7 +305,6 @@
           images.push(path);
           pageNum++;
         } else {
-          // Se non trovo la prossima pagina, mi fermo
           break;
         }
       } catch(e) {
@@ -397,9 +406,14 @@
       return;
     }
     
-    const numbers = await loadAvailableNumbers();
+    allNumbers = await loadAvailableNumbers();
     
-    if (numbers.length > 0) {
+    // Verifica che il numero pre-caricato esista, altrimenti usa il primo disponibile
+    if (allNumbers.length > 0) {
+      if (!allNumbers.includes(currentNumber) && allNumbers.length > 0) {
+        currentNumber = allNumbers[0];
+        chapterSelect.value = currentNumber;
+      }
       await loadPages();
       document.querySelectorAll('.page-wrapper').forEach(w => observer.observe(w));
     } else {

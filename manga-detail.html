@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dettagli Manga - KitsuManga</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+      min-height: 100vh;
+      color: white;
+    }
+    header {
+      padding: 25px;
+      text-align: center;
+      background: rgba(0,0,0,0.3);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+      position: relative;
+    }
+    .back-btn {
+      position: absolute;
+      left: 25px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(139, 92, 246, 0.3);
+      color: white;
+      border: none;
+      padding: 0.5rem 1rem;
+      border-radius: 20px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      text-decoration: none;
+      display: inline-block;
+      transition: 0.2s;
+    }
+    .back-btn:hover {
+      background: rgba(139, 92, 246, 0.6);
+    }
+    h1 { font-size: 2em; }
+    .manga-cover {
+      width: 200px;
+      height: 280px;
+      object-fit: cover;
+      border-radius: 15px;
+      margin: 20px auto;
+      display: block;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    }
+    .container { padding: 30px 20px; max-width: 1200px; margin: 0 auto; }
+    .section-title {
+      font-size: 1.5em;
+      margin: 30px 0 20px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid #8b5cf6;
+      display: inline-block;
+    }
+    .volumes-grid, .chapters-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      gap: 20px;
+      margin-bottom: 40px;
+    }
+    .volume-card, .chapter-card {
+      background: rgba(255,255,255,0.1);
+      border-radius: 12px;
+      padding: 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s;
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+    .volume-card:hover, .chapter-card:hover {
+      transform: translateY(-5px);
+      background: rgba(139, 92, 246, 0.2);
+      border-color: #8b5cf6;
+    }
+    .volume-number, .chapter-number {
+      font-size: 1.8em;
+      font-weight: bold;
+      color: #c4b5fd;
+    }
+    .volume-label, .chapter-label {
+      font-size: 0.9em;
+      margin-top: 10px;
+      opacity: 0.8;
+    }
+    .loading, .error, .empty {
+      text-align: center;
+      padding: 4rem 2rem;
+      font-size: 1.1rem;
+    }
+    .loading { color: #c4b5fd; }
+    .error { color: #ef4444; }
+    .empty { color: #9ca3af; }
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border: 3px solid rgba(255, 255, 255, 0.1);
+      border-top-color: #8b5cf6;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 1rem;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    .type-badge {
+      display: inline-block;
+      background: rgba(107, 33, 168, 0.3);
+      padding: 0.3rem 0.8rem;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      color: #c4b5fd;
+      margin-left: 10px;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <a href="index.html" class="back-btn">← Libreria</a>
+  <h1 id="mangaTitle">Caricamento...</h1>
+  <span class="type-badge" id="typeBadge"></span>
+  <div style="margin-top: 10px; opacity: 0.8;" id="mangaInfo"></div>
+</header>
+
+<div class="container">
+  <div id="content">
+    <div class="loading">
+      <div class="spinner"></div>
+      <div>Caricamento contenuti...</div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const urlParams = new URLSearchParams(window.location.search);
+  const mangaId = urlParams.get('manga');
+  const mangaTitle = decodeURIComponent(urlParams.get('title') || 'Manga');
+  
+  document.getElementById('mangaTitle').textContent = mangaTitle;
+  document.title = `${mangaTitle} - KitsuManga`;
+
+  let contentType = null;
+  let numbers = [];
+
+  const contentDiv = document.getElementById('content');
+  const typeBadge = document.getElementById('typeBadge');
+  const mangaInfo = document.getElementById('mangaInfo');
+
+  async function detectContentType() {
+    // Prova prima con "volumes"
+    try {
+      const res = await fetch(`manga/${mangaId}/volumes/1/1.jpg`, { method: 'HEAD' });
+      if (res.ok) {
+        contentType = 'volumes';
+        typeBadge.textContent = '📚 FORMATO VOLUMI';
+        mangaInfo.textContent = 'Seleziona un volume per iniziare la lettura';
+        return 'volumes';
+      }
+    } catch(e) {}
+    
+    // Prova con "chapters"
+    try {
+      const res = await fetch(`manga/${mangaId}/chapters/1/1.jpg`, { method: 'HEAD' });
+      if (res.ok) {
+        contentType = 'chapters';
+        typeBadge.textContent = '📖 FORMATO CAPITOLI';
+        mangaInfo.textContent = 'Seleziona un capitolo per iniziare la lettura';
+        return 'chapters';
+      }
+    } catch(e) {}
+    
+    typeBadge.textContent = '❌ NESSUN CONTENUTO';
+    return null;
+  }
+
+  async function loadAvailableNumbers() {
+    if (!contentType) {
+      return [];
+    }
+    
+    const foundNumbers = [];
+    
+    // Cerco fino al volume/capitolo 200
+    for (let num = 1; num <= 200; num++) {
+      try {
+        const testPath = `manga/${mangaId}/${contentType}/${num}/1.jpg`;
+        const res = await fetch(testPath, { method: 'HEAD' });
+        if (res.ok) {
+          foundNumbers.push(num);
+          console.log(`Trovato ${contentType} ${num}`);
+        }
+      } catch(e) {
+        // Continuo con il prossimo
+        continue;
+      }
+    }
+    
+    return foundNumbers;
+  }
+
+  function renderContent() {
+    if (!contentType || numbers.length === 0) {
+      contentDiv.innerHTML = '<div class="empty">📭 Nessun volume/capitolo trovato</div>';
+      return;
+    }
+    
+    const label = contentType === 'volumes' ? 'Volume' : 'Capitolo';
+    const labelPlural = contentType === 'volumes' ? 'Volumi' : 'Capitoli';
+    const gridClass = contentType === 'volumes' ? 'volumes-grid' : 'chapters-grid';
+    
+    let html = `<h2 class="section-title">📚 ${labelPlural} disponibili (${numbers.length})</h2>`;
+    html += `<div class="${gridClass}">`;
+    
+    numbers.forEach(num => {
+      html += `
+        <div class="${contentType === 'volumes' ? 'volume-card' : 'chapter-card'}" onclick="openReader(${num})">
+          <div class="${contentType === 'volumes' ? 'volume-number' : 'chapter-number'}">${num}</div>
+          <div class="${contentType === 'volumes' ? 'volume-label' : 'chapter-label'}">${label} ${num}</div>
+        </div>
+      `;
+    });
+    
+    html += `</div>`;
+    contentDiv.innerHTML = html;
+  }
+
+  function openReader(number) {
+    // Passo il numero del volume/capitolo al reader
+    window.location.href = `reader.html?manga=${encodeURIComponent(mangaId)}&title=${encodeURIComponent(mangaTitle)}&number=${number}&type=${contentType}`;
+  }
+
+  async function init() {
+    if (!mangaId) {
+      contentDiv.innerHTML = '<div class="error">❌ Nessun manga specificato</div>';
+      return;
+    }
+    
+    await detectContentType();
+    
+    if (!contentType) {
+      contentDiv.innerHTML = '<div class="empty">📭 Nessun contenuto trovato per questo manga</div>';
+      return;
+    }
+    
+    numbers = await loadAvailableNumbers();
+    renderContent();
+  }
+
+  init();
+</script>
+</body>
+</html>

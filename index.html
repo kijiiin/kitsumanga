@@ -133,9 +133,9 @@
           </div>
         `;
         
-        // ✅ QUESTA È LA PARTE IMPORTANTE!
+        // 👈 MODIFICATO: ora apre manga-detail.html invece di reader.html
         card.onclick = function() {
-          window.location.href = 'reader.html?manga=' + encodeURIComponent(m.id) + '&title=' + encodeURIComponent(m.title);
+          window.location.href = 'manga-detail.html?manga=' + encodeURIComponent(m.id) + '&title=' + encodeURIComponent(m.title);
         };
         
         grid.appendChild(card);
