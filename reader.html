@@ -124,6 +124,11 @@
       height: auto;
       object-fit: contain;
       cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.15s ease;
+    }
+    .page img.loaded {
+      opacity: 1;
     }
     
     /* Bottom controls - POSIZIONE LATERALE */
@@ -181,8 +186,8 @@
       border-radius: 20px;
     }
     
-    /* Loading */
-    .loading, .error, .empty {
+    /* Loading - solo iniziale */
+    .initial-loading, .error, .empty {
       position: fixed;
       top: 50%;
       left: 50%;
@@ -194,7 +199,7 @@
       border-radius: 20px;
       z-index: 2000;
     }
-    .loading { color: #c4b5fd; }
+    .initial-loading { color: #c4b5fd; }
     .error { color: #ef4444; }
     .empty { color: #9ca3af; }
     .spinner {
@@ -256,6 +261,19 @@
       100% { opacity: 0; transform: translateX(-50%) translateY(-20px); visibility: hidden; }
     }
     
+    /* Progress bar */
+    .progress-bar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 3px;
+      background: #8b5cf6;
+      width: 0%;
+      z-index: 1001;
+      transition: width 0.3s ease;
+      box-shadow: 0 0 10px #8b5cf6;
+    }
+    
     @media (max-width: 768px) {
       .top-bar { padding: 0.6rem 1rem; }
       .selector-container { width: 100%; margin-top: 0.3rem; }
@@ -276,6 +294,8 @@
   </style>
 </head>
 <body>
+
+<div class="progress-bar" id="progressBar"></div>
 
 <div class="top-bar" id="topBar">
   <a href="javascript:history.back()" class="back-btn">← Libreria</a>
@@ -317,6 +337,7 @@
   let allNumbers = [];
   let currentPageIndex = 0;
   let isLoadingChapter = false;
+  let preloadedImages = new Set(); // Traccia immagini già precaricate
 
   const topBar = document.getElementById('topBar');
   const bottomControls = document.getElementById('bottomControls');
@@ -329,6 +350,7 @@
   const prevBtn = document.getElementById('prevBtn');
   const nextBtn = document.getElementById('nextBtn');
   const touchHint = document.getElementById('touchHint');
+  const progressBar = document.getElementById('progressBar');
 
   // Funzione per mostrare toast
   function showToast(message) {
@@ -363,6 +385,33 @@
   document.addEventListener('click', showUI);
   document.addEventListener('touchstart', showUI);
   resetHideTimer();
+
+  // Aggiorna progress bar
+  function updateProgress(loaded, total) {
+    const percent = (loaded / total) * 100;
+    progressBar.style.width = `${percent}%`;
+    if (percent >= 100) {
+      setTimeout(() => {
+        progressBar.style.width = '0%';
+      }, 500);
+    }
+  }
+
+  // Precarica immagini adiacenti
+  function preloadAdjacentImages(currentIndex) {
+    const toPreload = [currentIndex + 1, currentIndex + 2, currentIndex - 1];
+    
+    toPreload.forEach(index => {
+      if (index >= 0 && index < images.length && !preloadedImages.has(index)) {
+        preloadedImages.add(index);
+        const img = new Image();
+        img.src = images[index];
+        img.onload = () => {
+          console.log(`Precaricata pagina ${index + 1}`);
+        };
+      }
+    });
+  }
 
   // Carica manifest.json
   async function loadManifest() {
@@ -438,11 +487,8 @@
     }
   }
 
-  // Carica le pagine
-  async function loadPages() {
-    // Mostra loading
-    readerWrapper.innerHTML = '<div class="loading"><div class="spinner"></div><div>Caricamento pagine...</div></div>';
-    
+  // Carica la lista delle pagine (senza attendere il caricamento delle immagini)
+  async function loadPagesList() {
     images = [];
     let pageNum = 1;
     
@@ -461,13 +507,30 @@
       }
     }
     
-    if (images.length === 0) {
+    return images.length > 0;
+  }
+
+  // Renderizza immediatamente le pagine con caricamento asincrono delle immagini
+  async function loadPages() {
+    // Mostra loading solo se è il primo caricamento
+    if (readerWrapper.children.length === 0 || readerWrapper.querySelector('.initial-loading')) {
+      readerWrapper.innerHTML = '<div class="initial-loading"><div class="spinner"></div><div>Caricamento pagine...</div></div>';
+    }
+    
+    // Resetta preload cache
+    preloadedImages.clear();
+    
+    // Carica solo la lista delle pagine (veloce)
+    const hasPages = await loadPagesList();
+    
+    if (!hasPages) {
       readerWrapper.innerHTML = '<div class="empty">😕 Nessuna pagina trovata</div>';
       updateUI();
       return;
     }
     
-    renderPages();
+    // Renderizza immediatamente la struttura (senza attendere il caricamento delle immagini)
+    renderPagesInstant();
     updateUI();
     
     // Scrolla alla prima pagina
@@ -476,12 +539,14 @@
       if (firstPage) {
         firstPage.scrollIntoView({ behavior: 'instant', block: 'start' });
       }
-    }, 100);
+    }, 50);
   }
 
-  // Renderizza tutte le pagine
-  function renderPages() {
+  // Renderizza le pagine istantaneamente con lazy loading
+  function renderPagesInstant() {
     readerWrapper.innerHTML = '';
+    let loadedCount = 0;
+    const totalImages = images.length;
     
     images.forEach((imgPath, index) => {
       const pageDiv = document.createElement('div');
@@ -489,12 +554,44 @@
       pageDiv.setAttribute('data-page', index);
       
       const img = document.createElement('img');
-      img.src = imgPath;
       img.alt = `Pagina ${index + 1}`;
-      img.loading = 'lazy';
+      img.loading = 'eager'; // Caricamento immediato per le prime pagine
+      
+      // Placeholder sottile prima del caricamento
+      img.style.backgroundColor = '#1a1a2e';
+      
+      // Carica l'immagine
+      const loadImage = () => {
+        img.src = imgPath;
+      };
+      
+      // Carica immediatamente le prime 3 pagine, le altre in lazy
+      if (index < 3) {
+        loadImage();
+      } else {
+        // Usa IntersectionObserver per caricare quando visibile
+        const observer = new IntersectionObserver((entries) => {
+          entries.forEach(entry => {
+            if (entry.isIntersecting) {
+              loadImage();
+              observer.unobserve(img);
+            }
+          });
+        }, { rootMargin: '200px' });
+        observer.observe(img);
+      }
+      
+      img.onload = () => {
+        img.classList.add('loaded');
+        loadedCount++;
+        updateProgress(loadedCount, totalImages);
+      };
       
       img.onerror = () => {
         img.src = `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='800' height='1200'%3E%3Crect width='800' height='1200' fill='%231a1a2e'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' fill='%23ef4444' font-size='18'%3EErrore%3C/text%3E%3C/svg%3E`;
+        img.classList.add('loaded');
+        loadedCount++;
+        updateProgress(loadedCount, totalImages);
       };
       
       // Click sull'immagine per avanzare
@@ -507,7 +604,7 @@
       readerWrapper.appendChild(pageDiv);
     });
     
-    // Osserva quale pagina è visibile
+    // Osserva quale pagina è visibile per preload e aggiornamento indice
     const observer = new IntersectionObserver((entries) => {
       entries.forEach(entry => {
         if (entry.isIntersecting) {
@@ -515,12 +612,17 @@
           if (!isNaN(pageIndex)) {
             currentPageIndex = pageIndex;
             updateUI();
+            // Precarica pagine adiacenti
+            preloadAdjacentImages(pageIndex);
           }
         }
       });
-    }, { threshold: 0.5 });
+    }, { threshold: 0.3 });
     
     document.querySelectorAll('.page').forEach(page => observer.observe(page));
+    
+    // Avvia preload delle prime pagine
+    preloadAdjacentImages(0);
   }
 
   // Navigazione
@@ -529,9 +631,10 @@
       const nextPageEl = document.querySelector(`.page[data-page="${currentPageIndex + 1}"]`);
       if (nextPageEl) {
         nextPageEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        // Precarica pagine successive
+        preloadAdjacentImages(currentPageIndex + 1);
       }
     } else {
-      // Siamo all'ultima pagina -> vai al capitolo successivo
       await nextChapter();
     }
   }
@@ -541,16 +644,15 @@
       const prevPageEl = document.querySelector(`.page[data-page="${currentPageIndex - 1}"]`);
       if (prevPageEl) {
         prevPageEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        preloadAdjacentImages(currentPageIndex - 1);
       }
     } else {
-      // Siamo alla prima pagina -> vai al capitolo precedente
       await prevChapter();
     }
   }
 
   function updateUI() {
     pageIndicator.textContent = `${currentPageIndex + 1} / ${images.length}`;
-    // Non disabilitiamo più i pulsanti perché ora cambiano capitolo
     prevBtn.disabled = false;
     nextBtn.disabled = false;
   }
