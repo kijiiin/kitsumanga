@@ -94,12 +94,11 @@
       scroll-snap-type: x mandatory;
       scroll-behavior: smooth;
       -webkit-overflow-scrolling: touch;
-      /* Nascondi scrollbar */
-      scrollbar-width: none; /* Firefox */
-      -ms-overflow-style: none; /* IE/Edge */
+      scrollbar-width: none;
+      -ms-overflow-style: none;
     }
     .reader-container::-webkit-scrollbar {
-      display: none; /* Chrome/Safari */
+      display: none;
     }
     
     .reader-wrapper {
@@ -233,6 +232,30 @@
       100% { opacity: 0; visibility: hidden; }
     }
     
+    /* Toast notifica */
+    .toast {
+      position: fixed;
+      bottom: 30%;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(139, 92, 246, 0.9);
+      color: white;
+      padding: 12px 24px;
+      border-radius: 40px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      z-index: 2000;
+      animation: toastFade 2s ease forwards;
+      pointer-events: none;
+      white-space: nowrap;
+    }
+    @keyframes toastFade {
+      0% { opacity: 0; transform: translateX(-50%) translateY(20px); }
+      15% { opacity: 1; transform: translateX(-50%) translateY(0); }
+      85% { opacity: 1; transform: translateX(-50%) translateY(0); }
+      100% { opacity: 0; transform: translateX(-50%) translateY(-20px); visibility: hidden; }
+    }
+    
     @media (max-width: 768px) {
       .top-bar { padding: 0.6rem 1rem; }
       .selector-container { width: 100%; margin-top: 0.3rem; }
@@ -248,6 +271,7 @@
         font-size: 0.75rem;
       }
       .page-indicator { font-size: 0.75rem; }
+      .toast { font-size: 0.8rem; padding: 8px 16px; white-space: nowrap; }
     }
   </style>
 </head>
@@ -292,6 +316,7 @@
   let images = [];
   let allNumbers = [];
   let currentPageIndex = 0;
+  let isLoadingChapter = false;
 
   const topBar = document.getElementById('topBar');
   const bottomControls = document.getElementById('bottomControls');
@@ -304,6 +329,17 @@
   const prevBtn = document.getElementById('prevBtn');
   const nextBtn = document.getElementById('nextBtn');
   const touchHint = document.getElementById('touchHint');
+
+  // Funzione per mostrare toast
+  function showToast(message) {
+    const existingToast = document.querySelector('.toast');
+    if (existingToast) existingToast.remove();
+    const toast = document.createElement('div');
+    toast.className = 'toast';
+    toast.textContent = message;
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 2000);
+  }
 
   // Auto-hide UI dopo 2 secondi di inattività
   let hideTimeout;
@@ -350,6 +386,7 @@
         chapterSelect.disabled = false;
         
         chapterSelect.onchange = async (e) => {
+          if (isLoadingChapter) return;
           currentNumber = parseInt(e.target.value);
           await loadPages();
         };
@@ -360,6 +397,45 @@
       console.log('manifest.json non trovato');
     }
     return false;
+  }
+
+  // Cambia capitolo
+  async function changeChapter(newNumber) {
+    if (isLoadingChapter) return false;
+    if (!allNumbers.includes(newNumber)) return false;
+    
+    isLoadingChapter = true;
+    currentNumber = newNumber;
+    chapterSelect.value = currentNumber;
+    await loadPages();
+    isLoadingChapter = false;
+    return true;
+  }
+
+  // Vai al capitolo successivo
+  async function nextChapter() {
+    const currentIndex = allNumbers.indexOf(currentNumber);
+    if (currentIndex < allNumbers.length - 1) {
+      const nextNumber = allNumbers[currentIndex + 1];
+      const label = contentType === 'volumes' ? 'Volume' : 'Capitolo';
+      showToast(`📖 ${label} ${nextNumber}`);
+      await changeChapter(nextNumber);
+    } else {
+      showToast(`🏁 Sei all'ultimo ${contentType === 'volumes' ? 'volume' : 'capitolo'}!`);
+    }
+  }
+
+  // Vai al capitolo precedente
+  async function prevChapter() {
+    const currentIndex = allNumbers.indexOf(currentNumber);
+    if (currentIndex > 0) {
+      const prevNumber = allNumbers[currentIndex - 1];
+      const label = contentType === 'volumes' ? 'Volume' : 'Capitolo';
+      showToast(`📖 ${label} ${prevNumber}`);
+      await changeChapter(prevNumber);
+    } else {
+      showToast(`🏁 Sei al primo ${contentType === 'volumes' ? 'volume' : 'capitolo'}!`);
+    }
   }
 
   // Carica le pagine
@@ -448,47 +524,54 @@
   }
 
   // Navigazione
-  function nextPage() {
+  async function nextPage() {
     if (currentPageIndex < images.length - 1) {
       const nextPageEl = document.querySelector(`.page[data-page="${currentPageIndex + 1}"]`);
       if (nextPageEl) {
         nextPageEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }
+    } else {
+      // Siamo all'ultima pagina -> vai al capitolo successivo
+      await nextChapter();
     }
   }
 
-  function prevPage() {
+  async function prevPage() {
     if (currentPageIndex > 0) {
       const prevPageEl = document.querySelector(`.page[data-page="${currentPageIndex - 1}"]`);
       if (prevPageEl) {
         prevPageEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }
+    } else {
+      // Siamo alla prima pagina -> vai al capitolo precedente
+      await prevChapter();
     }
   }
 
   function updateUI() {
     pageIndicator.textContent = `${currentPageIndex + 1} / ${images.length}`;
-    prevBtn.disabled = currentPageIndex === 0;
-    nextBtn.disabled = currentPageIndex === images.length - 1;
+    // Non disabilitiamo più i pulsanti perché ora cambiano capitolo
+    prevBtn.disabled = false;
+    nextBtn.disabled = false;
   }
 
   // Eventi tastiera
-  document.addEventListener('keydown', (e) => {
+  document.addEventListener('keydown', async (e) => {
     if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
       e.preventDefault();
-      nextPage();
+      await nextPage();
       showUI();
     }
     if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
       e.preventDefault();
-      prevPage();
+      await prevPage();
       showUI();
     }
   });
 
   // Pulsanti
-  prevBtn.onclick = () => { prevPage(); showUI(); };
-  nextBtn.onclick = () => { nextPage(); showUI(); };
+  prevBtn.onclick = async () => { await prevPage(); showUI(); };
+  nextBtn.onclick = async () => { await nextPage(); showUI(); };
 
   // Scroll manuale aggiorna indice
   readerContainer.addEventListener('scroll', () => {
