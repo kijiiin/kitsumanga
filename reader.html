@@ -12,6 +12,7 @@
       color: white;
       overflow: hidden;
       height: 100vh;
+      touch-action: pan-y pinch-zoom; /* Blocca scroll orizzontale nativo */
     }
     
     .top-bar {
@@ -69,34 +70,36 @@
       color: #c4b5fd;
     }
     
+    /* Reader container - senza scroll nativo */
     .reader-container {
       height: 100vh;
       width: 100%;
-      overflow-x: auto;
-      overflow-y: hidden;
-      scroll-snap-type: x mandatory;
-      scroll-behavior: smooth;
-      -webkit-overflow-scrolling: touch;
-      scrollbar-width: none;
-      -ms-overflow-style: none;
+      overflow: hidden; /* Blocca lo scroll nativo */
+      position: relative;
     }
-    .reader-container::-webkit-scrollbar { display: none; }
     
     .reader-wrapper {
       display: flex;
       flex-direction: row;
       height: 100%;
       align-items: center;
+      transition: transform 0.3s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+      will-change: transform;
+      cursor: grab;
     }
+    .reader-wrapper:active {
+      cursor: grabbing;
+    }
+    
     .page {
       flex: 0 0 100%;
       height: 100vh;
-      scroll-snap-align: start;
       display: flex;
       justify-content: center;
       align-items: center;
       background: #000;
       position: relative;
+      pointer-events: none; /* Le immagini gestiscono il click da sole */
     }
     .page img {
       max-height: 100vh;
@@ -107,11 +110,13 @@
       cursor: pointer;
       opacity: 0;
       transition: opacity 0.2s ease;
+      pointer-events: auto;
     }
     .page img.loaded {
       opacity: 1;
     }
     
+    /* Bottom controls */
     .bottom-controls {
       position: fixed;
       bottom: 50%;
@@ -201,6 +206,23 @@
       100% { opacity: 0; transform: translateX(-50%) translateY(-20px); visibility: hidden; }
     }
     
+    /* Indicatore di swipe */
+    .swipe-indicator {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0,0,0,0.5);
+      padding: 5px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      color: #c4b5fd;
+      pointer-events: none;
+      z-index: 999;
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+    
     @media (max-width: 768px) {
       .top-bar { padding: 0.6rem 1rem; }
       .selector-container { width: 100%; margin-top: 0.3rem; }
@@ -235,6 +257,8 @@
   <button class="nav-btn" id="nextBtn">NEXT ▶</button>
 </div>
 
+<div class="swipe-indicator" id="swipeIndicator">👆 Scorri per cambiare pagina</div>
+
 <script>
   const urlParams = new URLSearchParams(window.location.search);
   const mangaId = urlParams.get('manga');
@@ -251,7 +275,14 @@
   let allNumbers = [];
   let currentPageIndex = 0;
   let isLoadingChapter = false;
-  let detectionComplete = false; // Per sapere se abbiamo già trovato l'ultima pagina
+
+  // Variabili per lo swipe manuale
+  let startX = 0;
+  let currentX = 0;
+  let isDragging = false;
+  let dragStartTime = 0;
+  const SWIPE_THRESHOLD = 50; // Soglia minima per cambiare pagina (px)
+  const SWIPE_MAX_TIME = 300; // Tempo massimo per considerare swipe (ms)
 
   const topBar = document.getElementById('topBar');
   const bottomControls = document.getElementById('bottomControls');
@@ -263,6 +294,14 @@
   const pageIndicator = document.getElementById('pageIndicator');
   const prevBtn = document.getElementById('prevBtn');
   const nextBtn = document.getElementById('nextBtn');
+  const swipeIndicator = document.getElementById('swipeIndicator');
+
+  // Nascondi indicatore swipe dopo 3 secondi
+  setTimeout(() => {
+    if (swipeIndicator) {
+      swipeIndicator.style.opacity = '0';
+    }
+  }, 3000);
 
   function showToast(message) {
     const existingToast = document.querySelector('.toast');
@@ -295,6 +334,171 @@
   document.addEventListener('click', showUI);
   document.addEventListener('touchstart', showUI);
   resetHideTimer();
+
+  // Gestione swipe con touch
+  function initSwipe() {
+    const wrapper = readerWrapper;
+    
+    // Touch start
+    wrapper.addEventListener('touchstart', (e) => {
+      startX = e.touches[0].clientX;
+      currentX = startX;
+      isDragging = true;
+      dragStartTime = Date.now();
+      wrapper.style.transition = 'none';
+      wrapper.style.cursor = 'grabbing';
+    });
+    
+    // Touch move
+    wrapper.addEventListener('touchmove', (e) => {
+      if (!isDragging) return;
+      e.preventDefault();
+      currentX = e.touches[0].clientX;
+      const deltaX = currentX - startX;
+      
+      // Applica trasformazione temporanea durante il drag
+      const containerWidth = readerContainer.clientWidth;
+      const translateX = -currentPageIndex * containerWidth + deltaX;
+      wrapper.style.transform = `translateX(${translateX}px)`;
+    });
+    
+    // Touch end
+    wrapper.addEventListener('touchend', (e) => {
+      if (!isDragging) return;
+      isDragging = false;
+      wrapper.style.cursor = 'grab';
+      
+      const deltaX = currentX - startX;
+      const deltaTime = Date.now() - dragStartTime;
+      const containerWidth = readerContainer.clientWidth;
+      
+      // Determina se fare swipe
+      let shouldChangePage = false;
+      let goToNext = false;
+      
+      // Swipe veloce (meno di 300ms) con movimento minimo
+      if (deltaTime < SWIPE_MAX_TIME && Math.abs(deltaX) > 30) {
+        shouldChangePage = true;
+        goToNext = deltaX < 0; // Negativo = verso sinistra = next
+      }
+      // Swipe lento ma supera la soglia
+      else if (Math.abs(deltaX) > SWIPE_THRESHOLD) {
+        shouldChangePage = true;
+        goToNext = deltaX < 0;
+      }
+      
+      if (shouldChangePage) {
+        if (goToNext && currentPageIndex < totalPages - 1) {
+          goToPage(currentPageIndex + 1);
+        } else if (!goToNext && currentPageIndex > 0) {
+          goToPage(currentPageIndex - 1);
+        } else if (goToNext && currentPageIndex >= totalPages - 1) {
+          // All'ultima pagina, passa al capitolo successivo
+          wrapper.style.transition = 'transform 0.3s cubic-bezier(0.2, 0.9, 0.4, 1.1)';
+          wrapper.style.transform = `translateX(${-currentPageIndex * containerWidth}px)`;
+          nextChapter();
+        } else if (!goToNext && currentPageIndex <= 0) {
+          // Alla prima pagina, passa al capitolo precedente
+          wrapper.style.transition = 'transform 0.3s cubic-bezier(0.2, 0.9, 0.4, 1.1)';
+          wrapper.style.transform = `translateX(${-currentPageIndex * containerWidth}px)`;
+          prevChapter();
+        } else {
+          // Torna alla posizione originale
+          wrapper.style.transition = 'transform 0.3s cubic-bezier(0.2, 0.9, 0.4, 1.1)';
+          wrapper.style.transform = `translateX(${-currentPageIndex * containerWidth}px)`;
+        }
+      } else {
+        // Torna alla posizione originale
+        wrapper.style.transition = 'transform 0.3s cubic-bezier(0.2, 0.9, 0.4, 1.1)';
+        wrapper.style.transform = `translateX(${-currentPageIndex * containerWidth}px)`;
+      }
+      
+      startX = 0;
+      currentX = 0;
+    });
+    
+    // Mouse events per desktop
+    wrapper.addEventListener('mousedown', (e) => {
+      e.preventDefault();
+      startX = e.clientX;
+      currentX = startX;
+      isDragging = true;
+      dragStartTime = Date.now();
+      wrapper.style.transition = 'none';
+      wrapper.style.cursor = 'grabbing';
+    });
+    
+    window.addEventListener('mousemove', (e) => {
+      if (!isDragging) return;
+      e.preventDefault();
+      currentX = e.clientX;
+      const deltaX = currentX - startX;
+      const containerWidth = readerContainer.clientWidth;
+      const translateX = -currentPageIndex * containerWidth + deltaX;
+      wrapper.style.transform = `translateX(${translateX}px)`;
+    });
+    
+    window.addEventListener('mouseup', (e) => {
+      if (!isDragging) return;
+      isDragging = false;
+      wrapper.style.cursor = 'grab';
+      
+      const deltaX = currentX - startX;
+      const deltaTime = Date.now() - dragStartTime;
+      const containerWidth = readerContainer.clientWidth;
+      
+      let shouldChangePage = false;
+      let goToNext = false;
+      
+      if (deltaTime < SWIPE_MAX_TIME && Math.abs(deltaX) > 30) {
+        shouldChangePage = true;
+        goToNext = deltaX < 0;
+      } else if (Math.abs(deltaX) > SWIPE_THRESHOLD) {
+        shouldChangePage = true;
+        goToNext = deltaX < 0;
+      }
+      
+      if (shouldChangePage) {
+        if (goToNext && currentPageIndex < totalPages - 1) {
+          goToPage(currentPageIndex + 1);
+        } else if (!goToNext && currentPageIndex > 0) {
+          goToPage(currentPageIndex - 1);
+        } else if (goToNext && currentPageIndex >= totalPages - 1) {
+          wrapper.style.transition = 'transform 0.3s cubic-bezier(0.2, 0.9, 0.4, 1.1)';
+          wrapper.style.transform = `translateX(${-currentPageIndex * containerWidth}px)`;
+          nextChapter();
+        } else if (!goToNext && currentPageIndex <= 0) {
+          wrapper.style.transition = 'transform 0.3s cubic-bezier(0.2, 0.9, 0.4, 1.1)';
+          wrapper.style.transform = `translateX(${-currentPageIndex * containerWidth}px)`;
+          prevChapter();
+        } else {
+          wrapper.style.transition = 'transform 0.3s cubic-bezier(0.2, 0.9, 0.4, 1.1)';
+          wrapper.style.transform = `translateX(${-currentPageIndex * containerWidth}px)`;
+        }
+      } else {
+        wrapper.style.transition = 'transform 0.3s cubic-bezier(0.2, 0.9, 0.4, 1.1)';
+        wrapper.style.transform = `translateX(${-currentPageIndex * containerWidth}px)`;
+      }
+      
+      startX = 0;
+      currentX = 0;
+    });
+  }
+  
+  function goToPage(index) {
+    if (index < 0 || index >= totalPages) return;
+    currentPageIndex = index;
+    const containerWidth = readerContainer.clientWidth;
+    readerWrapper.style.transition = 'transform 0.3s cubic-bezier(0.2, 0.9, 0.4, 1.1)';
+    readerWrapper.style.transform = `translateX(${-currentPageIndex * containerWidth}px)`;
+    updateUI();
+  }
+  
+  function updateWrapperPosition() {
+    const containerWidth = readerContainer.clientWidth;
+    readerWrapper.style.transition = 'none';
+    readerWrapper.style.transform = `translateX(${-currentPageIndex * containerWidth}px)`;
+  }
 
   async function loadManifest() {
     try {
@@ -359,14 +563,11 @@
     }
   }
 
-  // Trova l'ultima pagina esistente con una richiesta HEAD ottimizzata
-  async function findLastPage(basePath, startGuess = 100) {
-    // Prima prova a trovare un range
+  async function findLastPage(basePath, startGuess = 50) {
     let low = 1;
     let high = startGuess;
-    
-    // Espandi l'intervallo finché non troviamo un 404
     let found = true;
+    
     while (found) {
       const testUrl = `${basePath}${high}.jpg`;
       try {
@@ -374,7 +575,7 @@
         if (res.ok) {
           low = high;
           high = high * 2;
-          if (high > 2000) break; // Limite massimo
+          if (high > 2000) break;
         } else {
           found = false;
         }
@@ -383,7 +584,6 @@
       }
     }
     
-    // Ora facciamo una ricerca binaria tra low e high
     let lastValid = low;
     while (low <= high) {
       const mid = Math.floor((low + high) / 2);
@@ -405,19 +605,12 @@
   }
 
   async function loadChapter() {
-    detectionComplete = false;
-    
-    // Mostra loading solo al primo caricamento
-    if (!totalPages) {
-      readerWrapper.innerHTML = '<div class="initial-loading"><div class="spinner"></div><div>Rilevamento pagine...</div></div>';
-    }
+    readerWrapper.innerHTML = '<div class="initial-loading"><div class="spinner"></div><div>Rilevamento pagine...</div></div>';
     
     const basePath = `manga/${mangaId}/${contentType}/${currentNumber}/`;
     
-    // Trova l'ultima pagina esistente (una sola richiesta binaria, non 500!)
     showToast('📖 Rilevamento pagine in corso...');
     totalPages = await findLastPage(basePath, 50);
-    detectionComplete = true;
     
     if (totalPages === 0) {
       readerWrapper.innerHTML = '<div class="empty">😕 Nessuna pagina trovata</div>';
@@ -426,14 +619,12 @@
     }
     
     showToast(`✅ ${totalPages} pagine trovate`);
-    
-    // Ora renderizza SOLO le pagine che esistono
     renderPagesExact(basePath, totalPages);
   }
 
-  // Renderizza esattamente le pagine che esistono
   function renderPagesExact(basePath, pageCount) {
     readerWrapper.innerHTML = '';
+    readerWrapper.style.transform = 'translateX(0px)';
     
     for (let i = 1; i <= pageCount; i++) {
       const pageDiv = document.createElement('div');
@@ -450,8 +641,6 @@
       };
       
       img.onerror = () => {
-        // Se un'immagine fallisce ma dovrebbe esistere, ricarica
-        console.log(`Ricarico pagina ${i}`);
         setTimeout(() => {
           img.src = `${basePath}${i}.jpg?retry=${Date.now()}`;
         }, 500);
@@ -461,27 +650,11 @@
       readerWrapper.appendChild(pageDiv);
     }
     
-    // Osserva quale pagina è visibile
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          const idx = parseInt(entry.target.getAttribute('data-page'));
-          if (!isNaN(idx)) {
-            currentPageIndex = idx;
-            updateUI();
-          }
-        }
-      });
-    }, { threshold: 0.5 });
+    currentPageIndex = 0;
+    updateWrapperPosition();
     
-    document.querySelectorAll('.page').forEach(page => observer.observe(page));
-    
-    // Scrolla alla prima pagina
     setTimeout(() => {
-      const firstPage = document.querySelector('.page');
-      if (firstPage) {
-        firstPage.scrollIntoView({ behavior: 'instant', block: 'start' });
-      }
+      initSwipe();
     }, 100);
     
     updateUI();
@@ -489,10 +662,7 @@
 
   async function nextPage() {
     if (currentPageIndex < totalPages - 1) {
-      const nextPageEl = document.querySelector(`.page[data-page="${currentPageIndex + 1}"]`);
-      if (nextPageEl) {
-        nextPageEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }
+      goToPage(currentPageIndex + 1);
     } else {
       await nextChapter();
     }
@@ -500,10 +670,7 @@
 
   async function prevPage() {
     if (currentPageIndex > 0) {
-      const prevPageEl = document.querySelector(`.page[data-page="${currentPageIndex - 1}"]`);
-      if (prevPageEl) {
-        prevPageEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }
+      goToPage(currentPageIndex - 1);
     } else {
       await prevChapter();
     }
@@ -515,7 +682,10 @@
     }
   }
 
-  // Eventi tastiera
+  window.addEventListener('resize', () => {
+    updateWrapperPosition();
+  });
+
   document.addEventListener('keydown', async (e) => {
     if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
       e.preventDefault();
@@ -532,8 +702,6 @@
   prevBtn.onclick = async () => { await prevPage(); showUI(); };
   nextBtn.onclick = async () => { await nextPage(); showUI(); };
 
-  readerContainer.addEventListener('scroll', () => resetHideTimer());
-
   async function init() {
     if (!mangaId) {
       readerWrapper.innerHTML = '<div class="error">❌ Nessun manga specificato</div>';
@@ -547,7 +715,6 @@
         <div class="empty">
           <h3>📝 File manifest.json mancante</h3>
           <p>Crea il file <code style="background: #1a1a2e; padding: 2px 5px; border-radius: 3px;">manga/${mangaId}/manifest.json</code></p>
-          <p>Esempio: <code style="background: #1a1a2e; padding: 2px 5px; border-radius: 3px;">{"type": "chapters", "numbers": [1, 2, 3]}</code></p>
         </div>
       `;
       return;
