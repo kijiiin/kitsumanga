@@ -19,7 +19,7 @@
       background: #000;
     }
     
-    /* TOP BAR - solo su desktop o fuori fullscreen */
+    /* TOP BAR COMPLETA - solo su desktop FUORI fullscreen */
     .top-bar {
       position: fixed;
       top: 0;
@@ -38,23 +38,11 @@
     }
     .top-bar.hide { transform: translateY(-100%); }
     
-    /* In fullscreen su mobile, mostra solo un mini top-bar con solo esci */
-    body:fullscreen .top-bar,
-    body:-webkit-full-screen .top-bar {
-      background: rgba(10, 10, 20, 0.7);
-      padding: 0.4rem 1rem;
-      backdrop-filter: blur(5px);
-    }
-    body:fullscreen .top-bar .back-btn,
-    body:fullscreen .top-bar .manga-title,
-    body:fullscreen .top-bar .selector-container,
-    body:fullscreen .top-bar .type-badge {
-      display: none;
-    }
-    body:fullscreen .top-bar .fullscreen-btn {
-      margin-left: auto;
-      margin-right: auto;
-      background: #ef4444;
+    /* Su mobile nascondi la top bar completa */
+    @media (max-width: 768px) {
+      .top-bar {
+        display: none !important;
+      }
     }
     
     .back-btn {
@@ -94,6 +82,8 @@
       font-size: 0.8rem;
       color: #c4b5fd;
     }
+    
+    /* Pulsante fullscreen universale */
     .fullscreen-btn {
       background: rgba(139, 92, 246, 0.3);
       color: white;
@@ -154,8 +144,8 @@
       opacity: 1;
     }
     
-    /* Bottom controls DESKTOP (laterale destro) - solo su desktop */
-    .bottom-controls {
+    /* HUD LATERALE DESKTOP - solo su desktop (schermo > 768px) */
+    .desktop-hud {
       position: fixed;
       bottom: 50%;
       transform: translateY(50%);
@@ -171,17 +161,29 @@
       z-index: 1000;
       transition: opacity 0.3s ease, transform 0.3s ease;
     }
-    .bottom-controls.hide {
+    .desktop-hud.hide {
       opacity: 0;
       transform: translateY(50%) translateX(100%);
       pointer-events: none;
     }
     
-    /* Su mobile nascondi i controlli laterali desktop */
+    /* Su mobile nascondi l'HUD desktop */
     @media (max-width: 768px) {
-      .bottom-controls {
+      .desktop-hud {
         display: none !important;
       }
+    }
+    
+    /* In fullscreen su desktop nascondi l'HUD laterale */
+    body:fullscreen .desktop-hud,
+    body:-webkit-full-screen .desktop-hud {
+      display: none !important;
+    }
+    
+    /* In fullscreen su desktop, mostra solo il pulsante esci in alto a destra */
+    body:fullscreen .fullscreen-exit-btn,
+    body:-webkit-full-screen .fullscreen-exit-btn {
+      display: flex !important;
     }
     
     .nav-btn {
@@ -207,54 +209,141 @@
       border-radius: 20px;
     }
     
-    /* BOTTOM BAR MOBILE - visibile solo in fullscreen su mobile */
-    .mobile-bottom-bar {
+    /* Pulsante esci fullscreen per desktop (solo in fullscreen) */
+    .fullscreen-exit-btn {
       position: fixed;
-      bottom: 0;
-      left: 0;
-      right: 0;
+      top: 1rem;
+      right: 1rem;
+      background: #ef4444;
+      color: white;
+      border: none;
+      padding: 0.5rem 1rem;
+      border-radius: 20px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      font-weight: 600;
+      z-index: 1001;
       display: none;
-      justify-content: space-between;
-      align-items: center;
-      background: rgba(10, 10, 20, 0.85);
-      backdrop-filter: blur(10px);
-      padding: 12px 20px;
-      z-index: 1000;
-      border-top: 1px solid rgba(139, 92, 246, 0.3);
+      box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+    }
+    .fullscreen-exit-btn:hover {
+      background: #dc2626;
+      transform: scale(1.05);
     }
     
-    body:fullscreen .mobile-bottom-bar {
+    /* HUD MOBILE - solo su mobile (fuori fullscreen) */
+    .mobile-hud {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
       display: flex;
+      align-items: center;
+      gap: 1rem;
+      background: rgba(10, 10, 20, 0.85);
+      padding: 0.6rem 1rem;
+      border-radius: 40px;
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(139, 92, 246, 0.3);
+      z-index: 1000;
+    }
+    
+    /* Su desktop nascondi l'HUD mobile */
+    @media (min-width: 769px) {
+      .mobile-hud {
+        display: none !important;
+      }
+    }
+    
+    /* In fullscreen su mobile, mostra l'HUD mobile in basso */
+    body:fullscreen .mobile-hud,
+    body:-webkit-full-screen .mobile-hud {
+      display: flex !important;
+      bottom: 20px;
+    }
+    
+    /* In fullscreen su mobile, nascondi il pulsante fullscreen normale e mostra quello di uscita a destra */
+    body:fullscreen .fullscreen-btn-mobile {
+      display: none !important;
     }
     
     .mobile-nav-btn {
       background: #6b21a8;
       color: white;
       border: none;
-      padding: 10px 20px;
+      padding: 8px 16px;
       border-radius: 30px;
       cursor: pointer;
-      font-size: 1rem;
+      font-size: 0.9rem;
       font-weight: 600;
       transition: 0.2s;
-      min-width: 80px;
     }
     .mobile-nav-btn:active {
       transform: scale(0.95);
       background: #8b5cf6;
     }
     .mobile-page-indicator {
-      font-size: 1rem;
+      font-size: 0.9rem;
       color: #c4b5fd;
       font-weight: 600;
       background: rgba(0,0,0,0.5);
-      padding: 8px 16px;
+      padding: 6px 12px;
       border-radius: 30px;
     }
     
-    /* Per desktop in fullscreen, nascondi anche la bottom bar laterale */
-    body:fullscreen .bottom-controls {
-      display: none !important;
+    /* Pulsante fullscreen per mobile (fuori fullscreen) */
+    .fullscreen-btn-mobile {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: rgba(139, 92, 246, 0.9);
+      color: white;
+      border: none;
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      cursor: pointer;
+      font-size: 1.3rem;
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+      transition: 0.2s;
+    }
+    .fullscreen-btn-mobile:active {
+      transform: scale(0.95);
+    }
+    
+    @media (min-width: 769px) {
+      .fullscreen-btn-mobile {
+        display: none !important;
+      }
+    }
+    
+    /* In fullscreen su mobile, mostra il pulsante esci in basso a destra */
+    body:fullscreen .exit-fullscreen-mobile,
+    body:-webkit-full-screen .exit-fullscreen-mobile {
+      display: flex !important;
+    }
+    
+    .exit-fullscreen-mobile {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: #ef4444;
+      color: white;
+      border: none;
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      cursor: pointer;
+      font-size: 1.2rem;
+      z-index: 1000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.3);
     }
     
     .initial-loading, .error, .empty {
@@ -301,16 +390,11 @@
       85% { opacity: 1; }
       100% { opacity: 0; transform: translateX(-50%) translateY(-20px); visibility: hidden; }
     }
-    
-    @media (max-width: 768px) {
-      .top-bar { padding: 0.6rem 1rem; }
-      .selector-container { width: 100%; margin-top: 0.3rem; }
-      .chapter-select { flex: 1; }
-    }
   </style>
 </head>
 <body>
 
+<!-- Top bar completa DESKTOP (solo fuori fullscreen) -->
 <div class="top-bar" id="topBar">
   <a href="javascript:history.back()" class="back-btn">← Libreria</a>
   <span class="manga-title" id="mangaTitle">Caricamento...</span>
@@ -324,22 +408,31 @@
   <button class="fullscreen-btn" id="fullscreenBtn">⛶ Schermo intero</button>
 </div>
 
-<div class="reader-container" id="readerContainer">
-  <div class="reader-wrapper" id="readerWrapper"></div>
-</div>
-
-<!-- Controlli desktop laterali -->
-<div class="bottom-controls" id="bottomControls">
+<!-- HUD laterale DESKTOP -->
+<div class="desktop-hud" id="desktopHud">
   <button class="nav-btn" id="prevBtn">◀ PREV</button>
   <span class="page-indicator" id="pageIndicator">0 / 0</span>
   <button class="nav-btn" id="nextBtn">NEXT ▶</button>
 </div>
 
-<!-- Barra mobile per fullscreen -->
-<div class="mobile-bottom-bar" id="mobileBottomBar">
-  <button class="mobile-nav-btn" id="mobilePrevBtn">◀ PREV</button>
+<!-- Pulsante esci fullscreen per DESKTOP (solo in fullscreen) -->
+<button class="fullscreen-exit-btn" id="fullscreenExitBtn">✕ Esci</button>
+
+<!-- HUD MOBILE (sempre visibile in basso al centro fuori fullscreen) -->
+<div class="mobile-hud" id="mobileHud">
+  <button class="mobile-nav-btn" id="mobilePrevBtn">◀</button>
   <span class="mobile-page-indicator" id="mobilePageIndicator">0 / 0</span>
-  <button class="mobile-nav-btn" id="mobileNextBtn">NEXT ▶</button>
+  <button class="mobile-nav-btn" id="mobileNextBtn">▶</button>
+</div>
+
+<!-- Pulsante fullscreen MOBILE (fuori fullscreen) -->
+<button class="fullscreen-btn-mobile" id="fullscreenBtnMobile">⛶</button>
+
+<!-- Pulsante esci fullscreen MOBILE (solo in fullscreen) -->
+<button class="exit-fullscreen-mobile" id="exitFullscreenMobile">✕</button>
+
+<div class="reader-container" id="readerContainer">
+  <div class="reader-wrapper" id="readerWrapper"></div>
 </div>
 
 <script>
@@ -369,7 +462,7 @@
   const SWIPE_MAX_TIME = 300;
 
   const topBar = document.getElementById('topBar');
-  const bottomControls = document.getElementById('bottomControls');
+  const desktopHud = document.getElementById('desktopHud');
   const readerContainer = document.getElementById('readerContainer');
   const readerWrapper = document.getElementById('readerWrapper');
   const chapterSelect = document.getElementById('chapterSelect');
@@ -382,6 +475,9 @@
   const mobilePrevBtn = document.getElementById('mobilePrevBtn');
   const mobileNextBtn = document.getElementById('mobileNextBtn');
   const fullscreenBtn = document.getElementById('fullscreenBtn');
+  const fullscreenBtnMobile = document.getElementById('fullscreenBtnMobile');
+  const fullscreenExitBtn = document.getElementById('fullscreenExitBtn');
+  const exitFullscreenMobile = document.getElementById('exitFullscreenMobile');
 
   // Controlla se siamo in fullscreen
   function isFullscreen() {
@@ -389,28 +485,32 @@
   }
 
   // Gestione schermo intero
+  function enterFullscreen() {
+    const elem = document.documentElement;
+    if (elem.requestFullscreen) {
+      elem.requestFullscreen();
+    } else if (elem.webkitRequestFullscreen) {
+      elem.webkitRequestFullscreen();
+    } else if (elem.msRequestFullscreen) {
+      elem.msRequestFullscreen();
+    }
+  }
+
+  function exitFullscreen() {
+    if (document.exitFullscreen) {
+      document.exitFullscreen();
+    } else if (document.webkitExitFullscreen) {
+      document.webkitExitFullscreen();
+    } else if (document.msExitFullscreen) {
+      document.msExitFullscreen();
+    }
+  }
+
   function toggleFullscreen() {
     if (!isFullscreen()) {
-      const elem = document.documentElement;
-      if (elem.requestFullscreen) {
-        elem.requestFullscreen();
-      } else if (elem.webkitRequestFullscreen) {
-        elem.webkitRequestFullscreen();
-      } else if (elem.msRequestFullscreen) {
-        elem.msRequestFullscreen();
-      }
-      fullscreenBtn.textContent = '✕ Esci';
-      fullscreenBtn.style.background = '#ef4444';
+      enterFullscreen();
     } else {
-      if (document.exitFullscreen) {
-        document.exitFullscreen();
-      } else if (document.webkitExitFullscreen) {
-        document.webkitExitFullscreen();
-      } else if (document.msExitFullscreen) {
-        document.msExitFullscreen();
-      }
-      fullscreenBtn.textContent = '⛶ Schermo intero';
-      fullscreenBtn.style.background = '';
+      exitFullscreen();
     }
   }
 
@@ -420,20 +520,34 @@
     isFullscreenActive = fs;
     
     if (fs) {
-      fullscreenBtn.textContent = '✕ Esci';
-      fullscreenBtn.style.background = '#ef4444';
-      // Su desktop in fullscreen nascondi i controlli laterali
-      if (window.innerWidth > 768 && bottomControls) {
-        bottomControls.style.display = 'none';
+      // Siamo in fullscreen
+      if (window.innerWidth > 768) {
+        // DESKTOP in fullscreen: nascondi topBar e desktopHud, mostra solo pulsante esci
+        topBar.style.display = 'none';
+        desktopHud.style.display = 'none';
+        fullscreenExitBtn.style.display = 'flex';
+      } else {
+        // MOBILE in fullscreen: nascondi pulsante fullscreen mobile, mostra hud mobile e pulsante esci
+        fullscreenBtnMobile.style.display = 'none';
+        // mobileHud rimane visibile (CSS lo mostra)
+        exitFullscreenMobile.style.display = 'flex';
       }
     } else {
-      fullscreenBtn.textContent = '⛶ Schermo intero';
-      fullscreenBtn.style.background = '';
-      if (window.innerWidth > 768 && bottomControls) {
-        bottomControls.style.display = '';
-        bottomControls.classList.remove('hide');
+      // Fuori fullscreen
+      if (window.innerWidth > 768) {
+        // DESKTOP fuori fullscreen
+        topBar.style.display = '';
+        desktopHud.style.display = '';
+        fullscreenExitBtn.style.display = 'none';
+        // Resetta auto-hide
+        topBar.classList.remove('hide');
+        desktopHud.classList.remove('hide');
+      } else {
+        // MOBILE fuori fullscreen
+        fullscreenBtnMobile.style.display = 'flex';
+        exitFullscreenMobile.style.display = 'none';
+        // mobileHud rimane visibile
       }
-      topBar.classList.remove('hide');
     }
   }
 
@@ -442,7 +556,11 @@
   document.addEventListener('mozfullscreenchange', updateFullscreenState);
   document.addEventListener('MSFullscreenChange', updateFullscreenState);
 
+  // Pulsanti fullscreen
   fullscreenBtn.addEventListener('click', toggleFullscreen);
+  fullscreenBtnMobile.addEventListener('click', enterFullscreen);
+  fullscreenExitBtn.addEventListener('click', exitFullscreen);
+  exitFullscreenMobile.addEventListener('click', exitFullscreen);
 
   function showToast(message) {
     const existingToast = document.querySelector('.toast');
@@ -454,19 +572,19 @@
     setTimeout(() => toast.remove(), 2000);
   }
 
-  // Auto-hide UI solo se NON siamo in fullscreen e su desktop
+  // Auto-hide UI solo su desktop FUORI fullscreen
   let hideTimeout;
   function resetHideTimer() {
     if (isFullscreenActive) return;
-    if (window.innerWidth <= 768) return; // Su mobile no auto-hide
+    if (window.innerWidth <= 768) return;
     
     clearTimeout(hideTimeout);
     topBar.classList.remove('hide');
-    bottomControls.classList.remove('hide');
+    desktopHud.classList.remove('hide');
     hideTimeout = setTimeout(() => {
       if (!isFullscreenActive && window.innerWidth > 768) {
         topBar.classList.add('hide');
-        bottomControls.classList.add('hide');
+        desktopHud.classList.add('hide');
       }
     }, 2500);
   }
@@ -475,7 +593,7 @@
     if (isFullscreenActive) return;
     if (window.innerWidth <= 768) return;
     topBar.classList.remove('hide');
-    bottomControls.classList.remove('hide');
+    desktopHud.classList.remove('hide');
     resetHideTimer();
   }
   
@@ -828,24 +946,20 @@
     if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
       e.preventDefault();
       await nextPage();
-      if (window.innerWidth > 768) showUI();
+      if (window.innerWidth > 768 && !isFullscreenActive) showUI();
     }
     if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
       e.preventDefault();
       await prevPage();
-      if (window.innerWidth > 768) showUI();
-    }
-    if (e.key === 'F11') {
-      e.preventDefault();
-      toggleFullscreen();
+      if (window.innerWidth > 768 && !isFullscreenActive) showUI();
     }
   });
 
   // Pulsanti desktop
-  prevBtn.onclick = async () => { await prevPage(); showUI(); };
-  nextBtn.onclick = async () => { await nextPage(); showUI(); };
+  prevBtn.onclick = async () => { await prevPage(); if (!isFullscreenActive) showUI(); };
+  nextBtn.onclick = async () => { await nextPage(); if (!isFullscreenActive) showUI(); };
   
-  // Pulsanti mobile fullscreen
+  // Pulsanti mobile
   mobilePrevBtn.onclick = async () => { await prevPage(); };
   mobileNextBtn.onclick = async () => { await nextPage(); };
 
