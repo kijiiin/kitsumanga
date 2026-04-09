@@ -242,25 +242,22 @@
       return [];
     }
     
-    chapterSelect.innerHTML = '<option>Ricerca...</option>';
+    chapterSelect.innerHTML = '<option>Ricerca in corso...</option>';
     const numbers = [];
-    let num = 1;
     
-    // Cerco fino al volume/capitolo 50
-    while (num <= 50) {
+    // Cerco fino al volume/capitolo 200 (modifica se necessario)
+    for (let num = 1; num <= 200; num++) {
       try {
         // Provo a vedere se esiste almeno la prima pagina del volume/capitolo
         const testPath = `manga/${mangaId}/${contentType}/${num}/1.jpg`;
         const res = await fetch(testPath, { method: 'HEAD' });
         if (res.ok) {
           numbers.push(num);
-          num++;
-        } else {
-          // Se non trovo il prossimo, mi fermo
-          break;
+          console.log(`Trovato ${contentType} ${num}`);
         }
       } catch(e) {
-        break;
+        // Ignoro l'errore e continuo con il prossimo
+        continue;
       }
     }
     
@@ -291,7 +288,6 @@
     
     // Cerco le pagine in sequenza (1.jpg, 2.jpg, 3.jpg...)
     while (pageNum <= 500) {
-      // Costruisco il path: manga/[id]/volumes/[numero]/[pagina].jpg
       const path = `manga/${mangaId}/${contentType}/${currentNumber}/${pageNum}.jpg`;
       try {
         const res = await fetch(path, { method: 'HEAD' });
