@@ -202,7 +202,7 @@
   let currentNumber = preloadNumber ? parseInt(preloadNumber) : 1;
   let currentPage = 0;
   let images = [];
-  let allNumbers = [];
+  let allNumbers = []; // Lista di tutti i volumi/capitoli dal manifest
 
   const container = document.getElementById('pagesContainer');
   const chapterSelect = document.getElementById('chapterSelect');
@@ -212,91 +212,39 @@
   const prevBtn = document.getElementById('prevBtn');
   const nextBtn = document.getElementById('nextBtn');
 
-  async function detectContentType() {
-    if (contentType) {
-      if (contentType === 'volumes') {
-        typeBadge.textContent = '📚 VOLUMI';
-        selectorLabel.textContent = 'Volume:';
-      } else if (contentType === 'chapters') {
-        typeBadge.textContent = '📖 CAPITOLI';
-        selectorLabel.textContent = 'Capitolo:';
-      }
-      return contentType;
-    }
-    
-    // Test veloce
+  // Carica il manifest.json per sapere quanti volumi/capitoli esistono
+  async function loadManifest() {
     try {
-      const res = await fetch(`manga/${mangaId}/volumes/1/1.jpg`, { method: 'HEAD' });
+      const res = await fetch(`manga/${mangaId}/manifest.json?t=${Date.now()}`);
       if (res.ok) {
-        contentType = 'volumes';
-        typeBadge.textContent = '📚 VOLUMI';
-        selectorLabel.textContent = 'Volume:';
-        return 'volumes';
-      }
-    } catch(e) {}
-    
-    try {
-      const res = await fetch(`manga/${mangaId}/chapters/1/1.jpg`, { method: 'HEAD' });
-      if (res.ok) {
-        contentType = 'chapters';
-        typeBadge.textContent = '📖 CAPITOLI';
-        selectorLabel.textContent = 'Capitolo:';
-        return 'chapters';
-      }
-    } catch(e) {}
-    
-    typeBadge.textContent = '❌ VUOTO';
-    return null;
-  }
-
-  async function loadAvailableNumbers() {
-    if (!contentType) {
-      chapterSelect.innerHTML = '<option>Nessun contenuto</option>';
-      return [];
-    }
-    
-    chapterSelect.innerHTML = '<option>🔍 Ricerca...</option>';
-    const numbers = [];
-    
-    // Limiti diversi per volumi e capitoli
-    let MAX_LIMIT;
-    if (contentType === 'volumes') {
-      MAX_LIMIT = 30;  // I volumi sono pochi, max 30
-    } else {
-      MAX_LIMIT = 500; // I capitoli possono essere tanti, fino a 500
-    }
-    
-    for (let num = 1; num <= MAX_LIMIT; num++) {
-      try {
-        const testPath = `manga/${mangaId}/${contentType}/${num}/1.jpg`;
-        const res = await fetch(testPath, { method: 'HEAD' });
-        if (res.ok) {
-          numbers.push(num);
-        } else if (numbers.length > 0 && contentType === 'volumes') {
-          // Per i volumi: se ne manca uno, presumo sia l'ultimo
-          break;
+        const manifest = await res.json();
+        contentType = manifest.type;
+        allNumbers = manifest.numbers;
+        
+        if (contentType === 'volumes') {
+          typeBadge.textContent = '📚 VOLUMI';
+          selectorLabel.textContent = 'Volume:';
+        } else if (contentType === 'chapters') {
+          typeBadge.textContent = '📖 CAPITOLI';
+          selectorLabel.textContent = 'Capitolo:';
         }
-        // Per i capitoli: continuo a cercare anche se qualcuno manca
-      } catch(e) {
-        if (numbers.length > 0 && contentType === 'volumes') break;
+        
+        // Popola il dropdown
+        const label = contentType === 'volumes' ? 'Volume' : 'Capitolo';
+        chapterSelect.innerHTML = allNumbers.map(n => `<option value="${n}" ${n == currentNumber ? 'selected' : ''}>${label} ${n}</option>`).join('');
+        chapterSelect.disabled = false;
+        
+        chapterSelect.onchange = async (e) => {
+          currentNumber = parseInt(e.target.value);
+          await loadPages();
+        };
+        
+        return true;
       }
+    } catch(e) {
+      console.log('manifest.json non trovato');
     }
-    
-    if (numbers.length === 0) {
-      chapterSelect.innerHTML = '<option>❌ Nessuno trovato</option>';
-      return [];
-    }
-    
-    const label = contentType === 'volumes' ? 'Volume' : 'Capitolo';
-    chapterSelect.innerHTML = numbers.map(n => `<option value="${n}" ${n === currentNumber ? 'selected' : ''}>${label} ${n}</option>`).join('');
-    chapterSelect.disabled = false;
-    
-    chapterSelect.onchange = async (e) => {
-      currentNumber = parseInt(e.target.value);
-      await loadPages();
-    };
-    
-    return numbers;
+    return false;
   }
 
   async function loadPages() {
@@ -305,7 +253,7 @@
     images = [];
     let pageNum = 1;
     
-    // Cerco le pagine
+    // Cerco le pagine (questa parte è veloce perché sono poche pagine)
     while (pageNum <= 500) {
       const path = `manga/${mangaId}/${contentType}/${currentNumber}/${pageNum}.jpg`;
       try {
@@ -408,25 +356,29 @@
       return;
     }
     
-    await detectContentType();
+    // Carica il manifest (istantaneo!)
+    const hasManifest = await loadManifest();
     
-    if (!contentType) {
-      container.innerHTML = '<div class="empty">📭 Nessun contenuto trovato</div>';
+    if (!hasManifest) {
+      container.innerHTML = `
+        <div class="empty">
+          <h3>📝 File manifest.json mancante</h3>
+          <p>Crea il file <code style="background: #1a1a2e; padding: 2px 5px; border-radius: 3px;">manga/${mangaId}/manifest.json</code></p>
+          <p>Esempio per volumi: <code style="background: #1a1a2e; padding: 2px 5px; border-radius: 3px;">{"type": "volumes", "numbers": [1, 2, 3]}</code></p>
+          <p>Esempio per capitoli: <code style="background: #1a1a2e; padding: 2px 5px; border-radius: 3px;">{"type": "chapters", "numbers": [1, 2, 3, 4, 5]}</code></p>
+        </div>
+      `;
       return;
     }
     
-    allNumbers = await loadAvailableNumbers();
-    
-    if (allNumbers.length > 0) {
-      if (!allNumbers.includes(currentNumber) && allNumbers.length > 0) {
-        currentNumber = allNumbers[0];
-        chapterSelect.value = currentNumber;
-      }
-      await loadPages();
-      document.querySelectorAll('.page-wrapper').forEach(w => observer.observe(w));
-    } else {
-      container.innerHTML = '<div class="empty">📭 Nessun volume/capitolo trovato</div>';
+    // Verifica che il numero pre-caricato esista
+    if (!allNumbers.includes(currentNumber) && allNumbers.length > 0) {
+      currentNumber = allNumbers[0];
+      chapterSelect.value = currentNumber;
     }
+    
+    await loadPages();
+    document.querySelectorAll('.page-wrapper').forEach(w => observer.observe(w));
   }
 
   init();
