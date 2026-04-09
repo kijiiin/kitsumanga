@@ -192,17 +192,17 @@
   const urlParams = new URLSearchParams(window.location.search);
   const mangaId = urlParams.get('manga');
   const mangaTitle = decodeURIComponent(urlParams.get('title') || 'Manga');
-  const preloadNumber = urlParams.get('number'); // Numero volume/capitolo pre-selezionato
-  const preloadType = urlParams.get('type'); // Tipo pre-selezionato (volumes/chapters)
+  const preloadNumber = urlParams.get('number');
+  const preloadType = urlParams.get('type');
   
   document.getElementById('mangaTitle').textContent = mangaTitle;
   document.title = `${mangaTitle} - KitsuManga`;
 
-  let contentType = preloadType || null; // Usa il tipo passato se presente
+  let contentType = preloadType || null;
   let currentNumber = preloadNumber ? parseInt(preloadNumber) : 1;
   let currentPage = 0;
   let images = [];
-  let allNumbers = []; // Array con tutti i volumi/capitoli disponibili
+  let allNumbers = [];
 
   const container = document.getElementById('pagesContainer');
   const chapterSelect = document.getElementById('chapterSelect');
@@ -213,7 +213,6 @@
   const nextBtn = document.getElementById('nextBtn');
 
   async function detectContentType() {
-    // Se abbiamo già il tipo dall'URL, usalo direttamente
     if (contentType) {
       if (contentType === 'volumes') {
         typeBadge.textContent = '📚 VOLUMI';
@@ -225,7 +224,7 @@
       return contentType;
     }
     
-    // Altrimenti rileva automaticamente
+    // Test veloce
     try {
       const res = await fetch(`manga/${mangaId}/volumes/1/1.jpg`, { method: 'HEAD' });
       if (res.ok) {
@@ -256,25 +255,27 @@
       return [];
     }
     
-    chapterSelect.innerHTML = '<option>Ricerca in corso...</option>';
+    chapterSelect.innerHTML = '<option>🔍 Ricerca...</option>';
     const numbers = [];
+    const MAX_VOLUMI = 20; // Massimo 20 volumi (veloce!)
     
-    // Cerco fino al volume/capitolo 200
-    for (let num = 1; num <= 200; num++) {
+    for (let num = 1; num <= MAX_VOLUMI; num++) {
       try {
         const testPath = `manga/${mangaId}/${contentType}/${num}/1.jpg`;
         const res = await fetch(testPath, { method: 'HEAD' });
         if (res.ok) {
           numbers.push(num);
-          console.log(`Trovato ${contentType} ${num}`);
+        } else if (numbers.length > 0) {
+          // Se abbiamo già trovato almeno un volume e questo manca, ci fermiamo
+          break;
         }
       } catch(e) {
-        continue;
+        if (numbers.length > 0) break;
       }
     }
     
     if (numbers.length === 0) {
-      chapterSelect.innerHTML = '<option>Nessuno trovato</option>';
+      chapterSelect.innerHTML = '<option>❌ Nessuno trovato</option>';
       return [];
     }
     
@@ -296,7 +297,7 @@
     images = [];
     let pageNum = 1;
     
-    // Cerco le pagine in sequenza (1.jpg, 2.jpg, 3.jpg...)
+    // Cerco le pagine
     while (pageNum <= 500) {
       const path = `manga/${mangaId}/${contentType}/${currentNumber}/${pageNum}.jpg`;
       try {
@@ -408,7 +409,6 @@
     
     allNumbers = await loadAvailableNumbers();
     
-    // Verifica che il numero pre-caricato esista, altrimenti usa il primo disponibile
     if (allNumbers.length > 0) {
       if (!allNumbers.includes(currentNumber) && allNumbers.length > 0) {
         currentNumber = allNumbers[0];
