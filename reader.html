@@ -45,6 +45,12 @@
       }
     }
     
+    /* In fullscreen su desktop nascondi la top bar */
+    body:fullscreen .top-bar,
+    body:-webkit-full-screen .top-bar {
+      display: none !important;
+    }
+    
     .back-btn {
       background: rgba(139, 92, 246, 0.3);
       color: white;
@@ -144,7 +150,7 @@
       opacity: 1;
     }
     
-    /* HUD LATERALE DESKTOP - solo su desktop (schermo > 768px) */
+    /* HUD LATERALE DESKTOP - visibile sia fuori che in fullscreen su desktop */
     .desktop-hud {
       position: fixed;
       bottom: 50%;
@@ -174,16 +180,12 @@
       }
     }
     
-    /* In fullscreen su desktop nascondi l'HUD laterale */
+    /* In fullscreen su desktop, l'HUD laterale rimane visibile ma senza auto-hide */
     body:fullscreen .desktop-hud,
     body:-webkit-full-screen .desktop-hud {
-      display: none !important;
-    }
-    
-    /* In fullscreen su desktop, mostra solo il pulsante esci in alto a destra */
-    body:fullscreen .fullscreen-exit-btn,
-    body:-webkit-full-screen .fullscreen-exit-btn {
-      display: flex !important;
+      opacity: 1 !important;
+      transform: translateY(50%) !important;
+      pointer-events: auto !important;
     }
     
     .nav-btn {
@@ -209,7 +211,7 @@
       border-radius: 20px;
     }
     
-    /* Pulsante esci fullscreen per desktop (solo in fullscreen) */
+    /* Pulsante esci fullscreen per desktop (solo in fullscreen, in alto a destra) */
     .fullscreen-exit-btn {
       position: fixed;
       top: 1rem;
@@ -229,6 +231,11 @@
     .fullscreen-exit-btn:hover {
       background: #dc2626;
       transform: scale(1.05);
+    }
+    
+    body:fullscreen .fullscreen-exit-btn,
+    body:-webkit-full-screen .fullscreen-exit-btn {
+      display: flex !important;
     }
     
     /* HUD MOBILE - solo su mobile (fuori fullscreen) */
@@ -260,11 +267,6 @@
     body:-webkit-full-screen .mobile-hud {
       display: flex !important;
       bottom: 20px;
-    }
-    
-    /* In fullscreen su mobile, nascondi il pulsante fullscreen normale e mostra quello di uscita a destra */
-    body:fullscreen .fullscreen-btn-mobile {
-      display: none !important;
     }
     
     .mobile-nav-btn {
@@ -408,17 +410,17 @@
   <button class="fullscreen-btn" id="fullscreenBtn">⛶ Schermo intero</button>
 </div>
 
-<!-- HUD laterale DESKTOP -->
+<!-- HUD laterale DESKTOP (visibile sempre su desktop, sia fuori che in fullscreen) -->
 <div class="desktop-hud" id="desktopHud">
   <button class="nav-btn" id="prevBtn">◀ PREV</button>
   <span class="page-indicator" id="pageIndicator">0 / 0</span>
   <button class="nav-btn" id="nextBtn">NEXT ▶</button>
 </div>
 
-<!-- Pulsante esci fullscreen per DESKTOP (solo in fullscreen) -->
+<!-- Pulsante esci fullscreen per DESKTOP (solo in fullscreen, in alto a destra) -->
 <button class="fullscreen-exit-btn" id="fullscreenExitBtn">✕ Esci</button>
 
-<!-- HUD MOBILE (sempre visibile in basso al centro fuori fullscreen) -->
+<!-- HUD MOBILE (sempre visibile in basso al centro su mobile) -->
 <div class="mobile-hud" id="mobileHud">
   <button class="mobile-nav-btn" id="mobilePrevBtn">◀</button>
   <span class="mobile-page-indicator" id="mobilePageIndicator">0 / 0</span>
@@ -428,7 +430,7 @@
 <!-- Pulsante fullscreen MOBILE (fuori fullscreen) -->
 <button class="fullscreen-btn-mobile" id="fullscreenBtnMobile">⛶</button>
 
-<!-- Pulsante esci fullscreen MOBILE (solo in fullscreen) -->
+<!-- Pulsante esci fullscreen MOBILE (solo in fullscreen, in basso a destra) -->
 <button class="exit-fullscreen-mobile" id="exitFullscreenMobile">✕</button>
 
 <div class="reader-container" id="readerContainer">
@@ -522,14 +524,13 @@
     if (fs) {
       // Siamo in fullscreen
       if (window.innerWidth > 768) {
-        // DESKTOP in fullscreen: nascondi topBar e desktopHud, mostra solo pulsante esci
+        // DESKTOP in fullscreen: nascondi topBar, mostra HUD laterale e pulsante esci
         topBar.style.display = 'none';
-        desktopHud.style.display = 'none';
+        // desktopHud rimane visibile (CSS lo forza)
         fullscreenExitBtn.style.display = 'flex';
       } else {
         // MOBILE in fullscreen: nascondi pulsante fullscreen mobile, mostra hud mobile e pulsante esci
         fullscreenBtnMobile.style.display = 'none';
-        // mobileHud rimane visibile (CSS lo mostra)
         exitFullscreenMobile.style.display = 'flex';
       }
     } else {
@@ -546,7 +547,6 @@
         // MOBILE fuori fullscreen
         fullscreenBtnMobile.style.display = 'flex';
         exitFullscreenMobile.style.display = 'none';
-        // mobileHud rimane visibile
       }
     }
   }
@@ -956,8 +956,8 @@
   });
 
   // Pulsanti desktop
-  prevBtn.onclick = async () => { await prevPage(); if (!isFullscreenActive) showUI(); };
-  nextBtn.onclick = async () => { await nextPage(); if (!isFullscreenActive) showUI(); };
+  prevBtn.onclick = async () => { await prevPage(); if (!isFullscreenActive && window.innerWidth > 768) showUI(); };
+  nextBtn.onclick = async () => { await nextPage(); if (!isFullscreenActive && window.innerWidth > 768) showUI(); };
   
   // Pulsanti mobile
   mobilePrevBtn.onclick = async () => { await prevPage(); };
