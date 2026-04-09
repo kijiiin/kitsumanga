@@ -257,20 +257,28 @@
     
     chapterSelect.innerHTML = '<option>🔍 Ricerca...</option>';
     const numbers = [];
-    const MAX_VOLUMI = 20; // Massimo 20 volumi (veloce!)
     
-    for (let num = 1; num <= MAX_VOLUMI; num++) {
+    // Limiti diversi per volumi e capitoli
+    let MAX_LIMIT;
+    if (contentType === 'volumes') {
+      MAX_LIMIT = 30;  // I volumi sono pochi, max 30
+    } else {
+      MAX_LIMIT = 500; // I capitoli possono essere tanti, fino a 500
+    }
+    
+    for (let num = 1; num <= MAX_LIMIT; num++) {
       try {
         const testPath = `manga/${mangaId}/${contentType}/${num}/1.jpg`;
         const res = await fetch(testPath, { method: 'HEAD' });
         if (res.ok) {
           numbers.push(num);
-        } else if (numbers.length > 0) {
-          // Se abbiamo già trovato almeno un volume e questo manca, ci fermiamo
+        } else if (numbers.length > 0 && contentType === 'volumes') {
+          // Per i volumi: se ne manca uno, presumo sia l'ultimo
           break;
         }
+        // Per i capitoli: continuo a cercare anche se qualcuno manca
       } catch(e) {
-        if (numbers.length > 0) break;
+        if (numbers.length > 0 && contentType === 'volumes') break;
       }
     }
     

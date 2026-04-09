@@ -116,6 +116,12 @@
       color: #c4b5fd;
       margin-left: 10px;
     }
+    .progress-info {
+      text-align: center;
+      margin-top: 10px;
+      font-size: 0.8rem;
+      color: #c4b5fd;
+    }
   </style>
 </head>
 <body>
@@ -185,17 +191,50 @@
     
     const foundNumbers = [];
     
-    // Cerco fino al volume/capitolo 200
-    for (let num = 1; num <= 200; num++) {
+    // Limiti diversi per volumi e capitoli
+    let MAX_LIMIT;
+    let showProgress = true;
+    
+    if (contentType === 'volumes') {
+      MAX_LIMIT = 30;  // I volumi sono pochi, max 30
+      showProgress = false;
+    } else {
+      MAX_LIMIT = 500; // I capitoli possono essere tanti, fino a 500
+    }
+    
+    // Mostra progresso solo per i capitoli
+    if (showProgress) {
+      const progressDiv = document.createElement('div');
+      progressDiv.className = 'progress-info';
+      progressDiv.id = 'searchProgress';
+      progressDiv.innerHTML = '🔍 Ricerca capitoli in corso... 0/' + MAX_LIMIT;
+      contentDiv.innerHTML = '';
+      contentDiv.appendChild(progressDiv);
+    }
+    
+    for (let num = 1; num <= MAX_LIMIT; num++) {
       try {
         const testPath = `manga/${mangaId}/${contentType}/${num}/1.jpg`;
         const res = await fetch(testPath, { method: 'HEAD' });
         if (res.ok) {
           foundNumbers.push(num);
-          console.log(`Trovato ${contentType} ${num}`);
+          console.log(`✅ Trovato ${contentType} ${num}`);
         }
+        
+        // Aggiorna progresso ogni 10 capitoli
+        if (showProgress && num % 10 === 0) {
+          const progressDiv = document.getElementById('searchProgress');
+          if (progressDiv) {
+            progressDiv.innerHTML = `🔍 Ricerca capitoli in corso... ${num}/${MAX_LIMIT} (trovati: ${foundNumbers.length})`;
+          }
+        }
+        
       } catch(e) {
-        // Continuo con il prossimo
+        // Per i volumi: se ne manca uno, presumo sia l'ultimo
+        if (contentType === 'volumes' && foundNumbers.length > 0) {
+          break;
+        }
+        // Per i capitoli: continuo a cercare
         continue;
       }
     }
@@ -230,7 +269,6 @@
   }
 
   function openReader(number) {
-    // Passo il numero del volume/capitolo al reader
     window.location.href = `reader.html?manga=${encodeURIComponent(mangaId)}&title=${encodeURIComponent(mangaTitle)}&number=${number}&type=${contentType}`;
   }
 
