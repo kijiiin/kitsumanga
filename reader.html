@@ -12,7 +12,23 @@
       color: white;
       overflow: hidden;
       height: 100vh;
-      touch-action: pan-y pinch-zoom; /* Blocca scroll orizzontale nativo */
+      touch-action: pan-y pinch-zoom;
+    }
+    
+    /* Modalità schermo intero */
+    body:fullscreen {
+      background: #000;
+    }
+    body:-webkit-full-screen {
+      background: #000;
+    }
+    body:-moz-full-screen {
+      background: #000;
+    }
+    body:fullscreen .top-bar,
+    body:-webkit-full-screen .top-bar,
+    body:-moz-full-screen .top-bar {
+      background: rgba(10, 10, 20, 0.9);
     }
     
     .top-bar {
@@ -69,12 +85,25 @@
       font-size: 0.8rem;
       color: #c4b5fd;
     }
+    .fullscreen-btn {
+      background: rgba(139, 92, 246, 0.3);
+      color: white;
+      border: none;
+      padding: 0.5rem 1rem;
+      border-radius: 20px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      transition: 0.2s;
+    }
+    .fullscreen-btn:hover {
+      background: rgba(139, 92, 246, 0.6);
+      transform: scale(1.05);
+    }
     
-    /* Reader container - senza scroll nativo */
     .reader-container {
       height: 100vh;
       width: 100%;
-      overflow: hidden; /* Blocca lo scroll nativo */
+      overflow: hidden;
       position: relative;
     }
     
@@ -99,7 +128,7 @@
       align-items: center;
       background: #000;
       position: relative;
-      pointer-events: none; /* Le immagini gestiscono il click da sole */
+      pointer-events: none;
     }
     .page img {
       max-height: 100vh;
@@ -116,7 +145,6 @@
       opacity: 1;
     }
     
-    /* Bottom controls */
     .bottom-controls {
       position: fixed;
       bottom: 50%;
@@ -206,7 +234,6 @@
       100% { opacity: 0; transform: translateX(-50%) translateY(-20px); visibility: hidden; }
     }
     
-    /* Indicatore di swipe */
     .swipe-indicator {
       position: fixed;
       bottom: 20px;
@@ -230,6 +257,7 @@
       .bottom-controls { right: 0.5rem; padding: 0.6rem; gap: 0.8rem; }
       .nav-btn { padding: 0.6rem 0.8rem; min-width: 60px; font-size: 0.75rem; }
       .page-indicator { font-size: 0.75rem; }
+      .fullscreen-btn { padding: 0.4rem 0.8rem; font-size: 0.8rem; }
     }
   </style>
 </head>
@@ -245,6 +273,7 @@
       <option>Caricamento...</option>
     </select>
   </div>
+  <button class="fullscreen-btn" id="fullscreenBtn">⛶ Schermo intero</button>
 </div>
 
 <div class="reader-container" id="readerContainer">
@@ -281,8 +310,8 @@
   let currentX = 0;
   let isDragging = false;
   let dragStartTime = 0;
-  const SWIPE_THRESHOLD = 50; // Soglia minima per cambiare pagina (px)
-  const SWIPE_MAX_TIME = 300; // Tempo massimo per considerare swipe (ms)
+  const SWIPE_THRESHOLD = 50;
+  const SWIPE_MAX_TIME = 300;
 
   const topBar = document.getElementById('topBar');
   const bottomControls = document.getElementById('bottomControls');
@@ -295,6 +324,60 @@
   const prevBtn = document.getElementById('prevBtn');
   const nextBtn = document.getElementById('nextBtn');
   const swipeIndicator = document.getElementById('swipeIndicator');
+  const fullscreenBtn = document.getElementById('fullscreenBtn');
+
+  // Gestione schermo intero
+  let isFullscreen = false;
+
+  function toggleFullscreen() {
+    if (!isFullscreen) {
+      // Entra in schermo intero
+      const elem = document.documentElement;
+      if (elem.requestFullscreen) {
+        elem.requestFullscreen();
+      } else if (elem.webkitRequestFullscreen) {
+        elem.webkitRequestFullscreen();
+      } else if (elem.msRequestFullscreen) {
+        elem.msRequestFullscreen();
+      }
+      fullscreenBtn.textContent = '✕ Esci';
+      fullscreenBtn.style.background = '#ef4444';
+      isFullscreen = true;
+      showToast('⛶ Modalità schermo intero - Premi ESC per uscire');
+    } else {
+      // Esci dallo schermo intero
+      if (document.exitFullscreen) {
+        document.exitFullscreen();
+      } else if (document.webkitExitFullscreen) {
+        document.webkitExitFullscreen();
+      } else if (document.msExitFullscreen) {
+        document.msExitFullscreen();
+      }
+      fullscreenBtn.textContent = '⛶ Schermo intero';
+      fullscreenBtn.style.background = '';
+      isFullscreen = false;
+    }
+  }
+
+  // Ascolta i cambiamenti dello schermo intero
+  document.addEventListener('fullscreenchange', updateFullscreenButton);
+  document.addEventListener('webkitfullscreenchange', updateFullscreenButton);
+  document.addEventListener('mozfullscreenchange', updateFullscreenButton);
+  document.addEventListener('MSFullscreenChange', updateFullscreenButton);
+
+  function updateFullscreenButton() {
+    if (document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement) {
+      fullscreenBtn.textContent = '✕ Esci';
+      fullscreenBtn.style.background = '#ef4444';
+      isFullscreen = true;
+    } else {
+      fullscreenBtn.textContent = '⛶ Schermo intero';
+      fullscreenBtn.style.background = '';
+      isFullscreen = false;
+    }
+  }
+
+  fullscreenBtn.addEventListener('click', toggleFullscreen);
 
   // Nascondi indicatore swipe dopo 3 secondi
   setTimeout(() => {
@@ -335,11 +418,10 @@
   document.addEventListener('touchstart', showUI);
   resetHideTimer();
 
-  // Gestione swipe con touch
+  // Gestione swipe
   function initSwipe() {
     const wrapper = readerWrapper;
     
-    // Touch start
     wrapper.addEventListener('touchstart', (e) => {
       startX = e.touches[0].clientX;
       currentX = startX;
@@ -349,20 +431,16 @@
       wrapper.style.cursor = 'grabbing';
     });
     
-    // Touch move
     wrapper.addEventListener('touchmove', (e) => {
       if (!isDragging) return;
       e.preventDefault();
       currentX = e.touches[0].clientX;
       const deltaX = currentX - startX;
-      
-      // Applica trasformazione temporanea durante il drag
       const containerWidth = readerContainer.clientWidth;
       const translateX = -currentPageIndex * containerWidth + deltaX;
       wrapper.style.transform = `translateX(${translateX}px)`;
     });
     
-    // Touch end
     wrapper.addEventListener('touchend', (e) => {
       if (!isDragging) return;
       isDragging = false;
@@ -372,17 +450,13 @@
       const deltaTime = Date.now() - dragStartTime;
       const containerWidth = readerContainer.clientWidth;
       
-      // Determina se fare swipe
       let shouldChangePage = false;
       let goToNext = false;
       
-      // Swipe veloce (meno di 300ms) con movimento minimo
       if (deltaTime < SWIPE_MAX_TIME && Math.abs(deltaX) > 30) {
         shouldChangePage = true;
-        goToNext = deltaX < 0; // Negativo = verso sinistra = next
-      }
-      // Swipe lento ma supera la soglia
-      else if (Math.abs(deltaX) > SWIPE_THRESHOLD) {
+        goToNext = deltaX < 0;
+      } else if (Math.abs(deltaX) > SWIPE_THRESHOLD) {
         shouldChangePage = true;
         goToNext = deltaX < 0;
       }
@@ -393,22 +467,18 @@
         } else if (!goToNext && currentPageIndex > 0) {
           goToPage(currentPageIndex - 1);
         } else if (goToNext && currentPageIndex >= totalPages - 1) {
-          // All'ultima pagina, passa al capitolo successivo
           wrapper.style.transition = 'transform 0.3s cubic-bezier(0.2, 0.9, 0.4, 1.1)';
           wrapper.style.transform = `translateX(${-currentPageIndex * containerWidth}px)`;
           nextChapter();
         } else if (!goToNext && currentPageIndex <= 0) {
-          // Alla prima pagina, passa al capitolo precedente
           wrapper.style.transition = 'transform 0.3s cubic-bezier(0.2, 0.9, 0.4, 1.1)';
           wrapper.style.transform = `translateX(${-currentPageIndex * containerWidth}px)`;
           prevChapter();
         } else {
-          // Torna alla posizione originale
           wrapper.style.transition = 'transform 0.3s cubic-bezier(0.2, 0.9, 0.4, 1.1)';
           wrapper.style.transform = `translateX(${-currentPageIndex * containerWidth}px)`;
         }
       } else {
-        // Torna alla posizione originale
         wrapper.style.transition = 'transform 0.3s cubic-bezier(0.2, 0.9, 0.4, 1.1)';
         wrapper.style.transform = `translateX(${-currentPageIndex * containerWidth}px)`;
       }
@@ -417,7 +487,6 @@
       currentX = 0;
     });
     
-    // Mouse events per desktop
     wrapper.addEventListener('mousedown', (e) => {
       e.preventDefault();
       startX = e.clientX;
@@ -696,6 +765,11 @@
       e.preventDefault();
       await prevPage();
       showUI();
+    }
+    // Tasto F11 o ESC per gestire schermo intero
+    if (e.key === 'F11') {
+      e.preventDefault();
+      toggleFullscreen();
     }
   });
 
