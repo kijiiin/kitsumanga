@@ -210,8 +210,9 @@
   const nextBtn = document.getElementById('nextBtn');
 
   async function detectContentType() {
+    // Prova prima con "volumes"
     try {
-      const res = await fetch(`manga/${mangaId}/volumes/1/001.jpg`, { method: 'HEAD' });
+      const res = await fetch(`manga/${mangaId}/volumes/1/1.jpg`, { method: 'HEAD' });
       if (res.ok) {
         contentType = 'volumes';
         typeBadge.textContent = '📚 VOLUMI';
@@ -220,8 +221,9 @@
       }
     } catch(e) {}
     
+    // Prova con "chapters"
     try {
-      const res = await fetch(`manga/${mangaId}/chapters/1/01.jpg`, { method: 'HEAD' });
+      const res = await fetch(`manga/${mangaId}/chapters/1/1.jpg`, { method: 'HEAD' });
       if (res.ok) {
         contentType = 'chapters';
         typeBadge.textContent = '📖 CAPITOLI';
@@ -244,13 +246,17 @@
     const numbers = [];
     let num = 1;
     
-    while (num < 500) {
+    // Cerco fino al volume/capitolo 50
+    while (num <= 50) {
       try {
-        const res = await fetch(`manga/${mangaId}/${contentType}/${num}/001.jpg`, { method: 'HEAD' });
+        // Provo a vedere se esiste almeno la prima pagina del volume/capitolo
+        const testPath = `manga/${mangaId}/${contentType}/${num}/1.jpg`;
+        const res = await fetch(testPath, { method: 'HEAD' });
         if (res.ok) {
           numbers.push(num);
           num++;
         } else {
+          // Se non trovo il prossimo, mi fermo
           break;
         }
       } catch(e) {
@@ -266,7 +272,7 @@
     const label = contentType === 'volumes' ? 'Volume' : 'Capitolo';
     chapterSelect.innerHTML = numbers.map(n => `<option value="${n}">${label} ${n}</option>`).join('');
     chapterSelect.disabled = false;
-    currentNumber = numbers[numbers.length - 1];
+    currentNumber = numbers[0]; // Parto dal primo
     chapterSelect.value = currentNumber;
     
     chapterSelect.onchange = async (e) => {
@@ -283,14 +289,17 @@
     images = [];
     let pageNum = 1;
     
-    while (pageNum < 500) {
-      const path = `manga/${mangaId}/${contentType}/${currentNumber}/${String(pageNum).padStart(3, '0')}.jpg`;
+    // Cerco le pagine in sequenza (1.jpg, 2.jpg, 3.jpg...)
+    while (pageNum <= 500) {
+      // Costruisco il path: manga/[id]/volumes/[numero]/[pagina].jpg
+      const path = `manga/${mangaId}/${contentType}/${currentNumber}/${pageNum}.jpg`;
       try {
         const res = await fetch(path, { method: 'HEAD' });
         if (res.ok) {
           images.push(path);
           pageNum++;
         } else {
+          // Se non trovo la prossima pagina, mi fermo
           break;
         }
       } catch(e) {
