@@ -251,6 +251,7 @@
   let allNumbers = [];
   let currentPageIndex = 0;
   let isLoadingChapter = false;
+  let detectionComplete = false; // Per sapere se abbiamo già trovato l'ultima pagina
 
   const topBar = document.getElementById('topBar');
   const bottomControls = document.getElementById('bottomControls');
@@ -358,54 +359,102 @@
     }
   }
 
-  // 🔥 RENDERIZZAZIONE IMMEDIATA - Senza padding, numeri normali (1,2,3...)
+  // Trova l'ultima pagina esistente con una richiesta HEAD ottimizzata
+  async function findLastPage(basePath, startGuess = 100) {
+    // Prima prova a trovare un range
+    let low = 1;
+    let high = startGuess;
+    
+    // Espandi l'intervallo finché non troviamo un 404
+    let found = true;
+    while (found) {
+      const testUrl = `${basePath}${high}.jpg`;
+      try {
+        const res = await fetch(testUrl, { method: 'HEAD' });
+        if (res.ok) {
+          low = high;
+          high = high * 2;
+          if (high > 2000) break; // Limite massimo
+        } else {
+          found = false;
+        }
+      } catch(e) {
+        found = false;
+      }
+    }
+    
+    // Ora facciamo una ricerca binaria tra low e high
+    let lastValid = low;
+    while (low <= high) {
+      const mid = Math.floor((low + high) / 2);
+      const testUrl = `${basePath}${mid}.jpg`;
+      try {
+        const res = await fetch(testUrl, { method: 'HEAD' });
+        if (res.ok) {
+          lastValid = mid;
+          low = mid + 1;
+        } else {
+          high = mid - 1;
+        }
+      } catch(e) {
+        high = mid - 1;
+      }
+    }
+    
+    return lastValid;
+  }
+
   async function loadChapter() {
+    detectionComplete = false;
+    
     // Mostra loading solo al primo caricamento
     if (!totalPages) {
-      readerWrapper.innerHTML = '<div class="initial-loading"><div class="spinner"></div><div>Caricamento pagine...</div></div>';
+      readerWrapper.innerHTML = '<div class="initial-loading"><div class="spinner"></div><div>Rilevamento pagine...</div></div>';
     }
     
     const basePath = `manga/${mangaId}/${contentType}/${currentNumber}/`;
-    renderPagesOptimistic(basePath);
+    
+    // Trova l'ultima pagina esistente (una sola richiesta binaria, non 500!)
+    showToast('📖 Rilevamento pagine in corso...');
+    totalPages = await findLastPage(basePath, 50);
+    detectionComplete = true;
+    
+    if (totalPages === 0) {
+      readerWrapper.innerHTML = '<div class="empty">😕 Nessuna pagina trovata</div>';
+      updateUI();
+      return;
+    }
+    
+    showToast(`✅ ${totalPages} pagine trovate`);
+    
+    // Ora renderizza SOLO le pagine che esistono
+    renderPagesExact(basePath, totalPages);
   }
 
-  function renderPagesOptimistic(basePath) {
+  // Renderizza esattamente le pagine che esistono
+  function renderPagesExact(basePath, pageCount) {
     readerWrapper.innerHTML = '';
     
-    // Stimiamo un massimo di 500 pagine (più che sufficiente)
-    const MAX_PAGES = 500;
-    let loadedCount = 0;
-    let lastValidPage = 0;
-    
-    // Crea immediatamente TUTTE le pagine potenziali (senza aspettare verifiche)
-    for (let i = 1; i <= MAX_PAGES; i++) {
+    for (let i = 1; i <= pageCount; i++) {
       const pageDiv = document.createElement('div');
       pageDiv.className = 'page';
       pageDiv.setAttribute('data-page', i - 1);
       
       const img = document.createElement('img');
-      // USA IL NUMERO NORMALE (senza padding)
       img.src = `${basePath}${i}.jpg`;
       img.alt = `Pagina ${i}`;
       img.loading = 'lazy';
       
-      // Quando l'immagine carica con successo
       img.onload = () => {
         img.classList.add('loaded');
-        loadedCount++;
-        lastValidPage = i;
-        totalPages = loadedCount;
-        updateUI();
       };
       
-      // Quando fallisce (404) - nascondi la pagina
       img.onerror = () => {
-        // Se è la prima pagina e fallisce subito -> nessuna immagine
-        if (i === 1 && loadedCount === 0) {
-          readerWrapper.innerHTML = '<div class="empty">😕 Nessuna pagina trovata</div>';
-        }
-        // Nascondi questa pagina
-        pageDiv.style.display = 'none';
+        // Se un'immagine fallisce ma dovrebbe esistere, ricarica
+        console.log(`Ricarico pagina ${i}`);
+        setTimeout(() => {
+          img.src = `${basePath}${i}.jpg?retry=${Date.now()}`;
+        }, 500);
       };
       
       pageDiv.appendChild(img);
@@ -427,14 +476,23 @@
     
     document.querySelectorAll('.page').forEach(page => observer.observe(page));
     
-    // Forza un aggiornamento UI dopo 1 secondo
-    setTimeout(() => updateUI(), 1000);
+    // Scrolla alla prima pagina
+    setTimeout(() => {
+      const firstPage = document.querySelector('.page');
+      if (firstPage) {
+        firstPage.scrollIntoView({ behavior: 'instant', block: 'start' });
+      }
+    }, 100);
+    
+    updateUI();
   }
 
   async function nextPage() {
-    const pages = document.querySelectorAll('.page:not([style*="display: none"])');
-    if (currentPageIndex < pages.length - 1 && pages[currentPageIndex + 1]) {
-      pages[currentPageIndex + 1].scrollIntoView({ behavior: 'smooth', block: 'start' });
+    if (currentPageIndex < totalPages - 1) {
+      const nextPageEl = document.querySelector(`.page[data-page="${currentPageIndex + 1}"]`);
+      if (nextPageEl) {
+        nextPageEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
     } else {
       await nextChapter();
     }
@@ -443,10 +501,8 @@
   async function prevPage() {
     if (currentPageIndex > 0) {
       const prevPageEl = document.querySelector(`.page[data-page="${currentPageIndex - 1}"]`);
-      if (prevPageEl && prevPageEl.style.display !== 'none') {
+      if (prevPageEl) {
         prevPageEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      } else {
-        await prevChapter();
       }
     } else {
       await prevChapter();
@@ -454,10 +510,7 @@
   }
 
   function updateUI() {
-    const visiblePages = document.querySelectorAll('.page:not([style*="display: none"]) img.loaded').length;
-    if (visiblePages > 0) {
-      pageIndicator.textContent = `${currentPageIndex + 1} / ${visiblePages}`;
-    } else if (totalPages > 0) {
+    if (totalPages > 0) {
       pageIndicator.textContent = `${currentPageIndex + 1} / ${totalPages}`;
     }
   }
