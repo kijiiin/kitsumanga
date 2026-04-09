@@ -4,6 +4,10 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>KitsuManga</title>
+  <!-- Meta tag per disabilitare la cache -->
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
@@ -86,6 +90,20 @@
     }
     .sort-select:hover {
       background: rgba(139, 92, 246, 0.3);
+    }
+    .reload-btn {
+      background: rgba(255,255,255,0.1);
+      border: 1px solid rgba(139, 92, 246, 0.5);
+      padding: 8px 15px;
+      border-radius: 20px;
+      cursor: pointer;
+      color: white;
+      font-size: 0.9rem;
+      transition: 0.3s;
+    }
+    .reload-btn:hover {
+      background: rgba(139, 92, 246, 0.3);
+      transform: scale(1.02);
     }
     .results-info {
       font-size: 0.85rem;
@@ -256,6 +274,7 @@
     <option value="latest-desc">🕐 Meno recenti prima</option>
     <option value="default">📋 Ordine originale</option>
   </select>
+  <button class="reload-btn" id="reloadBtn">🔄 Ricarica</button>
 </div>
 
 <div class="tabs">
@@ -287,6 +306,7 @@
   const resultsInfo = document.getElementById('resultsInfo');
   const tabs = document.querySelectorAll('.tab-btn');
   const addMangaBtn = document.getElementById('addMangaBtn');
+  const reloadBtn = document.getElementById('reloadBtn');
   
   let mangasLocal = [];
   let mangasExternal = [];
@@ -305,41 +325,82 @@
     setTimeout(() => toast.remove(), 3000);
   }
 
-  // Carica manga locali da manga.json
+  // Carica manga locali da manga.json (con cache busting)
   async function loadLocalMangas() {
     try {
-      const res = await fetch("manga.json");
+      const timestamp = Date.now();
+      const res = await fetch(`manga.json?t=${timestamp}`);
       const data = await res.json();
       mangasLocal = data.map(m => ({ ...m, type: 'local' }));
+      console.log('✅ Manga locali caricati:', mangasLocal.length);
     } catch (e) {
       console.error('Errore nel caricamento manga locali:', e);
       mangasLocal = [];
     }
   }
 
-  // Carica manga esterni da external.json
-  async function loadExternalMangas() {
+  // Carica manga esterni da external.json (con cache busting e force reload)
+  async function loadExternalMangas(forceReload = false) {
     try {
-      const res = await fetch("external.json");
+      // Usa timestamp per evitare la cache del browser
+      const cacheBuster = forceReload ? Date.now() : Date.now();
+      const res = await fetch(`external.json?t=${cacheBuster}&_=${Date.now()}`);
       if (res.ok) {
         const data = await res.json();
         mangasExternal = data.map(m => ({ ...m, type: 'external' }));
+        console.log('✅ Manga esterni caricati:', mangasExternal.length);
+        // Salva in sessionStorage come backup
+        sessionStorage.setItem('externalMangas', JSON.stringify(mangasExternal));
+        return true;
+      } else {
+        // Prova a caricare da sessionStorage
+        const cached = sessionStorage.getItem('externalMangas');
+        if (cached) {
+          mangasExternal = JSON.parse(cached);
+          console.log('📦 Manga esterni caricati da cache locale:', mangasExternal.length);
+        } else {
+          mangasExternal = [];
+        }
+        return false;
+      }
+    } catch (e) {
+      console.log('File external.json non trovato, uso cache locale');
+      // Prova a caricare da sessionStorage
+      const cached = sessionStorage.getItem('externalMangas');
+      if (cached) {
+        mangasExternal = JSON.parse(cached);
+        console.log('📦 Manga esterni caricati da cache locale:', mangasExternal.length);
       } else {
         mangasExternal = [];
       }
-    } catch (e) {
-      console.log('File external.json non trovato');
-      mangasExternal = [];
+      return false;
     }
   }
 
-  // Salva manga esterni su external.json (simulato - richiederebbe backend)
+  // Salva manga esterni (simulato - mostra istruzioni)
   async function saveExternalMangas() {
-    // Nota: In un ambiente reale, questo richiederebbe un backend
-    // Per ora mostriamo solo le istruzioni
     const externalData = mangasExternal.map(({ type, ...rest }) => rest);
-    console.log('Per salvare permanentemente, copia questo JSON in external.json:', JSON.stringify(externalData, null, 2));
-    showToast('📝 Manga aggiunto! Copia il JSON nella console per salvare permanentemente');
+    console.log('📝 Per salvare permanentemente, copia questo JSON in external.json:');
+    console.log(JSON.stringify(externalData, null, 2));
+    
+    // Mostra un toast con le istruzioni
+    showToast('📝 Manga aggiunto! Apri la console (F12) e copia il JSON in external.json', false);
+    
+    // Salva anche in sessionStorage per persistenza temporanea
+    sessionStorage.setItem('externalMangas', JSON.stringify(mangasExternal));
+  }
+
+  // Ricarica tutti i dati
+  async function reloadAllData() {
+    showToast('🔄 Ricaricamento in corso...');
+    await loadLocalMangas();
+    await loadExternalMangas(true);
+    if (currentTab === 'external') {
+      applySortAndFilter();
+    } else {
+      applySortAndFilter();
+    }
+    showToast('✅ Libreria ricaricata!');
   }
 
   // Aggiungi manga esterno
@@ -376,7 +437,7 @@
       applySortAndFilter();
     }
     
-    showToast(`✅ "${title}" aggiunto ai manga esterni!`);
+    showToast(`✅ "${title}" aggiunto ai manga esterni! Ricorda di salvare il JSON`);
   }
 
   // Funzioni di ordinamento
@@ -557,6 +618,11 @@
       }
     });
     
+    // Se passo al tab esterni, ricarica i dati dal file
+    if (tab === 'external') {
+      await loadExternalMangas(true);
+    }
+    
     searchInput.value = '';
     currentSearchTerm = '';
     searchClear.style.display = 'none';
@@ -567,7 +633,7 @@
 
   async function loadAllMangas() {
     await loadLocalMangas();
-    await loadExternalMangas();
+    await loadExternalMangas(true);
     updateAddButton();
     applySortAndFilter();
   }
@@ -576,6 +642,7 @@
   sortSelect.addEventListener('change', applySortAndFilter);
   searchInput.addEventListener('input', handleSearch);
   searchClear.addEventListener('click', clearSearch);
+  reloadBtn.addEventListener('click', reloadAllData);
   
   tabs.forEach(btn => {
     btn.addEventListener('click', () => switchTab(btn.dataset.tab));
