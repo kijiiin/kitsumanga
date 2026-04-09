@@ -2,7 +2,7 @@
 <html lang="it">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
   <title>Lettore Manga</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -10,7 +10,11 @@
       background: #0a0a0f;
       font-family: 'Segoe UI', system-ui, sans-serif;
       color: white;
+      overflow: hidden;
+      height: 100vh;
     }
+    
+    /* Top bar */
     .top-bar {
       position: fixed;
       top: 0;
@@ -25,6 +29,10 @@
       z-index: 1000;
       border-bottom: 1px solid rgba(139, 92, 246, 0.3);
       flex-wrap: wrap;
+      transition: transform 0.3s ease;
+    }
+    .top-bar.hide {
+      transform: translateY(-100%);
     }
     .back-btn {
       background: rgba(139, 92, 246, 0.3);
@@ -45,6 +53,9 @@
       font-size: 1.1rem;
       font-weight: 600;
       flex: 1;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
     .selector-container {
       display: flex;
@@ -72,25 +83,43 @@
       font-size: 0.8rem;
       color: #c4b5fd;
     }
-    .pages-container {
-      margin-top: 70px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 1rem 0;
+    
+    /* Reader orizzontale */
+    .reader-container {
+      height: 100vh;
+      width: 100%;
+      overflow-x: auto;
+      overflow-y: hidden;
+      scroll-snap-type: x mandatory;
+      scroll-behavior: smooth;
+      -webkit-overflow-scrolling: touch;
     }
-    .page-wrapper {
-      margin-bottom: 2px;
-      background: #000;
+    .reader-wrapper {
+      display: flex;
+      flex-direction: row;
+      height: 100%;
+      align-items: center;
+    }
+    .page {
+      flex: 0 0 100%;
+      height: 100vh;
+      scroll-snap-align: start;
       display: flex;
       justify-content: center;
+      align-items: center;
+      background: #000;
+      position: relative;
     }
-    .page-wrapper img {
+    .page img {
+      max-height: 100vh;
       max-width: 100%;
+      width: auto;
       height: auto;
-      display: block;
-      box-shadow: 0 5px 20px rgba(0, 0, 0, 0.5);
+      object-fit: contain;
+      cursor: pointer;
     }
+    
+    /* Bottom controls */
     .bottom-controls {
       position: fixed;
       bottom: 2rem;
@@ -104,6 +133,10 @@
       backdrop-filter: blur(10px);
       border: 1px solid rgba(139, 92, 246, 0.3);
       z-index: 1000;
+      transition: transform 0.3s ease;
+    }
+    .bottom-controls.hide {
+      transform: translateX(-50%) translateY(100%);
     }
     .nav-btn {
       background: #6b21a8;
@@ -124,6 +157,7 @@
     .nav-btn:disabled {
       opacity: 0.3;
       cursor: not-allowed;
+      transform: none;
     }
     .page-indicator {
       display: flex;
@@ -131,11 +165,21 @@
       padding: 0 1rem;
       font-size: 1rem;
       color: #c4b5fd;
+      font-weight: 600;
     }
+    
+    /* Loading */
     .loading, .error, .empty {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
       text-align: center;
-      padding: 4rem 2rem;
+      padding: 2rem;
       font-size: 1.1rem;
+      background: rgba(0,0,0,0.8);
+      border-radius: 20px;
+      z-index: 2000;
     }
     .loading { color: #c4b5fd; }
     .error { color: #ef4444; }
@@ -152,19 +196,43 @@
     @keyframes spin {
       to { transform: rotate(360deg); }
     }
+    
+    /* Touch hints */
+    .touch-hint {
+      position: fixed;
+      bottom: 100px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0,0,0,0.7);
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      color: #c4b5fd;
+      pointer-events: none;
+      z-index: 999;
+      animation: fadeOut 3s forwards;
+      white-space: nowrap;
+    }
+    @keyframes fadeOut {
+      0% { opacity: 1; }
+      70% { opacity: 1; }
+      100% { opacity: 0; visibility: hidden; }
+    }
+    
     @media (max-width: 768px) {
       .top-bar { padding: 0.6rem 1rem; }
       .selector-container { width: 100%; margin-top: 0.3rem; }
       .chapter-select { flex: 1; }
-      .bottom-controls { bottom: 1rem; padding: 0.6rem 1rem; }
-      .nav-btn { padding: 0.5rem 1rem; min-width: 70px; font-size: 0.9rem; }
+      .bottom-controls { bottom: 1rem; padding: 0.5rem 1rem; }
+      .nav-btn { padding: 0.4rem 1rem; min-width: 70px; font-size: 0.8rem; }
+      .page-indicator { font-size: 0.8rem; }
     }
   </style>
 </head>
 <body>
 
-<div class="top-bar">
-  <a href="javascript:history.back()" class="back-btn">← Indietro</a>
+<div class="top-bar" id="topBar">
+  <a href="javascript:history.back()" class="back-btn">← Libreria</a>
   <span class="manga-title" id="mangaTitle">Caricamento...</span>
   <span class="type-badge" id="typeBadge"></span>
   <div class="selector-container">
@@ -175,18 +243,17 @@
   </div>
 </div>
 
-<div class="pages-container" id="pagesContainer">
-  <div class="loading">
-    <div class="spinner"></div>
-    <div>Caricamento pagine...</div>
-  </div>
+<div class="reader-container" id="readerContainer">
+  <div class="reader-wrapper" id="readerWrapper"></div>
 </div>
 
-<div class="bottom-controls">
-  <button class="nav-btn" id="prevBtn" onclick="prevPage()">← PREV</button>
+<div class="bottom-controls" id="bottomControls">
+  <button class="nav-btn" id="prevBtn">← PREV</button>
   <span class="page-indicator" id="pageIndicator">0 / 0</span>
-  <button class="nav-btn" id="nextBtn" onclick="nextPage()">NEXT →</button>
+  <button class="nav-btn" id="nextBtn">NEXT →</button>
 </div>
+
+<div class="touch-hint" id="touchHint">👆 Scorri a sinistra/destra per cambiare pagina</div>
 
 <script>
   const urlParams = new URLSearchParams(window.location.search);
@@ -200,19 +267,46 @@
 
   let contentType = preloadType || null;
   let currentNumber = preloadNumber ? parseInt(preloadNumber) : 1;
-  let currentPage = 0;
   let images = [];
-  let allNumbers = []; // Lista di tutti i volumi/capitoli dal manifest
+  let allNumbers = [];
+  let currentPageIndex = 0;
 
-  const container = document.getElementById('pagesContainer');
+  const topBar = document.getElementById('topBar');
+  const bottomControls = document.getElementById('bottomControls');
+  const readerContainer = document.getElementById('readerContainer');
+  const readerWrapper = document.getElementById('readerWrapper');
   const chapterSelect = document.getElementById('chapterSelect');
   const typeBadge = document.getElementById('typeBadge');
   const selectorLabel = document.getElementById('selectorLabel');
   const pageIndicator = document.getElementById('pageIndicator');
   const prevBtn = document.getElementById('prevBtn');
   const nextBtn = document.getElementById('nextBtn');
+  const touchHint = document.getElementById('touchHint');
 
-  // Carica il manifest.json per sapere quanti volumi/capitoli esistono
+  // Auto-hide UI dopo 2 secondi di inattività
+  let hideTimeout;
+  function resetHideTimer() {
+    clearTimeout(hideTimeout);
+    topBar.classList.remove('hide');
+    bottomControls.classList.remove('hide');
+    hideTimeout = setTimeout(() => {
+      topBar.classList.add('hide');
+      bottomControls.classList.add('hide');
+    }, 2500);
+  }
+  
+  function showUI() {
+    topBar.classList.remove('hide');
+    bottomControls.classList.remove('hide');
+    resetHideTimer();
+  }
+  
+  document.addEventListener('mousemove', showUI);
+  document.addEventListener('click', showUI);
+  document.addEventListener('touchstart', showUI);
+  resetHideTimer();
+
+  // Carica manifest.json
   async function loadManifest() {
     try {
       const res = await fetch(`manga/${mangaId}/manifest.json?t=${Date.now()}`);
@@ -229,7 +323,6 @@
           selectorLabel.textContent = 'Capitolo:';
         }
         
-        // Popola il dropdown
         const label = contentType === 'volumes' ? 'Volume' : 'Capitolo';
         chapterSelect.innerHTML = allNumbers.map(n => `<option value="${n}" ${n == currentNumber ? 'selected' : ''}>${label} ${n}</option>`).join('');
         chapterSelect.disabled = false;
@@ -247,13 +340,14 @@
     return false;
   }
 
+  // Carica le pagine
   async function loadPages() {
-    container.innerHTML = '<div class="loading"><div class="spinner"></div><div>Caricamento pagine...</div></div>';
+    // Mostra loading
+    readerWrapper.innerHTML = '<div class="loading"><div class="spinner"></div><div>Caricamento pagine...</div></div>';
     
     images = [];
     let pageNum = 1;
     
-    // Cerco le pagine (questa parte è veloce perché sono poche pagine)
     while (pageNum <= 500) {
       const path = `manga/${mangaId}/${contentType}/${currentNumber}/${pageNum}.jpg`;
       try {
@@ -269,26 +363,32 @@
       }
     }
     
-    currentPage = 0;
-    
     if (images.length === 0) {
-      container.innerHTML = '<div class="empty">😕 Nessuna pagina trovata</div>';
+      readerWrapper.innerHTML = '<div class="empty">😕 Nessuna pagina trovata</div>';
       updateUI();
       return;
     }
     
-    renderAllPages();
+    renderPages();
     updateUI();
-    window.scrollTo({ top: 70, behavior: 'smooth' });
+    
+    // Scrolla alla prima pagina
+    setTimeout(() => {
+      const firstPage = document.querySelector('.page');
+      if (firstPage) {
+        firstPage.scrollIntoView({ behavior: 'instant', block: 'start' });
+      }
+    }, 100);
   }
 
-  function renderAllPages() {
-    container.innerHTML = '';
+  // Renderizza tutte le pagine
+  function renderPages() {
+    readerWrapper.innerHTML = '';
     
     images.forEach((imgPath, index) => {
-      const wrapper = document.createElement('div');
-      wrapper.className = 'page-wrapper';
-      wrapper.id = `page-${index}`;
+      const pageDiv = document.createElement('div');
+      pageDiv.className = 'page';
+      pageDiv.setAttribute('data-page', index);
       
       const img = document.createElement('img');
       img.src = imgPath;
@@ -299,68 +399,90 @@
         img.src = `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='800' height='1200'%3E%3Crect width='800' height='1200' fill='%231a1a2e'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' fill='%23ef4444' font-size='18'%3EErrore%3C/text%3E%3C/svg%3E`;
       };
       
-      wrapper.appendChild(img);
-      container.appendChild(wrapper);
+      // Click sull'immagine per avanzare
+      img.onclick = (e) => {
+        e.stopPropagation();
+        nextPage();
+      };
+      
+      pageDiv.appendChild(img);
+      readerWrapper.appendChild(pageDiv);
     });
+    
+    // Osserva quale pagina è visibile
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          const pageIndex = parseInt(entry.target.getAttribute('data-page'));
+          if (!isNaN(pageIndex)) {
+            currentPageIndex = pageIndex;
+            updateUI();
+          }
+        }
+      });
+    }, { threshold: 0.5 });
+    
+    document.querySelectorAll('.page').forEach(page => observer.observe(page));
   }
 
-  function scrollToPage(pageIndex) {
-    const pageElement = document.getElementById(`page-${pageIndex}`);
-    if (pageElement) {
-      pageElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
-    updateUI();
-  }
-
+  // Navigazione
   function nextPage() {
-    if (currentPage < images.length - 1) {
-      currentPage++;
-      scrollToPage(currentPage);
+    if (currentPageIndex < images.length - 1) {
+      const nextPageEl = document.querySelector(`.page[data-page="${currentPageIndex + 1}"]`);
+      if (nextPageEl) {
+        nextPageEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
     }
   }
 
   function prevPage() {
-    if (currentPage > 0) {
-      currentPage--;
-      scrollToPage(currentPage);
+    if (currentPageIndex > 0) {
+      const prevPageEl = document.querySelector(`.page[data-page="${currentPageIndex - 1}"]`);
+      if (prevPageEl) {
+        prevPageEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
     }
   }
 
   function updateUI() {
-    pageIndicator.textContent = `${currentPage + 1} / ${images.length}`;
-    prevBtn.disabled = currentPage === 0;
-    nextBtn.disabled = currentPage === images.length - 1;
+    pageIndicator.textContent = `${currentPageIndex + 1} / ${images.length}`;
+    prevBtn.disabled = currentPageIndex === 0;
+    nextBtn.disabled = currentPageIndex === images.length - 1;
   }
 
+  // Eventi tastiera
   document.addEventListener('keydown', (e) => {
-    if (e.key === 'ArrowRight') { e.preventDefault(); nextPage(); }
-    if (e.key === 'ArrowLeft') { e.preventDefault(); prevPage(); }
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+      e.preventDefault();
+      nextPage();
+      showUI();
+    }
+    if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+      e.preventDefault();
+      prevPage();
+      showUI();
+    }
   });
 
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting) {
-        const id = entry.target.id;
-        const match = id.match(/page-(\d+)/);
-        if (match) {
-          currentPage = parseInt(match[1]);
-          updateUI();
-        }
-      }
-    });
-  }, { threshold: 0.5 });
+  // Pulsanti
+  prevBtn.onclick = () => { prevPage(); showUI(); };
+  nextBtn.onclick = () => { nextPage(); showUI(); };
+
+  // Scroll manuale aggiorna indice
+  readerContainer.addEventListener('scroll', () => {
+    resetHideTimer();
+  });
 
   async function init() {
     if (!mangaId) {
-      container.innerHTML = '<div class="error">❌ Nessun manga specificato</div>';
+      readerWrapper.innerHTML = '<div class="error">❌ Nessun manga specificato</div>';
       return;
     }
     
-    // Carica il manifest (istantaneo!)
     const hasManifest = await loadManifest();
     
     if (!hasManifest) {
-      container.innerHTML = `
+      readerWrapper.innerHTML = `
         <div class="empty">
           <h3>📝 File manifest.json mancante</h3>
           <p>Crea il file <code style="background: #1a1a2e; padding: 2px 5px; border-radius: 3px;">manga/${mangaId}/manifest.json</code></p>
@@ -371,14 +493,12 @@
       return;
     }
     
-    // Verifica che il numero pre-caricato esista
     if (!allNumbers.includes(currentNumber) && allNumbers.length > 0) {
       currentNumber = allNumbers[0];
       chapterSelect.value = currentNumber;
     }
     
     await loadPages();
-    document.querySelectorAll('.page-wrapper').forEach(w => observer.observe(w));
   }
 
   init();
