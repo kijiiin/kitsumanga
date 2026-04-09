@@ -1,267 +1,712 @@
+𝓚𝓲𝓳𝓲𝓲𝓲𝓷
+kijiiin
+•
+Non ricordo il suono della voce mia perché ormai non parlo. Vorrei farlo ma di interessante tanto non ho un cazzo
+
+Goel
+ — 04/04/2026 22:59
+quindi un Trojan
+𝓚𝓲𝓳𝓲𝓲𝓲𝓷
+ — 04/04/2026 22:59
+Ma ti faceva così o ti fa ancora così dopo il reset?
+𝓚𝓲𝓳𝓲𝓲𝓲𝓷
+ — 04/04/2026 22:59
+Oddio, non ne ho idea
+Non conosco termini e differenze, sincero
+Goel
+ — 04/04/2026 22:59
+da quando ho ravviato non è successo niente
+𝓚𝓲𝓳𝓲𝓲𝓲𝓷
+ — 04/04/2026 22:59
+Ok, almeno
+Goel
+ — 04/04/2026 23:00
+ormai ho paura di dormire ahahahaha
+in 3 giorni è successo di tutto
+𝓚𝓲𝓳𝓲𝓲𝓲𝓷
+ — 04/04/2026 23:00
+Ma no, mo hai resettato
+Quello che è successo è successo, mo non c'è più niente tecnicamente
+Però ancora non capisco come siano arrivati ad amazon
+A meno che non avevi salvato le password sul browser tipo
+O stavi direttamente loggato
+Goel
+ — 04/04/2026 23:01
+immagino che da pc uso l'account di mia madre che lei tiene amazon prime
+𝓚𝓲𝓳𝓲𝓲𝓲𝓷
+ — 04/04/2026 23:01
+Aah capito
+Eh allora si. Era sempre circoscritto al computer
+𝓚𝓲𝓳𝓲𝓲𝓲𝓷
+ — 05/04/2026 16:32
+https://www.steelseries.com/deeplink/gg/sonar/config/v1/import?url=aHR0cHM6Ly9jb21tdW5pdHktY29uZmlncy5zdGVlbHNlcmllc2Nkbi5jb20vdjEvMTEwN2Y4ZDItZDhhOS00ZWM3LTlhYmYtNzI3NTc5OTE2YTdl
+SteelSeries
+Deeplink by SteelSeries
+This deeplink can be opened with GG for a smooth experience
+Immagine
+https://www.steelseries.com/deeplink/gg/sonar/config/v1/import?url=aHR0cHM6Ly9jb21tdW5pdHktY29uZmlncy5zdGVlbHNlcmllc2Nkbi5jb20vdjEvMjA1ZDNiOGYtOGRhNy00ZGUzLWFmOTctZTBlODNhMDYyZGI2
+SteelSeries
+Deeplink by SteelSeries
+This deeplink can be opened with GG for a smooth experience
+Immagine
+𝓚𝓲𝓳𝓲𝓲𝓲𝓷
+ — 05/04/2026 16:57
+https://github.com/5rahim/seanime/releases/tag/v3.5.2
+GitHub
+Release v3.5.2 · 5rahim/seanime
+What's new?
+
+⚡️ Built-in Player: Improved performance
+
+Reduced lag caused by animations and subtitle streaming
+
+
+⚡️ Added "Check for updates" button
+⚡️ Added Update Channels (Experime...
+Release v3.5.2 · 5rahim/seanime
+𝓚𝓲𝓳𝓲𝓲𝓲𝓷
+ — 05/04/2026 17:10
+https://stremio-addon-manager.vercel.app/
+Stremio Addon Manager
+Stremio Addon Manager
+https://94c8cb9f702d-tmdb-addon.baby-beamup.club/configure/
+The Movie Database Addon - Stremio Addon
+Configure your TMDB Addon for Stremio
+𝓚𝓲𝓳𝓲𝓲𝓲𝓷
+ — 05/04/2026 17:31
+(function() {
+
+    const token = JSON.parse(localStorage.getItem("profile")).auth.key;
+
+    const requestData = {
+        type: "AddonCollectionGet",
+        authKey: token,
+        update: true
+    };
+
+    fetch('https://api.strem.io/api/addonCollectionGet', {
+        method: 'POST',
+        body: JSON.stringify(requestData)
+    })
+    .then(response => response.json())
+    .then(data => {
+
+    if (data && data.result) {
+
+        let result = JSON.stringify(data.result).substring(1).replace(/"protected":true/g, '"protected":false').replace('"idPrefixes":["tmdb:"]', '"idPrefixes":["tmdb:","tt"]');
+
+        const index = result.indexOf("}}],");
+
+        if (index !== -1) {
+            result = result.substring(0, index + 3) + "}";
+        }
+
+        let addons = '{"type":"AddonCollectionSet","authKey":"' + token + '",' + result;
+
+        fetch('https://api.strem.io/api/addonCollectionSet', {
+            method: 'POST',
+            body: addons 
+        })
+          .then(response => response.text())
+          .then(data => {
+              console.log('Success:', data);
+          })
+          .catch((error) => {
+              console.error('Error:', error);
+          });
+
+        } else {
+            console.error('Error:', error);
+        }
+    })
+    .catch((error) => {
+        console.error('Erro:', error);
+    });
+})();
+https://v3-cinemeta.strem.io/manifest.json
+𝓚𝓲𝓳𝓲𝓲𝓲𝓷
+ — 06/04/2026 14:17
+Ci sei?
+Goel
+ — 06/04/2026 19:43
+è andata via Misty ahahahaù
+𝓚𝓲𝓳𝓲𝓲𝓲𝓷
+ — 06/04/2026 19:45
+HAHAHAHAHAAHAHAHAHAH
+Goel
+ — Ieri alle 18:17
+frocio
+𝓚𝓲𝓳𝓲𝓲𝓲𝓷
+ — Ieri alle 18:17
+Dimmi tutto, pelato
+Goel
+ — Ieri alle 18:20
+che stai facendo?
+𝓚𝓲𝓳𝓲𝓲𝓲𝓷
+ — Ieri alle 18:20
+Non si può dire👀
+Goel
+ — Ieri alle 18:21
+eeeh lo so che cosa stai facendo
+stai giocando a super meat boy 2 3D
+𝓚𝓲𝓳𝓲𝓲𝓲𝓷
+ — Ieri alle 18:21
+Il 2? No, non ancora
+Prima finisco l'1
+𝓚𝓲𝓳𝓲𝓲𝓲𝓷
+ — Ieri alle 19:14
+https://kijiiin.github.io/KitsuStream/index.html
+𝓚𝓲𝓳𝓲𝓲𝓲𝓷
+ — 15:34
+Riavvia steelseries
+Goel
+ — 16:53
+Tipo di allegato: archive
+issue_report_2026-04-09_16-53-17.zip
+723.34 KB
+𝓚𝓲𝓳𝓲𝓲𝓲𝓷
+ — 17:03
+dohurl="https://cloudflare-dns.com/dns-query%7B?dns}"
+𝓚𝓲𝓳𝓲𝓲𝓲𝓷
+ — 17:31
+https://kijiiin.github.io/KitsuManga/
+𝓚𝓲𝓳𝓲𝓲𝓲𝓷
+ — 17:51
+Prima della modifica estetica
 <!DOCTYPE html>
 <html lang="it">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>Ayashimon Reader</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>Lettore Manga</title>
 
-        body {
-            background: #0a0a0a;
-            font-family: system-ui, 'Segoe UI', sans-serif;
-            overflow: hidden;
-            height: 100vh;
-        }
+reader.html
+15 KB
+﻿
+Goel
+_goel
+ 
+ 
+ 
+ 
+ 
+ 
+ 
++ melo -
++ vengo -
+x non venir + -
+non melo - +
+o x lo -
+melo -
+di - 
 
-        .reader-container {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            background: black;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .image-wrapper {
-            width: 100%;
-            height: 100%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            background: black;
-        }
-
-        .manga-page {
-            max-width: 100%;
-            max-height: 100%;
-            width: auto;
-            height: auto;
-            object-fit: contain;
-            display: block;
-            background: black;
-        }
-
-        .nav-btn {
-            position: fixed;
-            top: 50%;
-            transform: translateY(-50%);
-            background: rgba(0, 0, 0, 0.7);
-            backdrop-filter: blur(8px);
-            border: none;
-            color: white;
-            font-size: 2rem;
-            font-weight: bold;
-            cursor: pointer;
-            padding: 0.8rem 1.2rem;
-            border-radius: 40px;
-            z-index: 100;
-            font-family: monospace;
-            border: 1px solid rgba(255,255,255,0.2);
-            transition: all 0.2s;
-        }
-
-        .nav-btn:hover {
-            background: rgba(0, 0, 0, 0.9);
-            transform: translateY(-50%) scale(1.05);
-        }
-
-        #prevBtn { left: 12px; }
-        #nextBtn { right: 12px; }
-
-        .info-overlay {
-            position: fixed;
-            bottom: 12px;
-            right: 16px;
-            background: rgba(0,0,0,0.6);
-            backdrop-filter: blur(5px);
-            padding: 6px 12px;
-            border-radius: 30px;
-            color: #ddd;
-            font-size: 0.8rem;
-            z-index: 99;
-            pointer-events: none;
-            font-family: monospace;
-        }
-
-        @media (max-width: 768px) {
-            .nav-btn { font-size: 1.5rem; padding: 0.5rem 1rem; }
-            .info-overlay { font-size: 0.7rem; bottom: 8px; right: 10px; }
-        }
-    </style>
+                                                        Pierino
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>Lettore Manga</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: #0a0a0f;
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      color: white;
+      overflow: hidden;
+      height: 100vh;
+    }
+    
+    /* Top bar */
+    .top-bar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      padding: 0.8rem 1.5rem;
+      background: rgba(10, 10, 20, 0.95);
+      backdrop-filter: blur(10px);
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      z-index: 1000;
+      border-bottom: 1px solid rgba(139, 92, 246, 0.3);
+      flex-wrap: wrap;
+      transition: transform 0.3s ease;
+    }
+    .top-bar.hide {
+      transform: translateY(-100%);
+    }
+    .back-btn {
+      background: rgba(139, 92, 246, 0.3);
+      color: white;
+      border: none;
+      padding: 0.5rem 1rem;
+      border-radius: 20px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      text-decoration: none;
+      display: inline-block;
+      transition: 0.2s;
+    }
+    .back-btn:hover {
+      background: rgba(139, 92, 246, 0.6);
+    }
+    .manga-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+      flex: 1;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .selector-container {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .selector-label {
+      color: #c4b5fd;
+      font-size: 0.9rem;
+    }
+    .chapter-select {
+      padding: 0.5rem 1rem;
+      background: #1a1a2e;
+      color: white;
+      border: 1px solid #6b21a8;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      cursor: pointer;
+      min-width: 150px;
+    }
+    .type-badge {
+      background: rgba(107, 33, 168, 0.3);
+      padding: 0.3rem 0.8rem;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      color: #c4b5fd;
+    }
+    
+    /* Reader orizzontale */
+    .reader-container {
+      height: 100vh;
+      width: 100%;
+      overflow-x: auto;
+      overflow-y: hidden;
+      scroll-snap-type: x mandatory;
+      scroll-behavior: smooth;
+      -webkit-overflow-scrolling: touch;
+    }
+    .reader-wrapper {
+      display: flex;
+      flex-direction: row;
+      height: 100%;
+      align-items: center;
+    }
+    .page {
+      flex: 0 0 100%;
+      height: 100vh;
+      scroll-snap-align: start;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: #000;
+      position: relative;
+    }
+    .page img {
+      max-height: 100vh;
+      max-width: 100%;
+      width: auto;
+      height: auto;
+      object-fit: contain;
+      cursor: pointer;
+    }
+    
+    /* Bottom controls */
+    .bottom-controls {
+      position: fixed;
+      bottom: 2rem;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 1rem;
+      background: rgba(10, 10, 20, 0.95);
+      padding: 0.8rem 1.5rem;
+      border-radius: 50px;
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(139, 92, 246, 0.3);
+      z-index: 1000;
+      transition: transform 0.3s ease;
+    }
+    .bottom-controls.hide {
+      transform: translateX(-50%) translateY(100%);
+    }
+    .nav-btn {
+      background: #6b21a8;
+      color: white;
+      border: none;
+      padding: 0.6rem 1.5rem;
+      border-radius: 25px;
+      cursor: pointer;
+      font-size: 1rem;
+      font-weight: 600;
+      transition: 0.2s;
+      min-width: 90px;
+    }
+    .nav-btn:hover {
+      background: #8b5cf6;
+      transform: scale(1.05);
+    }
+    .nav-btn:disabled {
+      opacity: 0.3;
+      cursor: not-allowed;
+      transform: none;
+    }
+    .page-indicator {
+      display: flex;
+      align-items: center;
+      padding: 0 1rem;
+      font-size: 1rem;
+      color: #c4b5fd;
+      font-weight: 600;
+    }
+    
+    /* Loading */
+    .loading, .error, .empty {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      text-align: center;
+      padding: 2rem;
+      font-size: 1.1rem;
+      background: rgba(0,0,0,0.8);
+      border-radius: 20px;
+      z-index: 2000;
+    }
+    .loading { color: #c4b5fd; }
+    .error { color: #ef4444; }
+    .empty { color: #9ca3af; }
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border: 3px solid rgba(255, 255, 255, 0.1);
+      border-top-color: #8b5cf6;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 1rem;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    
+    /* Touch hints */
+    .touch-hint {
+      position: fixed;
+      bottom: 100px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0,0,0,0.7);
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      color: #c4b5fd;
+      pointer-events: none;
+      z-index: 999;
+      animation: fadeOut 3s forwards;
+      white-space: nowrap;
+    }
+    @keyframes fadeOut {
+      0% { opacity: 1; }
+      70% { opacity: 1; }
+      100% { opacity: 0; visibility: hidden; }
+    }
+    
+    @media (max-width: 768px) {
+      .top-bar { padding: 0.6rem 1rem; }
+      .selector-container { width: 100%; margin-top: 0.3rem; }
+      .chapter-select { flex: 1; }
+      .bottom-controls { bottom: 1rem; padding: 0.5rem 1rem; }
+      .nav-btn { padding: 0.4rem 1rem; min-width: 70px; font-size: 0.8rem; }
+      .page-indicator { font-size: 0.8rem; }
+    }
+  </style>
 </head>
 <body>
-<div class="reader-container">
-    <div class="image-wrapper">
-        <img id="mangaImage" class="manga-page" alt="Manga page" src="">
-    </div>
+
+<div class="top-bar" id="topBar">
+  <a href="javascript:history.back()" class="back-btn">← Libreria</a>
+  <span class="manga-title" id="mangaTitle">Caricamento...</span>
+  <span class="type-badge" id="typeBadge"></span>
+  <div class="selector-container">
+    <span class="selector-label" id="selectorLabel">Seleziona:</span>
+    <select class="chapter-select" id="chapterSelect" disabled>
+      <option>Caricamento...</option>
+    </select>
+  </div>
 </div>
 
-<button id="prevBtn" class="nav-btn">◀ PREV</button>
-<button id="nextBtn" class="nav-btn">NEXT ▶</button>
-<div class="info-overlay" id="pageInfo">— / —</div>
+<div class="reader-container" id="readerContainer">
+  <div class="reader-wrapper" id="readerWrapper"></div>
+</div>
+
+<div class="bottom-controls" id="bottomControls">
+  <button class="nav-btn" id="prevBtn">← PREV</button>
+  <span class="page-indicator" id="pageIndicator">0 / 0</span>
+  <button class="nav-btn" id="nextBtn">NEXT →</button>
+</div>
+
+<div class="touch-hint" id="touchHint">👆 Scorri a sinistra/destra per cambiare pagina</div>
 
 <script>
-    // ============================================
-    // LEGGI LE IMMAGINI DALL'URL (parametro ?pages=)
-    // Esempio: reader.html?pages=1.jpg,2.jpg,3.png
-    // Oppure: reader.html?folder=manga/
-    // ============================================
-    
-    const mangaImg = document.getElementById('mangaImage');
-    const prevBtn = document.getElementById('prevBtn');
-    const nextBtn = document.getElementById('nextBtn');
-    const pageInfoSpan = document.getElementById('pageInfo');
-    
-    let pages = [];
-    let currentIndex = 0;
-    let preloadedImages = [];
-    
-    // Precarica tutte le immagini
-    function preloadAllImages() {
-        preloadedImages = [];
-        for (let i = 0; i < pages.length; i++) {
-            const img = new Image();
-            img.src = pages[i];
-            preloadedImages.push(img);
+  const urlParams = new URLSearchParams(window.location.search);
+  const mangaId = urlParams.get('manga');
+  const mangaTitle = decodeURIComponent(urlParams.get('title') || 'Manga');
+  const preloadNumber = urlParams.get('number');
+  const preloadType = urlParams.get('type');
+  
+  document.getElementById('mangaTitle').textContent = mangaTitle;
+  document.title = `${mangaTitle} - KitsuManga`;
+
+  let contentType = preloadType || null;
+  let currentNumber = preloadNumber ? parseInt(preloadNumber) : 1;
+  let images = [];
+  let allNumbers = [];
+  let currentPageIndex = 0;
+
+  const topBar = document.getElementById('topBar');
+  const bottomControls = document.getElementById('bottomControls');
+  const readerContainer = document.getElementById('readerContainer');
+  const readerWrapper = document.getElementById('readerWrapper');
+  const chapterSelect = document.getElementById('chapterSelect');
+  const typeBadge = document.getElementById('typeBadge');
+  const selectorLabel = document.getElementById('selectorLabel');
+  const pageIndicator = document.getElementById('pageIndicator');
+  const prevBtn = document.getElementById('prevBtn');
+  const nextBtn = document.getElementById('nextBtn');
+  const touchHint = document.getElementById('touchHint');
+
+  // Auto-hide UI dopo 2 secondi di inattività
+  let hideTimeout;
+  function resetHideTimer() {
+    clearTimeout(hideTimeout);
+    topBar.classList.remove('hide');
+    bottomControls.classList.remove('hide');
+    hideTimeout = setTimeout(() => {
+      topBar.classList.add('hide');
+      bottomControls.classList.add('hide');
+    }, 2500);
+  }
+  
+  function showUI() {
+    topBar.classList.remove('hide');
+    bottomControls.classList.remove('hide');
+    resetHideTimer();
+  }
+  
+  document.addEventListener('mousemove', showUI);
+  document.addEventListener('click', showUI);
+  document.addEventListener('touchstart', showUI);
+  resetHideTimer();
+
+  // Carica manifest.json
+  async function loadManifest() {
+    try {
+      const res = await fetch(`manga/${mangaId}/manifest.json?t=${Date.now()}`);
+      if (res.ok) {
+        const manifest = await res.json();
+        contentType = manifest.type;
+        allNumbers = manifest.numbers;
+        
+        if (contentType === 'volumes') {
+          typeBadge.textContent = '📚 VOLUMI';
+          selectorLabel.textContent = 'Volume:';
+        } else if (contentType === 'chapters') {
+          typeBadge.textContent = '📖 CAPITOLI';
+          selectorLabel.textContent = 'Capitolo:';
         }
-    }
-    
-    // Mostra pagina corrente (istantaneo)
-    function displayPage(index) {
-        if (pages.length === 0) return;
         
-        if (index < 0) index = 0;
-        if (index >= pages.length) index = pages.length - 1;
-        currentIndex = index;
+        const label = contentType === 'volumes' ? 'Volume' : 'Capitolo';
+        chapterSelect.innerHTML = allNumbers.map(n => `<option value="${n}" ${n == currentNumber ? 'selected' : ''}>${label} ${n}</option>`).join('');
+        chapterSelect.disabled = false;
         
-        pageInfoSpan.innerText = `${currentIndex+1} / ${pages.length}`;
+        chapterSelect.onchange = async (e) => {
+          currentNumber = parseInt(e.target.value);
+          await loadPages();
+        };
         
-        const targetImg = preloadedImages[currentIndex];
-        if (targetImg && targetImg.complete && targetImg.naturalWidth !== 0) {
-            mangaImg.src = targetImg.src;
-        } else {
-            mangaImg.src = pages[currentIndex];
-        }
-    }
-    
-    function goPrev() {
-        if (pages.length === 0) return;
-        if (currentIndex > 0) displayPage(currentIndex - 1);
-    }
-    
-    function goNext() {
-        if (pages.length === 0) return;
-        if (currentIndex < pages.length - 1) displayPage(currentIndex + 1);
-    }
-    
-    // Carica pagine da un array di URL
-    function loadPages(pageUrls) {
-        if (!pageUrls || pageUrls.length === 0) return false;
-        pages = pageUrls;
-        preloadAllImages();
-        currentIndex = 0;
-        displayPage(0);
         return true;
+      }
+    } catch(e) {
+      console.log('manifest.json non trovato');
+    }
+    return false;
+  }
+
+  // Carica le pagine
+  async function loadPages() {
+    // Mostra loading
+    readerWrapper.innerHTML = '<div class="loading"><div class="spinner"></div><div>Caricamento pagine...</div></div>';
+    
+    images = [];
+    let pageNum = 1;
+    
+    while (pageNum <= 500) {
+      const path = `manga/${mangaId}/${contentType}/${currentNumber}/${pageNum}.jpg`;
+      try {
+        const res = await fetch(path, { method: 'HEAD' });
+        if (res.ok) {
+          images.push(path);
+          pageNum++;
+        } else {
+          break;
+        }
+      } catch(e) {
+        break;
+      }
     }
     
-    // Leggi parametri dall'URL
-    function getUrlParams() {
-        const params = new URLSearchParams(window.location.search);
-        
-        // Metodo 1: ?pages=1.jpg,2.jpg,3.png
-        if (params.has('pages')) {
-            const pagesStr = params.get('pages');
-            const pageUrls = pagesStr.split(',').map(p => p.trim());
-            if (pageUrls.length > 0) {
-                loadPages(pageUrls);
-                return true;
-            }
-        }
-        
-        // Metodo 2: ?folder=cartella/ (carica 1.jpg,2.jpg,... dalla cartella)
-        if (params.has('folder')) {
-            let folder = params.get('folder');
-            if (!folder.endsWith('/')) folder += '/';
-            
-            // Prova a caricare sequenzialmente
-            const extensions = ['jpg', 'jpeg', 'png', 'webp'];
-            let foundPages = [];
-            let testIndex = 1;
-            
-            function tryLoadNext() {
-                if (testIndex > 50) { // massimo 50 pagine
-                    if (foundPages.length > 0) loadPages(foundPages);
-                    return;
-                }
-                
-                let tried = 0;
-                for (let ext of extensions) {
-                    const url = folder + testIndex + '.' + ext;
-                    const img = new Image();
-                    img.onload = () => {
-                        foundPages.push(url);
-                        testIndex++;
-                        tryLoadNext();
-                    };
-                    img.onerror = () => {
-                        tried++;
-                        if (tried === extensions.length) {
-                            // fine sequenza
-                            if (foundPages.length > 0) loadPages(foundPages);
-                        }
-                    };
-                    img.src = url;
-                }
-            }
-            
-            tryLoadNext();
-            return true;
-        }
-        
-        // Metodo 3: nessun parametro - messaggio guida
-        pageInfoSpan.innerText = '?pages=1.jpg,2.jpg';
-        return false;
+    if (images.length === 0) {
+      readerWrapper.innerHTML = '<div class="empty">😕 Nessuna pagina trovata</div>';
+      updateUI();
+      return;
     }
     
-    // Eventi
-    prevBtn.addEventListener('click', goPrev);
-    nextBtn.addEventListener('click', goNext);
+    renderPages();
+    updateUI();
     
-    window.addEventListener('keydown', (e) => {
-        if (e.key === 'ArrowLeft') { e.preventDefault(); goPrev(); }
-        if (e.key === 'ArrowRight') { e.preventDefault(); goNext(); }
+    // Scrolla alla prima pagina
+    setTimeout(() => {
+      const firstPage = document.querySelector('.page');
+      if (firstPage) {
+        firstPage.scrollIntoView({ behavior: 'instant', block: 'start' });
+      }
+    }, 100);
+  }
+
+  // Renderizza tutte le pagine
+  function renderPages() {
+    readerWrapper.innerHTML = '';
+    
+    images.forEach((imgPath, index) => {
+      const pageDiv = document.createElement('div');
+      pageDiv.className = 'page';
+      pageDiv.setAttribute('data-page', index);
+      
+      const img = document.createElement('img');
+      img.src = imgPath;
+      img.alt = `Pagina ${index + 1}`;
+      img.loading = 'lazy';
+      
+      img.onerror = () => {
+        img.src = `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='800' height='1200'%3E%3Crect width='800' height='1200' fill='%231a1a2e'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' fill='%23ef4444' font-size='18'%3EErrore%3C/text%3E%3C/svg%3E`;
+      };
+      
+      // Click sull'immagine per avanzare
+      img.onclick = (e) => {
+        e.stopPropagation();
+        nextPage();
+      };
+      
+      pageDiv.appendChild(img);
+      readerWrapper.appendChild(pageDiv);
     });
     
-    // Swipe touch
-    let touchStartX = 0;
-    const container = document.querySelector('.reader-container');
-    container.addEventListener('touchstart', (e) => {
-        touchStartX = e.changedTouches[0].screenX;
-    });
-    
-    container.addEventListener('touchend', (e) => {
-        const touchEndX = e.changedTouches[0].screenX;
-        const delta = touchEndX - touchStartX;
-        if (Math.abs(delta) > 50) {
-            if (delta > 0) goPrev();
-            else goNext();
-            e.preventDefault();
+    // Osserva quale pagina è visibile
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          const pageIndex = parseInt(entry.target.getAttribute('data-page'));
+          if (!isNaN(pageIndex)) {
+            currentPageIndex = pageIndex;
+            updateUI();
+          }
         }
-    });
+      });
+    }, { threshold: 0.5 });
     
-    mangaImg.addEventListener('contextmenu', (e) => e.preventDefault());
+    document.querySelectorAll('.page').forEach(page => observer.observe(page));
+  }
+
+  // Navigazione
+  function nextPage() {
+    if (currentPageIndex < images.length - 1) {
+      const nextPageEl = document.querySelector(`.page[data-page="${currentPageIndex + 1}"]`);
+      if (nextPageEl) {
+        nextPageEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }
+  }
+
+  function prevPage() {
+    if (currentPageIndex > 0) {
+      const prevPageEl = document.querySelector(`.page[data-page="${currentPageIndex - 1}"]`);
+      if (prevPageEl) {
+        prevPageEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }
+  }
+
+  function updateUI() {
+    pageIndicator.textContent = `${currentPageIndex + 1} / ${images.length}`;
+    prevBtn.disabled = currentPageIndex === 0;
+    nextBtn.disabled = currentPageIndex === images.length - 1;
+  }
+
+  // Eventi tastiera
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+      e.preventDefault();
+      nextPage();
+      showUI();
+    }
+    if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+      e.preventDefault();
+      prevPage();
+      showUI();
+    }
+  });
+
+  // Pulsanti
+  prevBtn.onclick = () => { prevPage(); showUI(); };
+  nextBtn.onclick = () => { nextPage(); showUI(); };
+
+  // Scroll manuale aggiorna indice
+  readerContainer.addEventListener('scroll', () => {
+    resetHideTimer();
+  });
+
+  async function init() {
+    if (!mangaId) {
+      readerWrapper.innerHTML = '<div class="error">❌ Nessun manga specificato</div>';
+      return;
+    }
     
-    // Avvia
-    getUrlParams();
+    const hasManifest = await loadManifest();
+    
+    if (!hasManifest) {
+      readerWrapper.innerHTML = `
+        <div class="empty">
+          <h3>📝 File manifest.json mancante</h3>
+          <p>Crea il file <code style="background: #1a1a2e; padding: 2px 5px; border-radius: 3px;">manga/${mangaId}/manifest.json</code></p>
+          <p>Esempio per volumi: <code style="background: #1a1a2e; padding: 2px 5px; border-radius: 3px;">{"type": "volumes", "numbers": [1, 2, 3]}</code></p>
+          <p>Esempio per capitoli: <code style="background: #1a1a2e; padding: 2px 5px; border-radius: 3px;">{"type": "chapters", "numbers": [1, 2, 3, 4, 5]}</code></p>
+        </div>
+      `;
+      return;
+    }
+    
+    if (!allNumbers.includes(currentNumber) && allNumbers.length > 0) {
+      currentNumber = allNumbers[0];
+      chapterSelect.value = currentNumber;
+    }
+    
+    await loadPages();
+  }
+
+  init();
 </script>
 </body>
 </html>
+reader.html
+15 KB
