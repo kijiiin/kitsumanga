@@ -5,5 +5,12 @@
   "cover": "manga/Ayashimon/cover.jpg",
   "latest": "Volume 3",
   "type": "📚 Volumi"
-}
+},
+  {
+  "id": "rikudo",
+  "title": "Rikudo",
+  "cover": "manga/rikudo/cover.jpg",
+  "latest": "2",
+  "type": "📖 Capitoli"
+  }
 ]
