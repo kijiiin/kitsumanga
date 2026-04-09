@@ -20,7 +20,26 @@
       border-bottom: 1px solid rgba(255,255,255,0.1);
     }
     h1 { font-size: 2.5em; }
-    .container { padding: 30px 20px; max-width: 1400px; margin: 0 auto; }
+    .controls {
+      display: flex;
+      justify-content: flex-end;
+      max-width: 1400px;
+      margin: 0 auto 20px;
+      padding: 0 20px;
+    }
+    .sort-select {
+      background: rgba(255,255,255,0.1);
+      color: white;
+      border: 1px solid rgba(139, 92, 246, 0.5);
+      padding: 8px 15px;
+      border-radius: 20px;
+      cursor: pointer;
+      font-size: 0.9rem;
+    }
+    .sort-select:hover {
+      background: rgba(139, 92, 246, 0.3);
+    }
+    .container { padding: 0 20px 30px; max-width: 1400px; margin: 0 auto; }
     .grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
@@ -92,6 +111,16 @@
   <p style="margin-top: 10px; opacity: 0.8;">La tua libreria manga personale</p>
 </header>
 
+<div class="controls">
+  <select class="sort-select" id="sortSelect">
+    <option value="title">📝 Ordine alfabetico</option>
+    <option value="title-desc">📝 Alfabetico inverso</option>
+    <option value="latest">🆕 Più recenti prima</option>
+    <option value="latest-desc">🕐 Meno recenti prima</option>
+    <option value="default">📋 Ordine originale (manga.json)</option>
+  </select>
+</div>
+
 <div class="container">
   <div class="grid" id="grid">
     <div style="grid-column: 1/-1; text-align: center; padding: 50px; color: #c4b5fd;">
@@ -108,38 +137,93 @@
 
 <script>
   const grid = document.getElementById('grid');
+  const sortSelect = document.getElementById('sortSelect');
+  let mangasOriginal = []; // Salva i manga originali
+
+  // Funzioni di ordinamento
+  function sortByTitle(a, b) {
+    return a.title.localeCompare(b.title);
+  }
+  
+  function sortByTitleDesc(a, b) {
+    return b.title.localeCompare(a.title);
+  }
+  
+  function sortByLatest(a, b) {
+    // Estrae il numero dal campo "latest"
+    const getNumber = (str) => {
+      const match = str?.match(/\d+/);
+      return match ? parseInt(match[0]) : 0;
+    };
+    return getNumber(b.latest) - getNumber(a.latest);
+  }
+  
+  function sortByLatestDesc(a, b) {
+    const getNumber = (str) => {
+      const match = str?.match(/\d+/);
+      return match ? parseInt(match[0]) : 0;
+    };
+    return getNumber(a.latest) - getNumber(b.latest);
+  }
+
+  function renderMangas(mangas) {
+    if (mangas.length === 0) {
+      grid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 50px;">Nessun manga nella libreria. Clicca il + per aggiungerne uno.</div>';
+      return;
+    }
+
+    grid.innerHTML = "";
+    
+    mangas.forEach(m => {
+      const card = document.createElement("div");
+      card.className = "card";
+      
+      card.innerHTML = `
+        <img src="${m.cover}" alt="${m.title}" onerror="this.src='https://placehold.co/300x400/1a1a2e/a78bfa?text=${encodeURIComponent(m.title)}'">
+        <div class="info">
+          <div class="title">${m.title}</div>
+          <div class="chapter">${m.latest || 'Nessun capitolo'}</div>
+        </div>
+      `;
+      
+      card.onclick = function() {
+        window.location.href = 'manga-detail.html?manga=' + encodeURIComponent(m.id) + '&title=' + encodeURIComponent(m.title);
+      };
+      
+      grid.appendChild(card);
+    });
+  }
+
+  function applySort() {
+    const sortType = sortSelect.value;
+    let sorted = [...mangasOriginal];
+    
+    switch(sortType) {
+      case 'title':
+        sorted.sort(sortByTitle);
+        break;
+      case 'title-desc':
+        sorted.sort(sortByTitleDesc);
+        break;
+      case 'latest':
+        sorted.sort(sortByLatest);
+        break;
+      case 'latest-desc':
+        sorted.sort(sortByLatestDesc);
+        break;
+      default:
+        // Ordine originale (mantieni come nel JSON)
+        break;
+    }
+    
+    renderMangas(sorted);
+  }
 
   async function loadManga() {
     try {
       const res = await fetch("manga.json");
-      const mangas = await res.json();
-      
-      if (mangas.length === 0) {
-        grid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 50px;">Nessun manga nella libreria. Clicca il + per aggiungerne uno.</div>';
-        return;
-      }
-
-      grid.innerHTML = "";
-      
-      mangas.forEach(m => {
-        const card = document.createElement("div");
-        card.className = "card";
-        
-        card.innerHTML = `
-          <img src="${m.cover}" alt="${m.title}" onerror="this.src='https://placehold.co/300x400/1a1a2e/a78bfa?text=${encodeURIComponent(m.title)}'">
-          <div class="info">
-            <div class="title">${m.title}</div>
-            <div class="chapter">${m.latest || 'Nessun capitolo'}</div>
-          </div>
-        `;
-        
-        // 👈 MODIFICATO: ora apre manga-detail.html invece di reader.html
-        card.onclick = function() {
-          window.location.href = 'manga-detail.html?manga=' + encodeURIComponent(m.id) + '&title=' + encodeURIComponent(m.title);
-        };
-        
-        grid.appendChild(card);
-      });
+      mangasOriginal = await res.json();
+      applySort(); // Applica l'ordinamento iniziale
       
     } catch (e) {
       grid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 50px; color: #ef4444;">Errore nel caricamento dei manga</div>';
@@ -147,6 +231,9 @@
     }
   }
 
+  // Quando cambia il selettore, riordina
+  sortSelect.addEventListener('change', applySort);
+  
   loadManga();
 </script>
 
