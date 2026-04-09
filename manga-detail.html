@@ -40,15 +40,6 @@
       background: rgba(139, 92, 246, 0.6);
     }
     h1 { font-size: 2em; }
-    .manga-cover {
-      width: 200px;
-      height: 280px;
-      object-fit: cover;
-      border-radius: 15px;
-      margin: 20px auto;
-      display: block;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-    }
     .container { padding: 30px 20px; max-width: 1200px; margin: 0 auto; }
     .section-title {
       font-size: 1.5em;
@@ -116,11 +107,13 @@
       color: #c4b5fd;
       margin-left: 10px;
     }
-    .progress-info {
-      text-align: center;
-      margin-top: 10px;
+    .info-manifest {
+      background: rgba(0,0,0,0.3);
+      padding: 10px;
+      border-radius: 8px;
+      margin-top: 20px;
       font-size: 0.8rem;
-      color: #c4b5fd;
+      text-align: center;
     }
   </style>
 </head>
@@ -157,89 +150,50 @@
   const typeBadge = document.getElementById('typeBadge');
   const mangaInfo = document.getElementById('mangaInfo');
 
-  async function detectContentType() {
-    // Prova prima con "volumes"
+  async function loadFromManifest() {
     try {
-      const res = await fetch(`manga/${mangaId}/volumes/1/1.jpg`, { method: 'HEAD' });
+      // Legge il manifest.json (istantaneo!)
+      const res = await fetch(`manga/${mangaId}/manifest.json?t=${Date.now()}`);
       if (res.ok) {
-        contentType = 'volumes';
-        typeBadge.textContent = '📚 FORMATO VOLUMI';
-        mangaInfo.textContent = 'Seleziona un volume per iniziare la lettura';
-        return 'volumes';
+        const manifest = await res.json();
+        contentType = manifest.type;
+        numbers = manifest.numbers;
+        
+        if (contentType === 'volumes') {
+          typeBadge.textContent = '📚 FORMATO VOLUMI';
+          mangaInfo.textContent = `📦 ${numbers.length} volumi disponibili`;
+        } else if (contentType === 'chapters') {
+          typeBadge.textContent = '📖 FORMATO CAPITOLI';
+          mangaInfo.textContent = `📖 ${numbers.length} capitoli disponibili`;
+        } else {
+          throw new Error('Tipo non valido');
+        }
+        
+        renderContent();
+        return true;
       }
-    } catch(e) {}
-    
-    // Prova con "chapters"
-    try {
-      const res = await fetch(`manga/${mangaId}/chapters/1/1.jpg`, { method: 'HEAD' });
-      if (res.ok) {
-        contentType = 'chapters';
-        typeBadge.textContent = '📖 FORMATO CAPITOLI';
-        mangaInfo.textContent = 'Seleziona un capitolo per iniziare la lettura';
-        return 'chapters';
-      }
-    } catch(e) {}
-    
-    typeBadge.textContent = '❌ NESSUN CONTENUTO';
-    return null;
+    } catch(e) {
+      console.log('manifest.json non trovato');
+    }
+    return false;
   }
 
-  async function loadAvailableNumbers() {
-    if (!contentType) {
-      return [];
-    }
+  function showManifestGuide() {
+    const exampleNumbers = contentType === 'volumes' ? '[1, 2, 3]' : '[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]';
+    const exampleType = contentType === 'volumes' ? 'volumes' : 'chapters';
     
-    const foundNumbers = [];
-    
-    // Limiti diversi per volumi e capitoli
-    let MAX_LIMIT;
-    let showProgress = true;
-    
-    if (contentType === 'volumes') {
-      MAX_LIMIT = 30;  // I volumi sono pochi, max 30
-      showProgress = false;
-    } else {
-      MAX_LIMIT = 500; // I capitoli possono essere tanti, fino a 500
-    }
-    
-    // Mostra progresso solo per i capitoli
-    if (showProgress) {
-      const progressDiv = document.createElement('div');
-      progressDiv.className = 'progress-info';
-      progressDiv.id = 'searchProgress';
-      progressDiv.innerHTML = '🔍 Ricerca capitoli in corso... 0/' + MAX_LIMIT;
-      contentDiv.innerHTML = '';
-      contentDiv.appendChild(progressDiv);
-    }
-    
-    for (let num = 1; num <= MAX_LIMIT; num++) {
-      try {
-        const testPath = `manga/${mangaId}/${contentType}/${num}/1.jpg`;
-        const res = await fetch(testPath, { method: 'HEAD' });
-        if (res.ok) {
-          foundNumbers.push(num);
-          console.log(`✅ Trovato ${contentType} ${num}`);
-        }
-        
-        // Aggiorna progresso ogni 10 capitoli
-        if (showProgress && num % 10 === 0) {
-          const progressDiv = document.getElementById('searchProgress');
-          if (progressDiv) {
-            progressDiv.innerHTML = `🔍 Ricerca capitoli in corso... ${num}/${MAX_LIMIT} (trovati: ${foundNumbers.length})`;
-          }
-        }
-        
-      } catch(e) {
-        // Per i volumi: se ne manca uno, presumo sia l'ultimo
-        if (contentType === 'volumes' && foundNumbers.length > 0) {
-          break;
-        }
-        // Per i capitoli: continuo a cercare
-        continue;
-      }
-    }
-    
-    return foundNumbers;
+    contentDiv.innerHTML = `
+      <div class="empty">
+        <h3>📝 File manifest.json mancante</h3>
+        <p>Crea il file <code style="background: #1a1a2e; padding: 2px 5px; border-radius: 3px;">manga/${mangaId}/manifest.json</code> con questo contenuto:</p>
+        <pre style="background: #1a1a2e; padding: 15px; margin: 15px 0; border-radius: 8px; text-align: left; overflow-x: auto;">{
+  "type": "${exampleType}",
+  "numbers": ${exampleNumbers}
+}</pre>
+        <p><small>💡 I numeri sono l'elenco dei volumi/capitoli che hai</small></p>
+        <button onclick="location.reload()" style="background: #8b5cf6; border: none; color: white; padding: 10px 20px; border-radius: 5px; cursor: pointer; margin-top: 10px;">↻ Ricarica dopo aver creato il file</button>
+      </div>
+    `;
   }
 
   function renderContent() {
@@ -265,6 +219,7 @@
     });
     
     html += `</div>`;
+    html += `<div class="info-manifest">📄 Basato su manifest.json - Modifica il file per aggiornare la lista</div>`;
     contentDiv.innerHTML = html;
   }
 
@@ -278,15 +233,11 @@
       return;
     }
     
-    await detectContentType();
+    const loaded = await loadFromManifest();
     
-    if (!contentType) {
-      contentDiv.innerHTML = '<div class="empty">📭 Nessun contenuto trovato per questo manga</div>';
-      return;
+    if (!loaded) {
+      showManifestGuide();
     }
-    
-    numbers = await loadAvailableNumbers();
-    renderContent();
   }
 
   init();
