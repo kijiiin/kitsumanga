@@ -118,6 +118,20 @@
       background: rgba(239, 68, 68, 0.5);
       transform: scale(1.02);
     }
+    .bug-btn {
+      background: rgba(245, 158, 11, 0.3);
+      border: 1px solid rgba(245, 158, 11, 0.5);
+      padding: 8px 15px;
+      border-radius: 20px;
+      cursor: pointer;
+      color: white;
+      font-size: 0.9rem;
+      transition: 0.3s;
+    }
+    .bug-btn:hover {
+      background: rgba(245, 158, 11, 0.5);
+      transform: scale(1.02);
+    }
     .results-info {
       font-size: 0.85rem;
       color: #c4b5fd;
@@ -207,6 +221,17 @@
       font-weight: bold;
       backdrop-filter: blur(5px);
     }
+    .bug-badge {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      background: rgba(245, 158, 11, 0.9);
+      padding: 4px 8px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: bold;
+      backdrop-filter: blur(5px);
+    }
     .status-badge {
       position: absolute;
       bottom: 10px;
@@ -219,6 +244,7 @@
     .status-pending { background: rgba(245, 158, 11, 0.9); }
     .status-approved { background: rgba(16, 185, 129, 0.9); }
     .status-rejected { background: rgba(239, 68, 68, 0.9); }
+    .status-fixed { background: rgba(16, 185, 129, 0.9); }
     .no-results {
       grid-column: 1/-1;
       text-align: center;
@@ -256,7 +282,7 @@
       margin-top: 40px;
     }
     
-    /* Modal per richieste */
+    /* Modal per richieste e bug */
     .modal {
       display: none;
       position: fixed;
@@ -286,7 +312,7 @@
       margin-bottom: 20px;
       color: #c4b5fd;
     }
-    .modal-content input, .modal-content textarea {
+    .modal-content input, .modal-content textarea, .modal-content select {
       width: 100%;
       padding: 10px;
       margin-bottom: 15px;
@@ -357,28 +383,48 @@
       max-width: 1200px;
       margin: 0 auto;
     }
-    .request-card {
+    .admin-tabs {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+      justify-content: center;
+    }
+    .admin-tab-btn {
+      background: rgba(255,255,255,0.1);
+      border: 1px solid rgba(139, 92, 246, 0.3);
+      padding: 10px 25px;
+      border-radius: 25px;
+      cursor: pointer;
+      color: white;
+      font-size: 1rem;
+      transition: 0.3s;
+    }
+    .admin-tab-btn.active {
+      background: #8b5cf6;
+      border-color: #8b5cf6;
+    }
+    .request-card, .bug-card {
       background: rgba(255,255,255,0.1);
       border-radius: 15px;
       padding: 20px;
       margin-bottom: 20px;
       border: 1px solid rgba(139, 92, 246, 0.3);
     }
-    .request-card h3 {
+    .request-card h3, .bug-card h3 {
       color: #c4b5fd;
       margin-bottom: 10px;
     }
-    .request-card p {
+    .request-card p, .bug-card p {
       margin-bottom: 8px;
       opacity: 0.9;
     }
-    .request-card .cover-thumb {
+    .request-card .cover-thumb, .bug-card .cover-thumb {
       max-width: 80px;
       max-height: 120px;
       border-radius: 8px;
       margin-top: 10px;
     }
-    .request-actions {
+    .request-actions, .bug-actions {
       display: flex;
       gap: 10px;
       margin-top: 15px;
@@ -393,6 +439,14 @@
     }
     .reject-btn {
       background: #ef4444;
+      color: white;
+      border: none;
+      padding: 8px 20px;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    .fix-btn {
+      background: #10b981;
       color: white;
       border: none;
       padding: 8px 20px;
@@ -443,6 +497,7 @@
       .card img { height: 200px; }
       .tab-btn { padding: 6px 15px; font-size: 0.85rem; }
       .toast { font-size: 0.8rem; padding: 8px 16px; white-space: nowrap; bottom: 80px; }
+      .admin-tab-btn { padding: 6px 15px; font-size: 0.85rem; }
     }
   </style>
 </head>
@@ -466,6 +521,7 @@
     <option value="default">📋 Ordine originale</option>
   </select>
   <button class="reload-btn" id="reloadBtn">🔄 Ricarica</button>
+  <button class="bug-btn" id="bugBtn">🐛 Segnala Bug</button>
   <button class="admin-btn" id="adminBtn">🔒 Admin</button>
 </div>
 
@@ -473,6 +529,7 @@
   <button class="tab-btn active" data-tab="local">📁 Manga Locali</button>
   <button class="tab-btn" data-tab="external">🌐 Manga Esterni</button>
   <button class="tab-btn" data-tab="requests">📋 Richieste</button>
+  <button class="tab-btn" data-tab="bugs">🐛 Bug</button>
 </div>
 
 <div class="results-info" id="resultsInfo"></div>
@@ -491,7 +548,7 @@
   © 2026 KitsuManga
 </footer>
 
-<!-- Modal per richieste con campo cover -->
+<!-- Modal per richieste manga -->
 <div class="modal" id="requestModal">
   <div class="modal-content">
     <h2>📝 Richiedi un manga</h2>
@@ -506,7 +563,27 @@
     <textarea id="reqReason" placeholder="Motivo della richiesta (opzionale)"></textarea>
     <input type="text" id="reqRequester" placeholder="Il tuo nome/nickname *">
     <button id="submitRequest">Invia richiesta</button>
-    <button class="close-modal" id="closeModal">Annulla</button>
+    <button class="close-modal" id="closeRequestModal">Annulla</button>
+  </div>
+</div>
+
+<!-- Modal per segnalazione bug -->
+<div class="modal" id="bugModal">
+  <div class="modal-content">
+    <h2>🐛 Segnala un bug</h2>
+    <select id="bugType">
+      <option value="visual">Problema visivo / layout</option>
+      <option value="functional">Problema funzionale</option>
+      <option value="loading">Problema di caricamento</option>
+      <option value="reader">Problema nel lettore</option>
+      <option value="other">Altro</option>
+    </select>
+    <input type="text" id="bugTitle" placeholder="Titolo breve del problema *">
+    <textarea id="bugDescription" placeholder="Descrivi il problema in dettaglio... *"></textarea>
+    <input type="text" id="bugPage" placeholder="Pagina/schermata dove si verifica (es. Reader, Libreria)">
+    <input type="text" id="bugReporter" placeholder="Il tuo nome/nickname *">
+    <button id="submitBug">Invia segnalazione</button>
+    <button class="close-modal" id="closeBugModal">Annulla</button>
   </div>
 </div>
 
@@ -514,8 +591,13 @@
 <div class="admin-panel" id="adminPanel">
   <button class="admin-close" id="closeAdmin">✕ Chiudi</button>
   <div class="admin-container">
-    <h2 style="margin-bottom: 20px;">🔒 Pannello Richieste</h2>
-    <div id="requestsList"></div>
+    <h2 style="margin-bottom: 20px; text-align:center;">🔒 Pannello Amministrazione</h2>
+    <div class="admin-tabs">
+      <button class="admin-tab-btn active" data-admin-tab="requests">📋 Richieste Manga</button>
+      <button class="admin-tab-btn" data-admin-tab="bugs">🐛 Segnalazioni Bug</button>
+    </div>
+    <div id="adminRequestsList"></div>
+    <div id="adminBugsList" style="display: none;"></div>
   </div>
 </div>
 
@@ -529,18 +611,23 @@
   const addMangaBtn = document.getElementById('addMangaBtn');
   const reloadBtn = document.getElementById('reloadBtn');
   const adminBtn = document.getElementById('adminBtn');
+  const bugBtn = document.getElementById('bugBtn');
   const requestModal = document.getElementById('requestModal');
+  const bugModal = document.getElementById('bugModal');
   const adminPanel = document.getElementById('adminPanel');
   const submitRequest = document.getElementById('submitRequest');
-  const closeModal = document.getElementById('closeModal');
+  const submitBug = document.getElementById('submitBug');
+  const closeRequestModal = document.getElementById('closeRequestModal');
+  const closeBugModal = document.getElementById('closeBugModal');
   const closeAdmin = document.getElementById('closeAdmin');
   
   let mangasLocal = [];
   let mangasExternal = [];
   let mangaRequests = [];
+  let bugReports = [];
   let currentTab = 'local';
   let currentSearchTerm = '';
-  let isAdminAuthenticated = false;
+  let currentAdminTab = 'requests';
   const ADMIN_PASSWORD = 'admin123';
 
   // Anteprima cover
@@ -560,7 +647,7 @@
     }
   });
 
-  // Carica richieste da localStorage
+  // Carica dati da localStorage
   function loadRequests() {
     const saved = localStorage.getItem('mangaRequests');
     if (saved) {
@@ -570,9 +657,21 @@
     }
   }
 
-  // Salva richieste in localStorage
+  function loadBugs() {
+    const saved = localStorage.getItem('bugReports');
+    if (saved) {
+      bugReports = JSON.parse(saved);
+    } else {
+      bugReports = [];
+    }
+  }
+
   function saveRequests() {
     localStorage.setItem('mangaRequests', JSON.stringify(mangaRequests));
+  }
+
+  function saveBugs() {
+    localStorage.setItem('bugReports', JSON.stringify(bugReports));
   }
 
   function showToast(message, isError = false) {
@@ -589,7 +688,6 @@
   function authenticateAdmin() {
     const password = prompt('Inserisci la password amministratore:');
     if (password === ADMIN_PASSWORD) {
-      isAdminAuthenticated = true;
       showAdminPanel();
       showToast('✅ Accesso amministratore consentito');
     } else if (password !== null) {
@@ -599,11 +697,19 @@
 
   function showAdminPanel() {
     adminPanel.classList.add('active');
-    renderAdminRequests();
+    renderAdminContent();
+  }
+
+  function renderAdminContent() {
+    if (currentAdminTab === 'requests') {
+      renderAdminRequests();
+    } else {
+      renderAdminBugs();
+    }
   }
 
   function renderAdminRequests() {
-    const container = document.getElementById('requestsList');
+    const container = document.getElementById('adminRequestsList');
     if (mangaRequests.length === 0) {
       container.innerHTML = '<div style="text-align:center;padding:50px;">📭 Nessuna richiesta in sospeso</div>';
       return;
@@ -631,13 +737,13 @@
       container.appendChild(card);
     });
     
-    document.querySelectorAll('.approve-btn').forEach(btn => {
+    document.querySelectorAll('#adminRequestsList .approve-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         const idx = parseInt(btn.dataset.index);
         approveRequest(idx);
       });
     });
-    document.querySelectorAll('.reject-btn').forEach(btn => {
+    document.querySelectorAll('#adminRequestsList .reject-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         const idx = parseInt(btn.dataset.index);
         if (btn.dataset.delete) {
@@ -645,6 +751,54 @@
         } else {
           rejectRequest(idx);
         }
+      });
+    });
+  }
+
+  function renderAdminBugs() {
+    const container = document.getElementById('adminBugsList');
+    if (bugReports.length === 0) {
+      container.innerHTML = '<div style="text-align:center;padding:50px;">🐛 Nessuna segnalazione bug</div>';
+      return;
+    }
+    
+    container.innerHTML = '';
+    bugReports.forEach((bug, index) => {
+      const typeLabels = {
+        'visual': '🎨 Problema visivo',
+        'functional': '⚙️ Problema funzionale',
+        'loading': '🔄 Problema di caricamento',
+        'reader': '📖 Problema nel lettore',
+        'other': '📝 Altro'
+      };
+      const card = document.createElement('div');
+      card.className = 'bug-card';
+      card.innerHTML = `
+        <h3>${escapeHtml(bug.title)}</h3>
+        <p><strong>Tipo:</strong> ${typeLabels[bug.type] || bug.type}</p>
+        <p><strong>Segnalato da:</strong> ${escapeHtml(bug.reporter)}</p>
+        <p><strong>Descrizione:</strong> ${escapeHtml(bug.description)}</p>
+        <p><strong>Pagina:</strong> ${escapeHtml(bug.page || 'Non specificata')}</p>
+        <p><strong>Data:</strong> ${new Date(bug.date).toLocaleString()}</p>
+        <p><strong>Stato:</strong> <span style="color:${bug.status === 'fixed' ? '#10b981' : '#f59e0b'}">${bug.status === 'fixed' ? '✅ Risolto' : '⏳ In attesa'}</span></p>
+        <div class="bug-actions">
+          ${bug.status === 'pending' ? `<button class="fix-btn" data-index="${index}">✅ Segna come risolto</button>` : ''}
+          <button class="reject-btn" data-index="${index}" data-delete="true" style="background:#6b7280;">🗑️ Elimina</button>
+        </div>
+      `;
+      container.appendChild(card);
+    });
+    
+    document.querySelectorAll('#adminBugsList .fix-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const idx = parseInt(btn.dataset.index);
+        fixBug(idx);
+      });
+    });
+    document.querySelectorAll('#adminBugsList .reject-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const idx = parseInt(btn.dataset.index);
+        deleteBug(idx);
       });
     });
   }
@@ -671,6 +825,22 @@
     renderAdminRequests();
     if (currentTab === 'requests') renderRequestsTab();
     showToast('🗑️ Richiesta eliminata');
+  }
+
+  function fixBug(index) {
+    bugReports[index].status = 'fixed';
+    saveBugs();
+    renderAdminBugs();
+    if (currentTab === 'bugs') renderBugsTab();
+    showToast('✅ Bug segnato come risolto');
+  }
+
+  function deleteBug(index) {
+    bugReports.splice(index, 1);
+    saveBugs();
+    renderAdminBugs();
+    if (currentTab === 'bugs') renderBugsTab();
+    showToast('🗑️ Segnalazione eliminata');
   }
 
   function addRequest() {
@@ -701,7 +871,6 @@
     mangaRequests.push(newRequest);
     saveRequests();
     
-    // Reset form
     document.getElementById('reqTitle').value = '';
     document.getElementById('reqAuthor').value = '';
     document.getElementById('reqCover').value = '';
@@ -712,6 +881,42 @@
     
     requestModal.classList.remove('active');
     showToast('✅ Richiesta inviata! Verrà esaminata al più presto.');
+  }
+
+  function addBug() {
+    const type = document.getElementById('bugType').value;
+    const title = document.getElementById('bugTitle').value.trim();
+    const description = document.getElementById('bugDescription').value.trim();
+    const page = document.getElementById('bugPage').value.trim();
+    const reporter = document.getElementById('bugReporter').value.trim();
+    
+    if (!title || !description || !reporter) {
+      showToast('❌ Titolo, descrizione e nome sono obbligatori', true);
+      return;
+    }
+    
+    const newBug = {
+      id: Date.now(),
+      type: type,
+      title: title,
+      description: description,
+      page: page,
+      reporter: reporter,
+      date: new Date().toISOString(),
+      status: 'pending'
+    };
+    
+    bugReports.push(newBug);
+    saveBugs();
+    
+    document.getElementById('bugType').value = 'visual';
+    document.getElementById('bugTitle').value = '';
+    document.getElementById('bugDescription').value = '';
+    document.getElementById('bugPage').value = '';
+    document.getElementById('bugReporter').value = '';
+    
+    bugModal.classList.remove('active');
+    showToast('✅ Segnalazione inviata! Grazie per il contributo.');
   }
 
   function renderRequestsTab() {
@@ -727,19 +932,32 @@
     const rejected = mangaRequests.filter(r => r.status === 'rejected');
     
     if (pending.length > 0) {
-      pending.forEach(req => {
-        grid.appendChild(createRequestCard(req));
-      });
+      pending.forEach(req => { grid.appendChild(createRequestCard(req)); });
     }
     if (approved.length > 0) {
-      approved.forEach(req => {
-        grid.appendChild(createRequestCard(req));
-      });
+      approved.forEach(req => { grid.appendChild(createRequestCard(req)); });
     }
     if (rejected.length > 0) {
-      rejected.forEach(req => {
-        grid.appendChild(createRequestCard(req));
-      });
+      rejected.forEach(req => { grid.appendChild(createRequestCard(req)); });
+    }
+  }
+
+  function renderBugsTab() {
+    if (bugReports.length === 0) {
+      grid.innerHTML = '<div class="no-results">🐛 Nessuna segnalazione bug. Clicca su "Segnala Bug" per inviarne uno!</div>';
+      return;
+    }
+    
+    grid.innerHTML = '';
+    
+    const pending = bugReports.filter(b => b.status === 'pending');
+    const fixed = bugReports.filter(b => b.status === 'fixed');
+    
+    if (pending.length > 0) {
+      pending.forEach(bug => { grid.appendChild(createBugCard(bug)); });
+    }
+    if (fixed.length > 0) {
+      fixed.forEach(bug => { grid.appendChild(createBugCard(bug)); });
     }
   }
   
@@ -777,16 +995,43 @@
     return card;
   }
 
-  // Carica manga locali
+  function createBugCard(bug) {
+    const card = document.createElement('div');
+    card.className = 'card';
+    
+    const typeLabels = {
+      'visual': '🎨 Visivo',
+      'functional': '⚙️ Funzionale',
+      'loading': '🔄 Caricamento',
+      'reader': '📖 Lettore',
+      'other': '📝 Altro'
+    };
+    
+    const statusClass = bug.status === 'fixed' ? 'status-approved' : 'status-pending';
+    const statusLabel = bug.status === 'fixed' ? '✅ Risolto' : '⏳ In attesa';
+    
+    card.innerHTML = `
+      <div class="bug-badge">🐛 ${typeLabels[bug.type] || bug.type}</div>
+      <div class="status-badge ${statusClass}">${statusLabel}</div>
+      <img src="https://placehold.co/300x400/1a1a2e/f59e0b?text=BUG" alt="Bug">
+      <div class="info">
+        <div class="title">${escapeHtml(bug.title)}</div>
+        <div class="chapter">Segnalato da: ${escapeHtml(bug.reporter)}</div>
+        <div class="chapter" style="font-size: 11px;">📅 ${new Date(bug.date).toLocaleDateString()}</div>
+        <div class="chapter" style="font-size: 11px; margin-top: 5px;">💬 ${escapeHtml(bug.description.substring(0, 60))}${bug.description.length > 60 ? '...' : ''}</div>
+      </div>
+    `;
+    
+    return card;
+  }
+
   async function loadLocalMangas() {
     try {
       const timestamp = Date.now();
       const res = await fetch(`manga.json?t=${timestamp}`);
       const data = await res.json();
       mangasLocal = data.map(m => ({ ...m, type: 'local' }));
-      console.log('✅ Manga locali caricati:', mangasLocal.length);
     } catch (e) {
-      console.error('Errore nel caricamento manga locali:', e);
       mangasLocal = [];
     }
   }
@@ -798,14 +1043,12 @@
       if (res.ok) {
         const data = await res.json();
         mangasExternal = data.map(m => ({ ...m, type: 'external' }));
-        console.log('✅ Manga esterni caricati:', mangasExternal.length);
         sessionStorage.setItem('externalMangas', JSON.stringify(mangasExternal));
         return true;
       } else {
         const cached = sessionStorage.getItem('externalMangas');
         if (cached) {
           mangasExternal = JSON.parse(cached);
-          console.log('📦 Manga esterni caricati da cache locale:', mangasExternal.length);
         } else {
           mangasExternal = [];
         }
@@ -815,7 +1058,6 @@
       const cached = sessionStorage.getItem('externalMangas');
       if (cached) {
         mangasExternal = JSON.parse(cached);
-        console.log('📦 Manga esterni caricati da cache locale:', mangasExternal.length);
       } else {
         mangasExternal = [];
       }
@@ -823,37 +1065,26 @@
     }
   }
 
-  function sortByTitle(a, b) {
-    return a.title.localeCompare(b.title);
-  }
-  
-  function sortByTitleDesc(a, b) {
-    return b.title.localeCompare(a.title);
-  }
-  
+  function sortByTitle(a, b) { return a.title.localeCompare(b.title); }
+  function sortByTitleDesc(a, b) { return b.title.localeCompare(a.title); }
   function sortByLatest(a, b) {
-    const getNumber = (str) => {
-      const match = str?.match(/\d+/);
-      return match ? parseInt(match[0]) : 0;
-    };
+    const getNumber = (str) => { const match = str?.match(/\d+/); return match ? parseInt(match[0]) : 0; };
     return getNumber(b.latest) - getNumber(a.latest);
   }
-  
   function sortByLatestDesc(a, b) {
-    const getNumber = (str) => {
-      const match = str?.match(/\d+/);
-      return match ? parseInt(match[0]) : 0;
-    };
+    const getNumber = (str) => { const match = str?.match(/\d+/); return match ? parseInt(match[0]) : 0; };
     return getNumber(a.latest) - getNumber(b.latest);
   }
 
-  function filterMangas(mangas, searchTerm) {
-    if (!searchTerm.trim()) return mangas;
+  function filterItems(items, searchTerm) {
+    if (!searchTerm.trim()) return items;
     const term = searchTerm.toLowerCase().trim();
-    return mangas.filter(m => 
-      m.title.toLowerCase().includes(term) ||
-      (m.latest && m.latest.toLowerCase().includes(term)) ||
-      (m.author && m.author.toLowerCase().includes(term))
+    return items.filter(item => 
+      item.title?.toLowerCase().includes(term) ||
+      item.requester?.toLowerCase().includes(term) ||
+      item.reporter?.toLowerCase().includes(term) ||
+      (item.latest && item.latest.toLowerCase().includes(term)) ||
+      (item.author && item.author.toLowerCase().includes(term))
     );
   }
 
@@ -868,13 +1099,10 @@
     }
 
     grid.innerHTML = "";
-    
     mangas.forEach(m => {
       const card = document.createElement("div");
       card.className = "card";
-      
       const externalBadge = m.type === 'external' ? '<div class="external-badge">🌐 ESTERNO</div>' : '';
-      
       card.innerHTML = `
         ${externalBadge}
         <img src="${m.cover}" alt="${m.title}" onerror="this.src='https://placehold.co/300x400/1a1a2e/a78bfa?text=${encodeURIComponent(m.title)}'">
@@ -884,7 +1112,6 @@
           ${m.author ? `<div class="chapter" style="font-size: 11px;">✍️ ${escapeHtml(m.author)}</div>` : ''}
         </div>
       `;
-      
       card.onclick = function() {
         if (m.type === 'local') {
           window.location.href = 'manga-detail.html?manga=' + encodeURIComponent(m.id) + '&title=' + encodeURIComponent(m.title);
@@ -892,7 +1119,6 @@
           window.location.href = `external-reader.html?url=${encodeURIComponent(m.externalUrl)}&title=${encodeURIComponent(m.title)}`;
         }
       };
-      
       grid.appendChild(card);
     });
   }
@@ -911,7 +1137,8 @@
     let tabLabel = '';
     if (currentTab === 'local') tabLabel = 'manga locali';
     else if (currentTab === 'external') tabLabel = 'manga esterni';
-    else tabLabel = 'richieste';
+    else if (currentTab === 'requests') tabLabel = 'richieste';
+    else tabLabel = 'segnalazioni bug';
     
     if (searchTerm && searchTerm.trim()) {
       resultsInfo.innerHTML = `🔍 Trovati ${filteredCount} ${tabLabel} su ${totalCount} per "${escapeHtml(searchTerm.trim())}"`;
@@ -923,15 +1150,25 @@
   function getCurrentItems() {
     if (currentTab === 'local') return [...mangasLocal];
     if (currentTab === 'external') return [...mangasExternal];
-    return [...mangaRequests];
+    if (currentTab === 'requests') return [...mangaRequests];
+    return [...bugReports];
   }
 
   function applySortAndFilter() {
     if (currentTab === 'requests') {
       const items = getCurrentItems();
       const totalCount = items.length;
-      let filtered = filterMangas(items, currentSearchTerm);
+      let filtered = filterItems(items, currentSearchTerm);
       renderRequestsTabContent(filtered);
+      updateResultsInfo(filtered.length, totalCount, currentSearchTerm);
+      return;
+    }
+    
+    if (currentTab === 'bugs') {
+      const items = getCurrentItems();
+      const totalCount = items.length;
+      let filtered = filterItems(items, currentSearchTerm);
+      renderBugsTabContent(filtered);
       updateResultsInfo(filtered.length, totalCount, currentSearchTerm);
       return;
     }
@@ -939,23 +1176,14 @@
     const sortType = sortSelect.value;
     let mangas = getCurrentItems();
     const totalCount = mangas.length;
-    let filtered = filterMangas(mangas, currentSearchTerm);
+    let filtered = filterItems(mangas, currentSearchTerm);
     
     switch(sortType) {
-      case 'title':
-        filtered.sort(sortByTitle);
-        break;
-      case 'title-desc':
-        filtered.sort(sortByTitleDesc);
-        break;
-      case 'latest':
-        filtered.sort(sortByLatest);
-        break;
-      case 'latest-desc':
-        filtered.sort(sortByLatestDesc);
-        break;
-      default:
-        break;
+      case 'title': filtered.sort(sortByTitle); break;
+      case 'title-desc': filtered.sort(sortByTitleDesc); break;
+      case 'latest': filtered.sort(sortByLatest); break;
+      case 'latest-desc': filtered.sort(sortByLatestDesc); break;
+      default: break;
     }
     
     renderMangas(filtered);
@@ -967,28 +1195,25 @@
       grid.innerHTML = '<div class="no-results">📭 Nessuna richiesta trovata</div>';
       return;
     }
-    
     grid.innerHTML = '';
-    
     const pending = requests.filter(r => r.status === 'pending');
     const approved = requests.filter(r => r.status === 'approved');
     const rejected = requests.filter(r => r.status === 'rejected');
-    
-    if (pending.length > 0) {
-      pending.forEach(req => {
-        grid.appendChild(createRequestCard(req));
-      });
+    if (pending.length > 0) pending.forEach(req => grid.appendChild(createRequestCard(req)));
+    if (approved.length > 0) approved.forEach(req => grid.appendChild(createRequestCard(req)));
+    if (rejected.length > 0) rejected.forEach(req => grid.appendChild(createRequestCard(req)));
+  }
+
+  function renderBugsTabContent(bugs) {
+    if (bugs.length === 0) {
+      grid.innerHTML = '<div class="no-results">🐛 Nessuna segnalazione trovata</div>';
+      return;
     }
-    if (approved.length > 0) {
-      approved.forEach(req => {
-        grid.appendChild(createRequestCard(req));
-      });
-    }
-    if (rejected.length > 0) {
-      rejected.forEach(req => {
-        grid.appendChild(createRequestCard(req));
-      });
-    }
+    grid.innerHTML = '';
+    const pending = bugs.filter(b => b.status === 'pending');
+    const fixed = bugs.filter(b => b.status === 'fixed');
+    if (pending.length > 0) pending.forEach(bug => grid.appendChild(createBugCard(bug)));
+    if (fixed.length > 0) fixed.forEach(bug => grid.appendChild(createBugCard(bug)));
   }
 
   function handleSearch() {
@@ -1010,36 +1235,28 @@
   }
 
   function updateAddButton() {
-    addMangaBtn.style.display = 'flex';
-    addMangaBtn.title = 'Richiedi un manga';
-    addMangaBtn.style.background = '#8b5cf6';
-    addMangaBtn.onclick = () => {
-      requestModal.classList.add('active');
-    };
+    if (currentTab === 'local' || currentTab === 'external' || currentTab === 'requests' || currentTab === 'bugs') {
+      addMangaBtn.style.display = 'flex';
+      addMangaBtn.title = 'Richiedi un manga';
+      addMangaBtn.style.background = '#8b5cf6';
+      addMangaBtn.onclick = () => { requestModal.classList.add('active'); };
+    }
   }
 
   async function switchTab(tab) {
     currentTab = tab;
-    
     tabs.forEach(btn => {
-      if (btn.dataset.tab === tab) {
-        btn.classList.add('active');
-      } else {
-        btn.classList.remove('active');
-      }
+      if (btn.dataset.tab === tab) btn.classList.add('active');
+      else btn.classList.remove('active');
     });
     
-    if (tab === 'external') {
-      await loadExternalMangas(true);
-    }
-    if (tab === 'requests') {
-      loadRequests();
-    }
+    if (tab === 'external') await loadExternalMangas(true);
+    if (tab === 'requests') loadRequests();
+    if (tab === 'bugs') loadBugs();
     
     searchInput.value = '';
     currentSearchTerm = '';
     searchClear.style.display = 'none';
-    
     updateAddButton();
     applySortAndFilter();
   }
@@ -1049,18 +1266,35 @@
     await loadLocalMangas();
     await loadExternalMangas(true);
     loadRequests();
-    if (currentTab === 'external' || currentTab === 'local') {
-      applySortAndFilter();
-    } else if (currentTab === 'requests') {
-      renderRequestsTab();
-    }
+    loadBugs();
+    applySortAndFilter();
     showToast('✅ Libreria ricaricata!');
   }
+
+  // Admin tab switching
+  document.querySelectorAll('.admin-tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      currentAdminTab = btn.dataset.adminTab;
+      document.querySelectorAll('.admin-tab-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      
+      if (currentAdminTab === 'requests') {
+        document.getElementById('adminRequestsList').style.display = 'block';
+        document.getElementById('adminBugsList').style.display = 'none';
+        renderAdminRequests();
+      } else {
+        document.getElementById('adminRequestsList').style.display = 'none';
+        document.getElementById('adminBugsList').style.display = 'block';
+        renderAdminBugs();
+      }
+    });
+  });
 
   async function loadAllMangas() {
     await loadLocalMangas();
     await loadExternalMangas(true);
     loadRequests();
+    loadBugs();
     updateAddButton();
     applySortAndFilter();
   }
@@ -1070,12 +1304,17 @@
   searchClear.addEventListener('click', clearSearch);
   reloadBtn.addEventListener('click', reloadAllData);
   adminBtn.addEventListener('click', authenticateAdmin);
+  bugBtn.addEventListener('click', () => bugModal.classList.add('active'));
   closeAdmin.addEventListener('click', () => adminPanel.classList.remove('active'));
   submitRequest.addEventListener('click', addRequest);
-  closeModal.addEventListener('click', () => requestModal.classList.remove('active'));
+  submitBug.addEventListener('click', addBug);
+  closeRequestModal.addEventListener('click', () => requestModal.classList.remove('active'));
+  closeBugModal.addEventListener('click', () => bugModal.classList.remove('active'));
   
-  requestModal.addEventListener('click', (e) => {
-    if (e.target === requestModal) requestModal.classList.remove('active');
+  [requestModal, bugModal].forEach(modal => {
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) modal.classList.remove('active');
+    });
   });
   
   tabs.forEach(btn => {
