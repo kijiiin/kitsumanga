@@ -645,11 +645,6 @@
   let messaggio = '';
   
   if (tipo === 'richieste') {
-    messaggio = `📋 NUOVE RICHIESTE MANGA DA INVIARE\n\n`;
-    messaggio += `📅 Data invio: ${new Date().toLocaleString()}\n`;
-    messaggio += `📊 Totale richieste: ${dati.length}\n\n`;
-    messaggio += `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n`;
-    
     dati.forEach((req, i) => {
       messaggio += `【${i+1}】 ${req.title}\n`;
       messaggio += `   👤 Richiedente: ${req.requester}\n`;
@@ -662,11 +657,6 @@
     });
   } 
   else if (tipo === 'bugs') {
-    messaggio = `🐛 NUOVE SEGNALAZIONI BUG DA INVIARE\n\n`;
-    messaggio += `📅 Data invio: ${new Date().toLocaleString()}\n`;
-    messaggio += `📊 Totale segnalazioni: ${dati.length}\n\n`;
-    messaggio += `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n`;
-    
     dati.forEach((bug, i) => {
       const tipoLabel = {
         'visual': '🎨 Problema visivo',
@@ -685,7 +675,7 @@
     });
   }
   
-  // Usa FormSubmit (gratuito, senza registrazione)
+  // Usa FormSubmit
   const form = document.createElement('form');
   form.method = 'POST';
   form.action = `https://formsubmit.co/${ADMIN_EMAIL}`;
@@ -697,13 +687,12 @@
   
   const inputSubject = document.createElement('input');
   inputSubject.name = '_subject';
-  inputSubject.value = `📬 KitsuManga - Nuovo report (${tipo === 'richieste' ? 'Richieste' : 'Bug'})`;
+  inputSubject.value = `📬 KitsuManga - ${tipo === 'richieste' ? 'Nuove richieste' : 'Nuovi bug'}`;
   
   const inputFormat = document.createElement('input');
   inputFormat.name = '_format';
   inputFormat.value = 'text';
   
-  // Impedisce il reindirizzamento
   const inputNext = document.createElement('input');
   inputNext.name = '_next';
   inputNext.value = window.location.href;
