@@ -282,7 +282,6 @@
       margin-top: 40px;
     }
     
-    /* Modal per richieste e bug */
     .modal {
       display: none;
       position: fixed;
@@ -363,7 +362,6 @@
       margin-bottom: 15px;
     }
     
-    /* Pannello admin */
     .admin-panel {
       display: none;
       position: fixed;
@@ -545,7 +543,7 @@
 <button class="add-manga" id="addMangaBtn" title="Richiedi un manga">+</button>
 
 <footer>
-  <p>© 2026 KitsuManga</p>
+  © 2026 KitsuManga
 </footer>
 
 <!-- Modal per richieste manga -->
@@ -601,18 +599,12 @@
   </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
   // ============================================================
-  // SUPABASE CONFIGURAZIONE
+  // CONFIGURAZIONE EMAIL (CAMBIARE CON LA TUA EMAIL!)
   // ============================================================
-  const SUPABASE_URL = 'https://rckcejnuhjehaegembts.supabase.co';
-  const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJja2Nlam51aGplaGFlZ2VtYnRzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU4MzE5MzMsImV4cCI6MjA5MTQwNzkzM30.FZDFP7RgkY_thJZP-OsNw2KWSlLAkj05uc9YELXkgxU';
-  const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
-  // ============================================================
-  // VARIABILI GLOBALI
-  // ============================================================
+  const ADMIN_EMAIL = 'KitsuMangaFeedback@gmail.com'; // <-- METTI LA TUA EMAIL QUI!
+  
   const grid = document.getElementById('grid');
   const sortSelect = document.getElementById('sortSelect');
   const searchInput = document.getElementById('searchInput');
@@ -641,6 +633,109 @@
   let currentAdminTab = 'requests';
   const ADMIN_PASSWORD = 'admin123';
 
+  // ============================================================
+  // INVIO VIA EMAIL CON FORMSUBMIT (gratuito, senza registrazione)
+  // ============================================================
+  async function inviaEmail(tipo, dati) {
+    let messaggio = '';
+    
+    if (tipo === 'richieste') {
+      messaggio = `📋 NUOVE RICHIESTE MANGA DA INVIARE\n\n`;
+      messaggio += `📅 Data invio: ${new Date().toLocaleString()}\n`;
+      messaggio += `📊 Totale richieste: ${dati.length}\n\n`;
+      messaggio += `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n`;
+      
+      dati.forEach((req, i) => {
+        messaggio += `【${i+1}】 ${req.title}\n`;
+        messaggio += `   👤 Richiedente: ${req.requester}\n`;
+        messaggio += `   ✍️ Autore: ${req.author || 'Non specificato'}\n`;
+        messaggio += `   🔗 URL: ${req.url || 'Non specificato'}\n`;
+        messaggio += `   💬 Motivo: ${req.reason || 'Nessuno'}\n`;
+        messaggio += `   🏷️ Stato locale: ${req.status === 'pending' ? '⏳ In attesa' : (req.status === 'approved' ? '✅ Approvata' : '❌ Respinta')}\n`;
+        if (req.cover) messaggio += `   🖼️ Cover: ${req.cover}\n`;
+        messaggio += `\n`;
+      });
+    } 
+    else if (tipo === 'bugs') {
+      messaggio = `🐛 NUOVE SEGNALAZIONI BUG DA INVIARE\n\n`;
+      messaggio += `📅 Data invio: ${new Date().toLocaleString()}\n`;
+      messaggio += `📊 Totale segnalazioni: ${dati.length}\n\n`;
+      messaggio += `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n`;
+      
+      dati.forEach((bug, i) => {
+        const tipoLabel = {
+          'visual': '🎨 Problema visivo',
+          'functional': '⚙️ Problema funzionale',
+          'loading': '🔄 Problema di caricamento',
+          'reader': '📖 Problema nel lettore',
+          'other': '📝 Altro'
+        };
+        messaggio += `【${i+1}】 ${bug.title}\n`;
+        messaggio += `   👤 Segnalato da: ${bug.reporter}\n`;
+        messaggio += `   🏷️ Tipo: ${tipoLabel[bug.type] || bug.type}\n`;
+        messaggio += `   📝 Descrizione: ${bug.description}\n`;
+        messaggio += `   📄 Pagina: ${bug.page || 'Non specificata'}\n`;
+        messaggio += `   🏷️ Stato locale: ${bug.status === 'pending' ? '⏳ In attesa' : '✅ Risolto'}\n`;
+        messaggio += `\n`;
+      });
+    }
+    
+    // Usa FormSubmit (gratuito, senza registrazione)
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = `https://formsubmit.co/${ADMIN_EMAIL}`;
+    form.style.display = 'none';
+    
+    const inputMessage = document.createElement('input');
+    inputMessage.name = 'message';
+    inputMessage.value = messaggio;
+    
+    const inputSubject = document.createElement('input');
+    inputSubject.name = '_subject';
+    inputSubject.value = `📬 KitsuManga - Nuovo report (${tipo === 'richieste' ? 'Richieste' : 'Bug'})`;
+    
+    const inputFormat = document.createElement('input');
+    inputFormat.name = '_format';
+    inputFormat.value = 'text';
+    
+    const inputTemplate = document.createElement('input');
+    inputTemplate.name = '_template';
+    inputTemplate.value = 'table';
+    
+    form.appendChild(inputMessage);
+    form.appendChild(inputSubject);
+    form.appendChild(inputFormat);
+    form.appendChild(inputTemplate);
+    document.body.appendChild(form);
+    
+    form.submit();
+    document.body.removeChild(form);
+    
+    return true;
+  }
+
+  async function inviaTutteLeRichieste() {
+    if (mangaRequests.length === 0) {
+      showToast('❌ Non hai richieste da inviare', true);
+      return;
+    }
+    
+    showToast('📧 Invio in corso...');
+    await inviaEmail('richieste', mangaRequests);
+    showToast('✅ Richieste inviate! Controlla la tua email tra pochi secondi.');
+  }
+  
+  async function inviaTuttiIBug() {
+    if (bugReports.length === 0) {
+      showToast('❌ Non hai bug da inviare', true);
+      return;
+    }
+    
+    showToast('📧 Invio in corso...');
+    await inviaEmail('bugs', bugReports);
+    showToast('✅ Bug inviati! Controlla la tua email tra pochi secondi.');
+  }
+
   // Anteprima cover
   const reqCoverInput = document.getElementById('reqCover');
   const coverPreview = document.getElementById('coverPreview');
@@ -658,6 +753,33 @@
     }
   });
 
+  // Carica dati da localStorage
+  function loadRequests() {
+    const saved = localStorage.getItem('mangaRequests');
+    if (saved) {
+      mangaRequests = JSON.parse(saved);
+    } else {
+      mangaRequests = [];
+    }
+  }
+
+  function loadBugs() {
+    const saved = localStorage.getItem('bugReports');
+    if (saved) {
+      bugReports = JSON.parse(saved);
+    } else {
+      bugReports = [];
+    }
+  }
+
+  function saveRequests() {
+    localStorage.setItem('mangaRequests', JSON.stringify(mangaRequests));
+  }
+
+  function saveBugs() {
+    localStorage.setItem('bugReports', JSON.stringify(bugReports));
+  }
+
   function showToast(message, isError = false) {
     const existingToast = document.querySelector('.toast');
     if (existingToast) existingToast.remove();
@@ -669,130 +791,6 @@
     setTimeout(() => toast.remove(), 3000);
   }
 
-  // ============================================================
-  // FUNZIONI SUPABASE
-  // ============================================================
-  
-  async function loadRequestsFromSupabase() {
-    try {
-      const { data, error } = await supabase
-        .from('richieste')
-        .select('*')
-        .order('data', { ascending: false });
-      if (error) throw error;
-      mangaRequests = data || [];
-      return mangaRequests;
-    } catch (e) {
-      console.error('Errore caricamento richieste:', e);
-      mangaRequests = [];
-      return [];
-    }
-  }
-
-  async function loadBugsFromSupabase() {
-    try {
-      const { data, error } = await supabase
-        .from('bugs')
-        .select('*')
-        .order('data', { ascending: false });
-      if (error) throw error;
-      bugReports = data || [];
-      return bugReports;
-    } catch (e) {
-      console.error('Errore caricamento bug:', e);
-      bugReports = [];
-      return [];
-    }
-  }
-
-  async function saveRequestToSupabase(request) {
-    try {
-      const { data, error } = await supabase
-        .from('richieste')
-        .insert([request])
-        .select();
-      if (error) throw error;
-      return data;
-    } catch (e) {
-      console.error('Errore salvataggio richiesta:', e);
-      throw e;
-    }
-  }
-
-  async function saveBugToSupabase(bug) {
-    try {
-      const { data, error } = await supabase
-        .from('bugs')
-        .insert([bug])
-        .select();
-      if (error) throw error;
-      return data;
-    } catch (e) {
-      console.error('Errore salvataggio bug:', e);
-      throw e;
-    }
-  }
-
-  async function updateRequestStatus(id, status) {
-    try {
-      const { error } = await supabase
-        .from('richieste')
-        .update({ stato: status })
-        .eq('id', id);
-      if (error) throw error;
-      return true;
-    } catch (e) {
-      console.error('Errore aggiornamento:', e);
-      return false;
-    }
-  }
-
-  async function deleteRequestFromSupabase(id) {
-    try {
-      const { error } = await supabase
-        .from('richieste')
-        .delete()
-        .eq('id', id);
-      if (error) throw error;
-      return true;
-    } catch (e) {
-      console.error('Errore eliminazione:', e);
-      return false;
-    }
-  }
-
-  async function updateBugStatus(id, status) {
-    try {
-      const { error } = await supabase
-        .from('bugs')
-        .update({ stato: status })
-        .eq('id', id);
-      if (error) throw error;
-      return true;
-    } catch (e) {
-      console.error('Errore aggiornamento:', e);
-      return false;
-    }
-  }
-
-  async function deleteBugFromSupabase(id) {
-    try {
-      const { error } = await supabase
-        .from('bugs')
-        .delete()
-        .eq('id', id);
-      if (error) throw error;
-      return true;
-    } catch (e) {
-      console.error('Errore eliminazione:', e);
-      return false;
-    }
-  }
-
-  // ============================================================
-  // ADMIN FUNCTIONS
-  // ============================================================
-  
   function authenticateAdmin() {
     const password = prompt('Inserisci la password amministratore:');
     if (password === ADMIN_PASSWORD) {
@@ -803,9 +801,7 @@
     }
   }
 
-  async function showAdminPanel() {
-    await loadRequestsFromSupabase();
-    await loadBugsFromSupabase();
+  function showAdminPanel() {
     adminPanel.classList.add('active');
     renderAdminContent();
   }
@@ -826,52 +822,40 @@
     }
     
     container.innerHTML = '';
-    mangaRequests.forEach((req) => {
+    mangaRequests.forEach((req, index) => {
       const card = document.createElement('div');
       card.className = 'request-card';
       card.innerHTML = `
-        <h3>${escapeHtml(req.titolo)}</h3>
-        <p><strong>Richiedente:</strong> ${escapeHtml(req.richiedente)}</p>
-        <p><strong>Autore:</strong> ${escapeHtml(req.autore || 'Non specificato')}</p>
+        <h3>${escapeHtml(req.title)}</h3>
+        <p><strong>Richiedente:</strong> ${escapeHtml(req.requester)}</p>
+        <p><strong>Autore:</strong> ${escapeHtml(req.author || 'Non specificato')}</p>
         ${req.cover ? `<p><strong>Cover:</strong> <a href="${req.cover}" target="_blank" style="color:#c4b5fd;">Visualizza immagine</a><br><img src="${req.cover}" class="cover-thumb" onerror="this.style.display='none'"></p>` : '<p><strong>Cover:</strong> Non fornita</p>'}
         <p><strong>URL:</strong> ${req.url ? `<a href="${req.url}" target="_blank" style="color:#c4b5fd;">${req.url.substring(0, 50)}...</a>` : 'Non specificato'}</p>
-        <p><strong>Motivo:</strong> ${escapeHtml(req.motivo || 'Nessun motivo specificato')}</p>
-        <p><strong>Data:</strong> ${new Date(req.data).toLocaleString()}</p>
-        <p><strong>Stato:</strong> <span style="color:${req.stato === 'approved' ? '#10b981' : (req.stato === 'rejected' ? '#ef4444' : '#f59e0b')}">${req.stato === 'approved' ? '✅ Approvata' : (req.stato === 'rejected' ? '❌ Respinta' : '⏳ In attesa')}</span></p>
+        <p><strong>Motivo:</strong> ${escapeHtml(req.reason || 'Nessun motivo specificato')}</p>
+        <p><strong>Data:</strong> ${new Date(req.date).toLocaleString()}</p>
+        <p><strong>Stato:</strong> <span style="color:${req.status === 'approved' ? '#10b981' : (req.status === 'rejected' ? '#ef4444' : '#f59e0b')}">${req.status === 'approved' ? '✅ Approvata' : (req.status === 'rejected' ? '❌ Respinta' : '⏳ In attesa')}</span></p>
         <div class="request-actions">
-          ${req.stato === 'pending' ? `<button class="approve-btn" data-id="${req.id}">✅ Approva</button>` : ''}
-          ${req.stato === 'pending' ? `<button class="reject-btn" data-id="${req.id}">❌ Rifiuta</button>` : ''}
-          <button class="reject-btn" data-id="${req.id}" data-delete="true" style="background:#6b7280;">🗑️ Elimina</button>
+          ${req.status === 'pending' ? `<button class="approve-btn" data-index="${index}">✅ Approva</button>` : ''}
+          ${req.status === 'pending' ? `<button class="reject-btn" data-index="${index}">❌ Rifiuta</button>` : ''}
+          <button class="reject-btn" data-index="${index}" data-delete="true" style="background:#6b7280;">🗑️ Elimina</button>
         </div>
       `;
       container.appendChild(card);
     });
     
     document.querySelectorAll('#adminRequestsList .approve-btn').forEach(btn => {
-      btn.addEventListener('click', async () => {
-        const id = parseInt(btn.dataset.id);
-        await updateRequestStatus(id, 'approved');
-        await loadRequestsFromSupabase();
-        renderAdminRequests();
-        if (currentTab === 'requests') await renderRequestsTab();
-        showToast('✅ Richiesta approvata!');
+      btn.addEventListener('click', () => {
+        const idx = parseInt(btn.dataset.index);
+        approveRequest(idx);
       });
     });
     document.querySelectorAll('#adminRequestsList .reject-btn').forEach(btn => {
-      btn.addEventListener('click', async () => {
-        const id = parseInt(btn.dataset.id);
+      btn.addEventListener('click', () => {
+        const idx = parseInt(btn.dataset.index);
         if (btn.dataset.delete) {
-          await deleteRequestFromSupabase(id);
-          await loadRequestsFromSupabase();
-          renderAdminRequests();
-          if (currentTab === 'requests') await renderRequestsTab();
-          showToast('🗑️ Richiesta eliminata');
+          deleteRequest(idx);
         } else {
-          await updateRequestStatus(id, 'rejected');
-          await loadRequestsFromSupabase();
-          renderAdminRequests();
-          if (currentTab === 'requests') await renderRequestsTab();
-          showToast('❌ Richiesta rifiutata');
+          rejectRequest(idx);
         }
       });
     });
@@ -885,7 +869,7 @@
     }
     
     container.innerHTML = '';
-    bugReports.forEach((bug) => {
+    bugReports.forEach((bug, index) => {
       const typeLabels = {
         'visual': '🎨 Problema visivo',
         'functional': '⚙️ Problema funzionale',
@@ -896,72 +880,102 @@
       const card = document.createElement('div');
       card.className = 'bug-card';
       card.innerHTML = `
-        <h3>${escapeHtml(bug.titolo)}</h3>
-        <p><strong>Tipo:</strong> ${typeLabels[bug.tipo] || bug.tipo}</p>
+        <h3>${escapeHtml(bug.title)}</h3>
+        <p><strong>Tipo:</strong> ${typeLabels[bug.type] || bug.type}</p>
         <p><strong>Segnalato da:</strong> ${escapeHtml(bug.reporter)}</p>
-        <p><strong>Descrizione:</strong> ${escapeHtml(bug.descrizione)}</p>
-        <p><strong>Pagina:</strong> ${escapeHtml(bug.pagina || 'Non specificata')}</p>
-        <p><strong>Data:</strong> ${new Date(bug.data).toLocaleString()}</p>
-        <p><strong>Stato:</strong> <span style="color:${bug.stato === 'fixed' ? '#10b981' : '#f59e0b'}">${bug.stato === 'fixed' ? '✅ Risolto' : '⏳ In attesa'}</span></p>
+        <p><strong>Descrizione:</strong> ${escapeHtml(bug.description)}</p>
+        <p><strong>Pagina:</strong> ${escapeHtml(bug.page || 'Non specificata')}</p>
+        <p><strong>Data:</strong> ${new Date(bug.date).toLocaleString()}</p>
+        <p><strong>Stato:</strong> <span style="color:${bug.status === 'fixed' ? '#10b981' : '#f59e0b'}">${bug.status === 'fixed' ? '✅ Risolto' : '⏳ In attesa'}</span></p>
         <div class="bug-actions">
-          ${bug.stato === 'pending' ? `<button class="fix-btn" data-id="${bug.id}">✅ Segna come risolto</button>` : ''}
-          <button class="reject-btn" data-id="${bug.id}" data-delete="true" style="background:#6b7280;">🗑️ Elimina</button>
+          ${bug.status === 'pending' ? `<button class="fix-btn" data-index="${index}">✅ Segna come risolto</button>` : ''}
+          <button class="reject-btn" data-index="${index}" data-delete="true" style="background:#6b7280;">🗑️ Elimina</button>
         </div>
       `;
       container.appendChild(card);
     });
     
     document.querySelectorAll('#adminBugsList .fix-btn').forEach(btn => {
-      btn.addEventListener('click', async () => {
-        const id = parseInt(btn.dataset.id);
-        await updateBugStatus(id, 'fixed');
-        await loadBugsFromSupabase();
-        renderAdminBugs();
-        if (currentTab === 'bugs') await renderBugsTab();
-        showToast('✅ Bug segnato come risolto');
+      btn.addEventListener('click', () => {
+        const idx = parseInt(btn.dataset.index);
+        fixBug(idx);
       });
     });
     document.querySelectorAll('#adminBugsList .reject-btn').forEach(btn => {
-      btn.addEventListener('click', async () => {
-        const id = parseInt(btn.dataset.id);
-        await deleteBugFromSupabase(id);
-        await loadBugsFromSupabase();
-        renderAdminBugs();
-        if (currentTab === 'bugs') await renderBugsTab();
-        showToast('🗑️ Segnalazione eliminata');
+      btn.addEventListener('click', () => {
+        const idx = parseInt(btn.dataset.index);
+        deleteBug(idx);
       });
     });
   }
 
-  // ============================================================
-  // RICHIESTE E BUG PER GLI UTENTI
-  // ============================================================
-  
-  async function addRequest() {
-    const titolo = document.getElementById('reqTitle').value.trim();
-    const autore = document.getElementById('reqAuthor').value.trim();
+  function approveRequest(index) {
+    mangaRequests[index].status = 'approved';
+    saveRequests();
+    renderAdminRequests();
+    showToast('✅ Richiesta approvata!');
+    if (currentTab === 'requests') renderRequestsTab();
+  }
+
+  function rejectRequest(index) {
+    mangaRequests[index].status = 'rejected';
+    saveRequests();
+    renderAdminRequests();
+    showToast('❌ Richiesta rifiutata');
+    if (currentTab === 'requests') renderRequestsTab();
+  }
+
+  function deleteRequest(index) {
+    mangaRequests.splice(index, 1);
+    saveRequests();
+    renderAdminRequests();
+    if (currentTab === 'requests') renderRequestsTab();
+    showToast('🗑️ Richiesta eliminata');
+  }
+
+  function fixBug(index) {
+    bugReports[index].status = 'fixed';
+    saveBugs();
+    renderAdminBugs();
+    if (currentTab === 'bugs') renderBugsTab();
+    showToast('✅ Bug segnato come risolto');
+  }
+
+  function deleteBug(index) {
+    bugReports.splice(index, 1);
+    saveBugs();
+    renderAdminBugs();
+    if (currentTab === 'bugs') renderBugsTab();
+    showToast('🗑️ Segnalazione eliminata');
+  }
+
+  function addRequest() {
+    const title = document.getElementById('reqTitle').value.trim();
+    const author = document.getElementById('reqAuthor').value.trim();
     const cover = document.getElementById('reqCover').value.trim();
     const url = document.getElementById('reqUrl').value.trim();
-    const motivo = document.getElementById('reqReason').value.trim();
-    const richiedente = document.getElementById('reqRequester').value.trim();
+    const reason = document.getElementById('reqReason').value.trim();
+    const requester = document.getElementById('reqRequester').value.trim();
     
-    if (!titolo || !richiedente) {
+    if (!title || !requester) {
       showToast('❌ Titolo e nome richiedente sono obbligatori', true);
       return;
     }
     
     const newRequest = {
-      titolo: titolo,
-      autore: autore || null,
+      id: Date.now(),
+      title: title,
+      author: author,
       cover: cover || null,
-      url: url || null,
-      motivo: motivo || null,
-      richiedente: richiedente,
-      data: new Date().toISOString(),
-      stato: 'pending'
+      url: url,
+      reason: reason,
+      requester: requester,
+      date: new Date().toISOString(),
+      status: 'pending'
     };
     
-    await saveRequestToSupabase(newRequest);
+    mangaRequests.push(newRequest);
+    saveRequests();
     
     document.getElementById('reqTitle').value = '';
     document.getElementById('reqAuthor').value = '';
@@ -973,36 +987,33 @@
     
     requestModal.classList.remove('active');
     showToast('✅ Richiesta inviata! Verrà esaminata al più presto.');
-    
-    if (currentTab === 'requests') {
-      await loadRequestsFromSupabase();
-      await renderRequestsTab();
-    }
   }
 
-  async function addBug() {
-    const tipo = document.getElementById('bugType').value;
-    const titolo = document.getElementById('bugTitle').value.trim();
-    const descrizione = document.getElementById('bugDescription').value.trim();
-    const pagina = document.getElementById('bugPage').value.trim();
+  function addBug() {
+    const type = document.getElementById('bugType').value;
+    const title = document.getElementById('bugTitle').value.trim();
+    const description = document.getElementById('bugDescription').value.trim();
+    const page = document.getElementById('bugPage').value.trim();
     const reporter = document.getElementById('bugReporter').value.trim();
     
-    if (!titolo || !descrizione || !reporter) {
+    if (!title || !description || !reporter) {
       showToast('❌ Titolo, descrizione e nome sono obbligatori', true);
       return;
     }
     
     const newBug = {
-      tipo: tipo,
-      titolo: titolo,
-      descrizione: descrizione,
-      pagina: pagina || null,
+      id: Date.now(),
+      type: type,
+      title: title,
+      description: description,
+      page: page,
       reporter: reporter,
-      data: new Date().toISOString(),
-      stato: 'pending'
+      date: new Date().toISOString(),
+      status: 'pending'
     };
     
-    await saveBugToSupabase(newBug);
+    bugReports.push(newBug);
+    saveBugs();
     
     document.getElementById('bugType').value = 'visual';
     document.getElementById('bugTitle').value = '';
@@ -1012,43 +1023,78 @@
     
     bugModal.classList.remove('active');
     showToast('✅ Segnalazione inviata! Grazie per il contributo.');
-    
-    if (currentTab === 'bugs') {
-      await loadBugsFromSupabase();
-      await renderBugsTab();
-    }
   }
 
-  async function renderRequestsTab() {
-    await loadRequestsFromSupabase();
+  function renderRequestsTab() {
+    // Aggiungi pulsante invia email
+    const existingBtn = document.getElementById('sendRequestsEmailBtn');
+    if (!existingBtn) {
+      const btnContainer = document.createElement('div');
+      btnContainer.style.textAlign = 'center';
+      btnContainer.style.margin = '20px 0';
+      btnContainer.innerHTML = `
+        <button id="sendRequestsEmailBtn" style="background: #10b981; border: none; color: white; padding: 12px 30px; border-radius: 30px; cursor: pointer; font-size: 1rem; font-weight: bold; margin-right: 10px;">
+          📧 Invia tutte le richieste all'amministratore
+        </button>
+      `;
+      grid.parentNode.insertBefore(btnContainer, grid);
+      document.getElementById('sendRequestsEmailBtn')?.addEventListener('click', inviaTutteLeRichieste);
+    }
+    
     if (mangaRequests.length === 0) {
       grid.innerHTML = '<div class="no-results">📭 Nessuna richiesta inviata. Clicca sul pulsante + per richiedere un manga!</div>';
       return;
     }
     
     grid.innerHTML = '';
-    const pending = mangaRequests.filter(r => r.stato === 'pending');
-    const approved = mangaRequests.filter(r => r.stato === 'approved');
-    const rejected = mangaRequests.filter(r => r.stato === 'rejected');
     
-    if (pending.length > 0) pending.forEach(req => { grid.appendChild(createRequestCard(req)); });
-    if (approved.length > 0) approved.forEach(req => { grid.appendChild(createRequestCard(req)); });
-    if (rejected.length > 0) rejected.forEach(req => { grid.appendChild(createRequestCard(req)); });
+    const pending = mangaRequests.filter(r => r.status === 'pending');
+    const approved = mangaRequests.filter(r => r.status === 'approved');
+    const rejected = mangaRequests.filter(r => r.status === 'rejected');
+    
+    if (pending.length > 0) {
+      pending.forEach(req => { grid.appendChild(createRequestCard(req)); });
+    }
+    if (approved.length > 0) {
+      approved.forEach(req => { grid.appendChild(createRequestCard(req)); });
+    }
+    if (rejected.length > 0) {
+      rejected.forEach(req => { grid.appendChild(createRequestCard(req)); });
+    }
   }
 
-  async function renderBugsTab() {
-    await loadBugsFromSupabase();
+  function renderBugsTab() {
+    // Aggiungi pulsante invia email
+    const existingBtn = document.getElementById('sendBugsEmailBtn');
+    if (!existingBtn) {
+      const btnContainer = document.createElement('div');
+      btnContainer.style.textAlign = 'center';
+      btnContainer.style.margin = '20px 0';
+      btnContainer.innerHTML = `
+        <button id="sendBugsEmailBtn" style="background: #10b981; border: none; color: white; padding: 12px 30px; border-radius: 30px; cursor: pointer; font-size: 1rem; font-weight: bold;">
+          📧 Invia tutte le segnalazioni all'amministratore
+        </button>
+      `;
+      grid.parentNode.insertBefore(btnContainer, grid);
+      document.getElementById('sendBugsEmailBtn')?.addEventListener('click', inviaTuttiIBug);
+    }
+    
     if (bugReports.length === 0) {
       grid.innerHTML = '<div class="no-results">🐛 Nessuna segnalazione bug. Clicca su "Segnala Bug" per inviarne uno!</div>';
       return;
     }
     
     grid.innerHTML = '';
-    const pending = bugReports.filter(b => b.stato === 'pending');
-    const fixed = bugReports.filter(b => b.stato === 'fixed');
     
-    if (pending.length > 0) pending.forEach(bug => { grid.appendChild(createBugCard(bug)); });
-    if (fixed.length > 0) fixed.forEach(bug => { grid.appendChild(createBugCard(bug)); });
+    const pending = bugReports.filter(b => b.status === 'pending');
+    const fixed = bugReports.filter(b => b.status === 'fixed');
+    
+    if (pending.length > 0) {
+      pending.forEach(bug => { grid.appendChild(createBugCard(bug)); });
+    }
+    if (fixed.length > 0) {
+      fixed.forEach(bug => { grid.appendChild(createBugCard(bug)); });
+    }
   }
   
   function createRequestCard(req) {
@@ -1057,10 +1103,10 @@
     
     let statusClass = '';
     let statusLabel = '';
-    if (req.stato === 'pending') {
+    if (req.status === 'pending') {
       statusClass = 'status-pending';
       statusLabel = '⏳ In attesa';
-    } else if (req.stato === 'approved') {
+    } else if (req.status === 'approved') {
       statusClass = 'status-approved';
       statusLabel = '✅ Approvata';
     } else {
@@ -1068,19 +1114,20 @@
       statusLabel = '❌ Respinta';
     }
     
-    const coverUrl = req.cover && req.cover.startsWith('http') ? req.cover : `https://placehold.co/300x400/1a1a2e/a78bfa?text=${encodeURIComponent(req.titolo)}`;
+    const coverUrl = req.cover && req.cover.startsWith('http') ? req.cover : `https://placehold.co/300x400/1a1a2e/a78bfa?text=${encodeURIComponent(req.title)}`;
     
     card.innerHTML = `
       <div class="request-badge">📋 RICHIESTO</div>
       <div class="status-badge ${statusClass}">${statusLabel}</div>
-      <img src="${coverUrl}" alt="${req.titolo}" onerror="this.src='https://placehold.co/300x400/1a1a2e/a78bfa?text=${encodeURIComponent(req.titolo)}'">
+      <img src="${coverUrl}" alt="${req.title}" onerror="this.src='https://placehold.co/300x400/1a1a2e/a78bfa?text=${encodeURIComponent(req.title)}'">
       <div class="info">
-        <div class="title">${escapeHtml(req.titolo)}</div>
-        <div class="chapter">Richiesto da: ${escapeHtml(req.richiedente)}</div>
-        ${req.autore ? `<div class="chapter" style="font-size: 11px;">✍️ ${escapeHtml(req.autore)}</div>` : ''}
-        ${req.motivo ? `<div class="chapter" style="font-size: 11px; margin-top: 5px;">💬 ${escapeHtml(req.motivo.substring(0, 50))}${req.motivo.length > 50 ? '...' : ''}</div>` : ''}
+        <div class="title">${escapeHtml(req.title)}</div>
+        <div class="chapter">Richiesto da: ${escapeHtml(req.requester)}</div>
+        ${req.author ? `<div class="chapter" style="font-size: 11px;">✍️ ${escapeHtml(req.author)}</div>` : ''}
+        ${req.reason ? `<div class="chapter" style="font-size: 11px; margin-top: 5px;">💬 ${escapeHtml(req.reason.substring(0, 50))}${req.reason.length > 50 ? '...' : ''}</div>` : ''}
       </div>
     `;
+    
     return card;
   }
 
@@ -1096,27 +1143,24 @@
       'other': '📝 Altro'
     };
     
-    const statusClass = bug.stato === 'fixed' ? 'status-approved' : 'status-pending';
-    const statusLabel = bug.stato === 'fixed' ? '✅ Risolto' : '⏳ In attesa';
+    const statusClass = bug.status === 'fixed' ? 'status-approved' : 'status-pending';
+    const statusLabel = bug.status === 'fixed' ? '✅ Risolto' : '⏳ In attesa';
     
     card.innerHTML = `
-      <div class="bug-badge">🐛 ${typeLabels[bug.tipo] || bug.tipo}</div>
+      <div class="bug-badge">🐛 ${typeLabels[bug.type] || bug.type}</div>
       <div class="status-badge ${statusClass}">${statusLabel}</div>
       <img src="https://placehold.co/300x400/1a1a2e/f59e0b?text=BUG" alt="Bug">
       <div class="info">
-        <div class="title">${escapeHtml(bug.titolo)}</div>
+        <div class="title">${escapeHtml(bug.title)}</div>
         <div class="chapter">Segnalato da: ${escapeHtml(bug.reporter)}</div>
-        <div class="chapter" style="font-size: 11px;">📅 ${new Date(bug.data).toLocaleDateString()}</div>
-        <div class="chapter" style="font-size: 11px; margin-top: 5px;">💬 ${escapeHtml(bug.descrizione.substring(0, 60))}${bug.descrizione.length > 60 ? '...' : ''}</div>
+        <div class="chapter" style="font-size: 11px;">📅 ${new Date(bug.date).toLocaleDateString()}</div>
+        <div class="chapter" style="font-size: 11px; margin-top: 5px;">💬 ${escapeHtml(bug.description.substring(0, 60))}${bug.description.length > 60 ? '...' : ''}</div>
       </div>
     `;
+    
     return card;
   }
 
-  // ============================================================
-  // MANGA LOCALI ED ESTERNI
-  // ============================================================
-  
   async function loadLocalMangas() {
     try {
       const timestamp = Date.now();
@@ -1173,8 +1217,7 @@
     const term = searchTerm.toLowerCase().trim();
     return items.filter(item => 
       item.title?.toLowerCase().includes(term) ||
-      item.titolo?.toLowerCase().includes(term) ||
-      item.richiedente?.toLowerCase().includes(term) ||
+      item.requester?.toLowerCase().includes(term) ||
       item.reporter?.toLowerCase().includes(term) ||
       (item.latest && item.latest.toLowerCase().includes(term)) ||
       (item.author && item.author.toLowerCase().includes(term))
@@ -1289,9 +1332,9 @@
       return;
     }
     grid.innerHTML = '';
-    const pending = requests.filter(r => r.stato === 'pending');
-    const approved = requests.filter(r => r.stato === 'approved');
-    const rejected = requests.filter(r => r.stato === 'rejected');
+    const pending = requests.filter(r => r.status === 'pending');
+    const approved = requests.filter(r => r.status === 'approved');
+    const rejected = requests.filter(r => r.status === 'rejected');
     if (pending.length > 0) pending.forEach(req => grid.appendChild(createRequestCard(req)));
     if (approved.length > 0) approved.forEach(req => grid.appendChild(createRequestCard(req)));
     if (rejected.length > 0) rejected.forEach(req => grid.appendChild(createRequestCard(req)));
@@ -1303,8 +1346,8 @@
       return;
     }
     grid.innerHTML = '';
-    const pending = bugs.filter(b => b.stato === 'pending');
-    const fixed = bugs.filter(b => b.stato === 'fixed');
+    const pending = bugs.filter(b => b.status === 'pending');
+    const fixed = bugs.filter(b => b.status === 'fixed');
     if (pending.length > 0) pending.forEach(bug => grid.appendChild(createBugCard(bug)));
     if (fixed.length > 0) fixed.forEach(bug => grid.appendChild(createBugCard(bug)));
   }
@@ -1328,10 +1371,12 @@
   }
 
   function updateAddButton() {
-    addMangaBtn.style.display = 'flex';
-    addMangaBtn.title = 'Richiedi un manga';
-    addMangaBtn.style.background = '#8b5cf6';
-    addMangaBtn.onclick = () => { requestModal.classList.add('active'); };
+    if (currentTab === 'local' || currentTab === 'external' || currentTab === 'requests' || currentTab === 'bugs') {
+      addMangaBtn.style.display = 'flex';
+      addMangaBtn.title = 'Richiedi un manga';
+      addMangaBtn.style.background = '#8b5cf6';
+      addMangaBtn.onclick = () => { requestModal.classList.add('active'); };
+    }
   }
 
   async function switchTab(tab) {
@@ -1342,8 +1387,8 @@
     });
     
     if (tab === 'external') await loadExternalMangas(true);
-    if (tab === 'requests') await loadRequestsFromSupabase();
-    if (tab === 'bugs') await loadBugsFromSupabase();
+    if (tab === 'requests') loadRequests();
+    if (tab === 'bugs') loadBugs();
     
     searchInput.value = '';
     currentSearchTerm = '';
@@ -1356,8 +1401,8 @@
     showToast('🔄 Ricaricamento in corso...');
     await loadLocalMangas();
     await loadExternalMangas(true);
-    await loadRequestsFromSupabase();
-    await loadBugsFromSupabase();
+    loadRequests();
+    loadBugs();
     applySortAndFilter();
     showToast('✅ Libreria ricaricata!');
   }
@@ -1384,8 +1429,8 @@
   async function loadAllMangas() {
     await loadLocalMangas();
     await loadExternalMangas(true);
-    await loadRequestsFromSupabase();
-    await loadBugsFromSupabase();
+    loadRequests();
+    loadBugs();
     updateAddButton();
     applySortAndFilter();
   }
