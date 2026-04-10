@@ -949,81 +949,172 @@
     showToast('🗑️ Segnalazione eliminata');
   }
 
-  function addRequest() {
-    const title = document.getElementById('reqTitle').value.trim();
-    const author = document.getElementById('reqAuthor').value.trim();
-    const cover = document.getElementById('reqCover').value.trim();
-    const url = document.getElementById('reqUrl').value.trim();
-    const reason = document.getElementById('reqReason').value.trim();
-    const requester = document.getElementById('reqRequester').value.trim();
-    
-    if (!title || !requester) {
-      showToast('❌ Titolo e nome richiedente sono obbligatori', true);
-      return;
-    }
-    
-    const newRequest = {
-      id: Date.now(),
-      title: title,
-      author: author,
-      cover: cover || null,
-      url: url,
-      reason: reason,
-      requester: requester,
-      date: new Date().toISOString(),
-      status: 'pending'
-    };
-    
-    mangaRequests.push(newRequest);
-    saveRequests();
-    
-    document.getElementById('reqTitle').value = '';
-    document.getElementById('reqAuthor').value = '';
-    document.getElementById('reqCover').value = '';
-    document.getElementById('reqUrl').value = '';
-    document.getElementById('reqReason').value = '';
-    document.getElementById('reqRequester').value = '';
-    coverPreview.classList.remove('show');
-    
-    requestModal.classList.remove('active');
-    showToast('✅ Richiesta inviata! Verrà esaminata al più presto.');
+  async function addRequest() {
+  const title = document.getElementById('reqTitle').value.trim();
+  const author = document.getElementById('reqAuthor').value.trim();
+  const cover = document.getElementById('reqCover').value.trim();
+  const url = document.getElementById('reqUrl').value.trim();
+  const reason = document.getElementById('reqReason').value.trim();
+  const requester = document.getElementById('reqRequester').value.trim();
+  
+  if (!title || !requester) {
+    showToast('❌ Titolo e nome richiedente sono obbligatori', true);
+    return;
   }
+  
+  // Crea l'oggetto richiesta
+  const newRequest = {
+    id: Date.now(),
+    title: title,
+    author: author,
+    cover: cover || null,
+    url: url,
+    reason: reason,
+    requester: requester,
+    date: new Date().toISOString(),
+    status: 'pending'
+  };
+  
+  // Salva nel localStorage
+  mangaRequests.push(newRequest);
+  saveRequests();
+  
+  // === INVIO VIA EMAIL ===
+  const messaggio = `📋 NUOVA RICHIESTA MANGA\n\n`;
+  const emailBody = `${messaggio}
+📅 Data: ${new Date().toLocaleString()}
+👤 Richiedente: ${requester}
+📖 Titolo: ${title}
+✍️ Autore: ${author || 'Non specificato'}
+🔗 URL: ${url || 'Non specificato'}
+💬 Motivo: ${reason || 'Nessuno'}
+🖼️ Cover: ${cover || 'Non fornita'}
+🏷️ Stato locale: ⏳ In attesa`;
 
-  function addBug() {
-    const type = document.getElementById('bugType').value;
-    const title = document.getElementById('bugTitle').value.trim();
-    const description = document.getElementById('bugDescription').value.trim();
-    const page = document.getElementById('bugPage').value.trim();
-    const reporter = document.getElementById('bugReporter').value.trim();
-    
-    if (!title || !description || !reporter) {
-      showToast('❌ Titolo, descrizione e nome sono obbligatori', true);
-      return;
-    }
-    
-    const newBug = {
-      id: Date.now(),
-      type: type,
-      title: title,
-      description: description,
-      page: page,
-      reporter: reporter,
-      date: new Date().toISOString(),
-      status: 'pending'
-    };
-    
-    bugReports.push(newBug);
-    saveBugs();
-    
-    document.getElementById('bugType').value = 'visual';
-    document.getElementById('bugTitle').value = '';
-    document.getElementById('bugDescription').value = '';
-    document.getElementById('bugPage').value = '';
-    document.getElementById('bugReporter').value = '';
-    
-    bugModal.classList.remove('active');
-    showToast('✅ Segnalazione inviata! Grazie per il contributo.');
+  // Invia email con FormSubmit
+  const form = document.createElement('form');
+  form.method = 'POST';
+  form.action = `https://formsubmit.co/${ADMIN_EMAIL}`;
+  form.style.display = 'none';
+  
+  const inputMessage = document.createElement('input');
+  inputMessage.name = 'message';
+  inputMessage.value = emailBody;
+  
+  const inputSubject = document.createElement('input');
+  inputSubject.name = '_subject';
+  inputSubject.value = `📬 KitsuManga - Nuova richiesta: ${title}`;
+  
+  const inputFormat = document.createElement('input');
+  inputFormat.name = '_format';
+  inputFormat.value = 'text';
+  
+  form.appendChild(inputMessage);
+  form.appendChild(inputSubject);
+  form.appendChild(inputFormat);
+  document.body.appendChild(form);
+  
+  form.submit();
+  document.body.removeChild(form);
+  // =========================
+  
+  // Pulisci il modulo
+  document.getElementById('reqTitle').value = '';
+  document.getElementById('reqAuthor').value = '';
+  document.getElementById('reqCover').value = '';
+  document.getElementById('reqUrl').value = '';
+  document.getElementById('reqReason').value = '';
+  document.getElementById('reqRequester').value = '';
+  coverPreview.classList.remove('show');
+  
+  requestModal.classList.remove('active');
+  showToast('✅ Richiesta inviata! Riceverai una conferma via email.');
+}
+
+  async function addBug() {
+  const type = document.getElementById('bugType').value;
+  const title = document.getElementById('bugTitle').value.trim();
+  const description = document.getElementById('bugDescription').value.trim();
+  const page = document.getElementById('bugPage').value.trim();
+  const reporter = document.getElementById('bugReporter').value.trim();
+  
+  if (!title || !description || !reporter) {
+    showToast('❌ Titolo, descrizione e nome sono obbligatori', true);
+    return;
   }
+  
+  // Crea l'oggetto bug
+  const newBug = {
+    id: Date.now(),
+    type: type,
+    title: title,
+    description: description,
+    page: page,
+    reporter: reporter,
+    date: new Date().toISOString(),
+    status: 'pending'
+  };
+  
+  // Salva nel localStorage
+  bugReports.push(newBug);
+  saveBugs();
+  
+  // === INVIO VIA EMAIL ===
+  const tipoLabel = {
+    'visual': '🎨 Problema visivo',
+    'functional': '⚙️ Problema funzionale',
+    'loading': '🔄 Problema di caricamento',
+    'reader': '📖 Problema nel lettore',
+    'other': '📝 Altro'
+  };
+  
+  const messaggio = `🐛 NUOVA SEGNALAZIONE BUG\n\n`;
+  const emailBody = `${messaggio}
+📅 Data: ${new Date().toLocaleString()}
+👤 Segnalato da: ${reporter}
+🏷️ Tipo: ${tipoLabel[type] || type}
+📝 Titolo: ${title}
+📄 Descrizione: ${description}
+📍 Pagina: ${page || 'Non specificata'}
+🏷️ Stato locale: ⏳ In attesa`;
+
+  // Invia email con FormSubmit
+  const form = document.createElement('form');
+  form.method = 'POST';
+  form.action = `https://formsubmit.co/${ADMIN_EMAIL}`;
+  form.style.display = 'none';
+  
+  const inputMessage = document.createElement('input');
+  inputMessage.name = 'message';
+  inputMessage.value = emailBody;
+  
+  const inputSubject = document.createElement('input');
+  inputSubject.name = '_subject';
+  inputSubject.value = `📬 KitsuManga - Nuovo bug: ${title}`;
+  
+  const inputFormat = document.createElement('input');
+  inputFormat.name = '_format';
+  inputFormat.value = 'text';
+  
+  form.appendChild(inputMessage);
+  form.appendChild(inputSubject);
+  form.appendChild(inputFormat);
+  document.body.appendChild(form);
+  
+  form.submit();
+  document.body.removeChild(form);
+  // =========================
+  
+  // Pulisci il modulo
+  document.getElementById('bugType').value = 'visual';
+  document.getElementById('bugTitle').value = '';
+  document.getElementById('bugDescription').value = '';
+  document.getElementById('bugPage').value = '';
+  document.getElementById('bugReporter').value = '';
+  
+  bugModal.classList.remove('active');
+  showToast('✅ Segnalazione inviata! Riceverai una conferma via email.');
+}
 
   function renderRequestsTab() {
     // Aggiungi pulsante invia email
