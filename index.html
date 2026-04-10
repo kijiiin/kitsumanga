@@ -947,82 +947,113 @@
   // FUNZIONE PER IMPORTARE RICHIESTE DA EMAIL
   // ============================================================
   function importFromEmail() {
-    const text = document.getElementById('emailImportText').value;
-    if (!text.trim()) {
-      showToast('❌ Incolla prima il contenuto dell\'email', true);
-      return;
+  const text = document.getElementById('emailImportText').value;
+  if (!text.trim()) {
+    showToast('❌ Incolla prima il contenuto dell\'email', true);
+    return;
+  }
+  
+  // Pulisci il testo: sostituisci le emoji senza spazio con emoji + spazio
+  let cleanText = text;
+  
+  // Se tutto è su una riga, prova a separare i campi
+  if (!cleanText.includes('\n') || cleanText.split('\n').length < 3) {
+    // Aggiungi newline prima di ogni emoji chiave
+    cleanText = cleanText.replace(/([👤✍️🔗💬🖼️📖🏷️])/g, '\n$1');
+    // Aggiungi newline dopo la parentesi
+    cleanText = cleanText.replace(/(【\d+】)/g, '$1\n');
+    // Pulisci righe vuote multiple
+    cleanText = cleanText.replace(/\n\s*\n/g, '\n');
+  }
+  
+  // Normalizza il testo: assicura che ogni campo sia su una riga separata
+  const lines = cleanText.split('\n');
+  let currentRequest = {};
+  let newRequests = [];
+  
+  for (let i = 0; i < lines.length; i++) {
+    let line = lines[i].trim();
+    if (line === '') continue;
+    
+    // Rileva l'inizio di una nuova richiesta (【数字】)
+    if (line.match(/【\d+】/)) {
+      if (currentRequest.title && currentRequest.requester) {
+        newRequests.push(currentRequest);
+      }
+      currentRequest = {};
+      // Estrai il titolo (tutto ciò che viene dopo la parentesi)
+      const titleMatch = line.match(/】\s*(.+)/);
+      if (titleMatch) currentRequest.title = titleMatch[1].trim();
     }
-    
-    const lines = text.split('\n');
-    let currentRequest = {};
-    let newRequests = [];
-    
-    for (let i = 0; i < lines.length; i++) {
-      const line = lines[i];
-      
-      if (line.match(/【\d+】/)) {
-        if (currentRequest.title) newRequests.push(currentRequest);
-        currentRequest = {};
-        const titleMatch = line.match(/】\s*(.+)/);
-        if (titleMatch) currentRequest.title = titleMatch[1].trim();
-      }
-      else if (line.includes('Richiedente:')) {
-        currentRequest.requester = line.split('Richiedente:')[1].trim();
-      }
-      else if (line.includes('Autore:')) {
-        let val = line.split('Autore:')[1].trim();
-        if (val !== 'Non specificato') currentRequest.author = val;
-      }
-      else if (line.includes('URL:')) {
-        let val = line.split('URL:')[1].trim();
-        if (val !== 'Non specificato') currentRequest.url = val;
-      }
-      else if (line.includes('Motivo:')) {
-        let val = line.split('Motivo:')[1].trim();
-        if (val !== 'Nessuno') currentRequest.reason = val;
-      }
-      else if (line.includes('Cover:')) {
-        let val = line.split('Cover:')[1].trim();
-        if (val !== 'Non fornita') currentRequest.cover = val;
-      }
+    // Estrai Richiedente
+    else if (line.includes('👤') && line.includes('Richiedente:')) {
+      let val = line.replace(/👤/, '').replace('Richiedente:', '').trim();
+      if (val && val !== 'Non specificato') currentRequest.requester = val;
     }
-    
-    if (currentRequest.title) newRequests.push(currentRequest);
-    
-    if (newRequests.length === 0) {
-      showToast('❌ Nessuna richiesta trovata nel testo', true);
-      return;
+    // Estrai Titolo (se presente come campo separato)
+    else if (line.includes('📖') && line.includes('Titolo:')) {
+      let val = line.replace(/📖/, '').replace('Titolo:', '').trim();
+      if (val && val !== 'Non specificato') currentRequest.title = val;
     }
-    
-    let importate = 0;
-    for (const req of newRequests) {
-      if (req.title && req.requester) {
-        const newRequest = {
-          id: Date.now() + importate,
-          title: req.title,
-          author: req.author || '',
-          cover: req.cover || null,
-          url: req.url || '',
-          reason: req.reason || '',
-          requester: req.requester,
-          date: new Date().toISOString(),
-          status: 'pending'
-        };
-        mangaRequests.unshift(newRequest);
-        importate++;
-      }
+    // Estrai Autore
+    else if (line.includes('✍️') && line.includes('Autore:')) {
+      let val = line.replace(/✍️/, '').replace('Autore:', '').trim();
+      if (val && val !== 'Non specificato') currentRequest.author = val;
     }
-    
-    if (importate > 0) {
-      saveRequests();
-      renderAdminRequests();
-      if (currentTab === 'requests') renderRequestsTab();
-      showToast(`✅ Importate ${importate} richieste!`);
-      document.getElementById('emailImportText').value = '';
-    } else {
-      showToast('❌ Nessuna richiesta valida trovata', true);
+    // Estrai URL
+    else if (line.includes('🔗') && line.includes('URL:')) {
+      let val = line.replace(/🔗/, '').replace('URL:', '').trim();
+      if (val && val !== 'Non specificato' && val !== 'no') currentRequest.url = val;
+    }
+    // Estrai Motivo
+    else if (line.includes('💬') && line.includes('Motivo:')) {
+      let val = line.replace(/💬/, '').replace('Motivo:', '').trim();
+      if (val && val !== 'Nessuno') currentRequest.reason = val;
+    }
+    // Estrai Cover
+    else if (line.includes('🖼️') && line.includes('Cover:')) {
+      let val = line.replace(/🖼️/, '').replace('Cover:', '').trim();
+      if (val && val !== 'Non fornita' && val !== 'non lo so') currentRequest.cover = val;
     }
   }
+  
+  // Aggiungi l'ultima richiesta
+  if (currentRequest.title && currentRequest.requester) {
+    newRequests.push(currentRequest);
+  }
+  
+  if (newRequests.length === 0) {
+    showToast('❌ Nessuna richiesta trovata nel testo', true);
+    return;
+  }
+  
+  let importate = 0;
+  for (const req of newRequests) {
+    const newRequest = {
+      id: Date.now() + importate,
+      title: req.title,
+      author: req.author || '',
+      cover: req.cover || null,
+      url: req.url || '',
+      reason: req.reason || '',
+      requester: req.requester,
+      date: new Date().toISOString(),
+      status: 'pending'
+    };
+    mangaRequests.unshift(newRequest);
+    importate++;
+  }
+  
+  if (importate > 0) {
+    saveRequests();
+    renderAdminRequests();
+    if (currentTab === 'requests') renderRequestsTab();
+    showToast(`✅ Importate ${importate} richieste!`);
+    document.getElementById('emailImportText').value = '';
+  } else {
+    showToast('❌ Nessuna richiesta valida trovata', true);
+  }
+}
 
   async function addRequest() {
   const title = document.getElementById('reqTitle').value.trim();
@@ -1055,7 +1086,7 @@
   saveRequests();
   
   // === INVIO VIA EMAIL ===
-  const messaggio = `📋 NUOVA RICHIESTA MANGA\n\n`;
+  const messaggio = `[1]📋 NUOVA RICHIESTA MANGA\n\n`;
   const emailBody = `${messaggio}
 📅 Data: ${new Date().toLocaleString()}
 👤 Richiedente: ${requester}
