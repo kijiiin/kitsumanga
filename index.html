@@ -642,82 +642,82 @@
   // INVIO VIA EMAIL CON FORMSUBMIT (gratuito, senza registrazione)
   // ============================================================
   async function inviaEmail(tipo, dati) {
-    let messaggio = '';
+  let messaggio = '';
+  
+  if (tipo === 'richieste') {
+    messaggio = `📋 NUOVE RICHIESTE MANGA DA INVIARE\n\n`;
+    messaggio += `📅 Data invio: ${new Date().toLocaleString()}\n`;
+    messaggio += `📊 Totale richieste: ${dati.length}\n\n`;
+    messaggio += `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n`;
     
-    if (tipo === 'richieste') {
-      messaggio = `📋 NUOVE RICHIESTE MANGA DA INVIARE\n\n`;
-      messaggio += `📅 Data invio: ${new Date().toLocaleString()}\n`;
-      messaggio += `📊 Totale richieste: ${dati.length}\n\n`;
-      messaggio += `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n`;
-      
-      dati.forEach((req, i) => {
-        messaggio += `【${i+1}】 ${req.title}\n`;
-        messaggio += `   👤 Richiedente: ${req.requester}\n`;
-        messaggio += `   ✍️ Autore: ${req.author || 'Non specificato'}\n`;
-        messaggio += `   🔗 URL: ${req.url || 'Non specificato'}\n`;
-        messaggio += `   💬 Motivo: ${req.reason || 'Nessuno'}\n`;
-        messaggio += `   🏷️ Stato locale: ${req.status === 'pending' ? '⏳ In attesa' : (req.status === 'approved' ? '✅ Approvata' : '❌ Respinta')}\n`;
-        if (req.cover) messaggio += `   🖼️ Cover: ${req.cover}\n`;
-        messaggio += `\n`;
-      });
-    } 
-    else if (tipo === 'bugs') {
-      messaggio = `🐛 NUOVE SEGNALAZIONI BUG DA INVIARE\n\n`;
-      messaggio += `📅 Data invio: ${new Date().toLocaleString()}\n`;
-      messaggio += `📊 Totale segnalazioni: ${dati.length}\n\n`;
-      messaggio += `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n`;
-      
-      dati.forEach((bug, i) => {
-        const tipoLabel = {
-          'visual': '🎨 Problema visivo',
-          'functional': '⚙️ Problema funzionale',
-          'loading': '🔄 Problema di caricamento',
-          'reader': '📖 Problema nel lettore',
-          'other': '📝 Altro'
-        };
-        messaggio += `【${i+1}】 ${bug.title}\n`;
-        messaggio += `   👤 Segnalato da: ${bug.reporter}\n`;
-        messaggio += `   🏷️ Tipo: ${tipoLabel[bug.type] || bug.type}\n`;
-        messaggio += `   📝 Descrizione: ${bug.description}\n`;
-        messaggio += `   📄 Pagina: ${bug.page || 'Non specificata'}\n`;
-        messaggio += `   🏷️ Stato locale: ${bug.status === 'pending' ? '⏳ In attesa' : '✅ Risolto'}\n`;
-        messaggio += `\n`;
-      });
-    }
+    dati.forEach((req, i) => {
+      messaggio += `【${i+1}】 ${req.title}\n`;
+      messaggio += `   👤 Richiedente: ${req.requester}\n`;
+      messaggio += `   ✍️ Autore: ${req.author || 'Non specificato'}\n`;
+      messaggio += `   🔗 URL: ${req.url || 'Non specificato'}\n`;
+      messaggio += `   💬 Motivo: ${req.reason || 'Nessuno'}\n`;
+      messaggio += `   🏷️ Stato locale: ${req.status === 'pending' ? '⏳ In attesa' : (req.status === 'approved' ? '✅ Approvata' : '❌ Respinta')}\n`;
+      if (req.cover) messaggio += `   🖼️ Cover: ${req.cover}\n`;
+      messaggio += `\n`;
+    });
+  } 
+  else if (tipo === 'bugs') {
+    messaggio = `🐛 NUOVE SEGNALAZIONI BUG DA INVIARE\n\n`;
+    messaggio += `📅 Data invio: ${new Date().toLocaleString()}\n`;
+    messaggio += `📊 Totale segnalazioni: ${dati.length}\n\n`;
+    messaggio += `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n`;
     
-    // Usa FormSubmit (gratuito, senza registrazione)
-    const form = document.createElement('form');
-    form.method = 'POST';
-    form.action = `https://formsubmit.co/${ADMIN_EMAIL}`;
-    form.style.display = 'none';
-    
-    const inputMessage = document.createElement('input');
-    inputMessage.name = 'message';
-    inputMessage.value = messaggio;
-    
-    const inputSubject = document.createElement('input');
-    inputSubject.name = '_subject';
-    inputSubject.value = `📬 KitsuManga - Nuovo report (${tipo === 'richieste' ? 'Richieste' : 'Bug'})`;
-    
-    const inputFormat = document.createElement('input');
-    inputFormat.name = '_format';
-    inputFormat.value = 'text';
-    
-    // ⭐ IMPORTANTE: Questa riga impedisce il reindirizzamento!
-    const inputNext = document.createElement('input');
-    inputNext.name = '_next';
-    inputNext.value = window.location.href;  // Rimanda alla pagina corrente
-    
-    form.appendChild(inputMessage);
-    form.appendChild(inputSubject);
-    form.appendChild(inputFormat);
-    form.appendChild(inputNext);  // Aggiungi questo campo
-    document.body.appendChild(form);
-    
-    form.submit();
-    document.body.removeChild(form);
-    
-    return true;
+    dati.forEach((bug, i) => {
+      const tipoLabel = {
+        'visual': '🎨 Problema visivo',
+        'functional': '⚙️ Problema funzionale',
+        'loading': '🔄 Problema di caricamento',
+        'reader': '📖 Problema nel lettore',
+        'other': '📝 Altro'
+      };
+      messaggio += `【${i+1}】 ${bug.title}\n`;
+      messaggio += `   👤 Segnalato da: ${bug.reporter}\n`;
+      messaggio += `   🏷️ Tipo: ${tipoLabel[bug.type] || bug.type}\n`;
+      messaggio += `   📝 Descrizione: ${bug.description}\n`;
+      messaggio += `   📄 Pagina: ${bug.page || 'Non specificata'}\n`;
+      messaggio += `   🏷️ Stato locale: ${bug.status === 'pending' ? '⏳ In attesa' : '✅ Risolto'}\n`;
+      messaggio += `\n`;
+    });
+  }
+  
+  // Usa FormSubmit (gratuito, senza registrazione)
+  const form = document.createElement('form');
+  form.method = 'POST';
+  form.action = `https://formsubmit.co/${ADMIN_EMAIL}`;
+  form.style.display = 'none';
+  
+  const inputMessage = document.createElement('input');
+  inputMessage.name = 'message';
+  inputMessage.value = messaggio;
+  
+  const inputSubject = document.createElement('input');
+  inputSubject.name = '_subject';
+  inputSubject.value = `📬 KitsuManga - Nuovo report (${tipo === 'richieste' ? 'Richieste' : 'Bug'})`;
+  
+  const inputFormat = document.createElement('input');
+  inputFormat.name = '_format';
+  inputFormat.value = 'text';
+  
+  // Impedisce il reindirizzamento
+  const inputNext = document.createElement('input');
+  inputNext.name = '_next';
+  inputNext.value = window.location.href;
+  
+  form.appendChild(inputMessage);
+  form.appendChild(inputSubject);
+  form.appendChild(inputFormat);
+  form.appendChild(inputNext);
+  document.body.appendChild(form);
+  
+  form.submit();
+  document.body.removeChild(form);
+  
+  return true;
 }
 
   async function inviaTutteLeRichieste() {
