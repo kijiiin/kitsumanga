@@ -279,7 +279,7 @@
       max-width: 500px;
       width: 90%;
       border: 1px solid #8b5cf6;
-      max-height: 80vh;
+      max-height: 85vh;
       overflow-y: auto;
     }
     .modal-content h2 {
@@ -316,6 +316,26 @@
     .close-modal {
       background: rgba(255,255,255,0.2) !important;
     }
+    .cover-preview {
+      margin-bottom: 15px;
+      text-align: center;
+    }
+    .cover-preview img {
+      max-width: 100px;
+      max-height: 150px;
+      border-radius: 10px;
+      border: 2px solid #8b5cf6;
+      display: none;
+    }
+    .cover-preview img.show {
+      display: inline-block;
+    }
+    .input-hint {
+      font-size: 0.7rem;
+      color: #9ca3af;
+      margin-top: -12px;
+      margin-bottom: 15px;
+    }
     
     /* Pannello admin */
     .admin-panel {
@@ -351,6 +371,12 @@
     .request-card p {
       margin-bottom: 8px;
       opacity: 0.9;
+    }
+    .request-card .cover-thumb {
+      max-width: 80px;
+      max-height: 120px;
+      border-radius: 8px;
+      margin-top: 10px;
     }
     .request-actions {
       display: flex;
@@ -459,19 +485,24 @@
   </div>
 </div>
 
-<button class="add-manga" id="addMangaBtn" title="Fai una richiesta">+</button>
+<button class="add-manga" id="addMangaBtn" title="Richiedi un manga">+</button>
 
 <footer>
   © 2026 KitsuManga
 </footer>
 
-<!-- Modal per richieste -->
+<!-- Modal per richieste con campo cover -->
 <div class="modal" id="requestModal">
   <div class="modal-content">
     <h2>📝 Richiedi un manga</h2>
     <input type="text" id="reqTitle" placeholder="Titolo del manga *">
     <input type="text" id="reqAuthor" placeholder="Autore">
-    <input type="url" id="reqUrl" placeholder="URL (dove leggerlo)">
+    <input type="url" id="reqCover" placeholder="URL della cover (copertina)">
+    <div class="cover-preview">
+      <img id="coverPreview" alt="Anteprima cover">
+    </div>
+    <div class="input-hint">💡 Inserisci un link diretto all'immagine della copertina (opzionale)</div>
+    <input type="url" id="reqUrl" placeholder="URL dove leggerlo (es. sito manga)">
     <textarea id="reqReason" placeholder="Motivo della richiesta (opzionale)"></textarea>
     <input type="text" id="reqRequester" placeholder="Il tuo nome/nickname *">
     <button id="submitRequest">Invia richiesta</button>
@@ -510,7 +541,24 @@
   let currentTab = 'local';
   let currentSearchTerm = '';
   let isAdminAuthenticated = false;
-  const ADMIN_PASSWORD = 'admin123'; // Cambia con la password che preferisci
+  const ADMIN_PASSWORD = 'admin123';
+
+  // Anteprima cover
+  const reqCoverInput = document.getElementById('reqCover');
+  const coverPreview = document.getElementById('coverPreview');
+  
+  reqCoverInput.addEventListener('input', () => {
+    const url = reqCoverInput.value.trim();
+    if (url && (url.startsWith('http://') || url.startsWith('https://'))) {
+      coverPreview.src = url;
+      coverPreview.classList.add('show');
+      coverPreview.onerror = () => {
+        coverPreview.classList.remove('show');
+      };
+    } else {
+      coverPreview.classList.remove('show');
+    }
+  });
 
   // Carica richieste da localStorage
   function loadRequests() {
@@ -527,7 +575,6 @@
     localStorage.setItem('mangaRequests', JSON.stringify(mangaRequests));
   }
 
-  // Mostra toast
   function showToast(message, isError = false) {
     const existingToast = document.querySelector('.toast');
     if (existingToast) existingToast.remove();
@@ -539,7 +586,6 @@
     setTimeout(() => toast.remove(), 3000);
   }
 
-  // Autenticazione admin
   function authenticateAdmin() {
     const password = prompt('Inserisci la password amministratore:');
     if (password === ADMIN_PASSWORD) {
@@ -571,6 +617,7 @@
         <h3>${escapeHtml(req.title)}</h3>
         <p><strong>Richiedente:</strong> ${escapeHtml(req.requester)}</p>
         <p><strong>Autore:</strong> ${escapeHtml(req.author || 'Non specificato')}</p>
+        ${req.cover ? `<p><strong>Cover:</strong> <a href="${req.cover}" target="_blank" style="color:#c4b5fd;">Visualizza immagine</a><br><img src="${req.cover}" class="cover-thumb" onerror="this.style.display='none'"></p>` : '<p><strong>Cover:</strong> Non fornita</p>'}
         <p><strong>URL:</strong> ${req.url ? `<a href="${req.url}" target="_blank" style="color:#c4b5fd;">${req.url.substring(0, 50)}...</a>` : 'Non specificato'}</p>
         <p><strong>Motivo:</strong> ${escapeHtml(req.reason || 'Nessun motivo specificato')}</p>
         <p><strong>Data:</strong> ${new Date(req.date).toLocaleString()}</p>
@@ -584,7 +631,6 @@
       container.appendChild(card);
     });
     
-    // Aggiungi event listeners ai bottoni
     document.querySelectorAll('.approve-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         const idx = parseInt(btn.dataset.index);
@@ -627,10 +673,10 @@
     showToast('🗑️ Richiesta eliminata');
   }
 
-  // Aggiungi nuova richiesta
   function addRequest() {
     const title = document.getElementById('reqTitle').value.trim();
     const author = document.getElementById('reqAuthor').value.trim();
+    const cover = document.getElementById('reqCover').value.trim();
     const url = document.getElementById('reqUrl').value.trim();
     const reason = document.getElementById('reqReason').value.trim();
     const requester = document.getElementById('reqRequester').value.trim();
@@ -644,6 +690,7 @@
       id: Date.now(),
       title: title,
       author: author,
+      cover: cover || null,
       url: url,
       reason: reason,
       requester: requester,
@@ -654,23 +701,20 @@
     mangaRequests.push(newRequest);
     saveRequests();
     
-    // Chiudi modal e resetta campi
-    requestModal.classList.remove('active');
+    // Reset form
     document.getElementById('reqTitle').value = '';
     document.getElementById('reqAuthor').value = '';
+    document.getElementById('reqCover').value = '';
     document.getElementById('reqUrl').value = '';
     document.getElementById('reqReason').value = '';
     document.getElementById('reqRequester').value = '';
+    coverPreview.classList.remove('show');
     
+    requestModal.classList.remove('active');
     showToast('✅ Richiesta inviata! Verrà esaminata al più presto.');
   }
 
-  // Renderizza il tab delle richieste (per tutti)
   function renderRequestsTab() {
-    const pendingRequests = mangaRequests.filter(r => r.status === 'pending');
-    const approvedRequests = mangaRequests.filter(r => r.status === 'approved');
-    const rejectedRequests = mangaRequests.filter(r => r.status === 'rejected');
-    
     if (mangaRequests.length === 0) {
       grid.innerHTML = '<div class="no-results">📭 Nessuna richiesta inviata. Clicca sul pulsante + per richiedere un manga!</div>';
       return;
@@ -678,29 +722,28 @@
     
     grid.innerHTML = '';
     
-    // Renderizza richieste in attesa
-    if (pendingRequests.length > 0) {
-      pendingRequests.forEach(req => {
-        grid.appendChild(createRequestCard(req, 'in-attesa'));
+    const pending = mangaRequests.filter(r => r.status === 'pending');
+    const approved = mangaRequests.filter(r => r.status === 'approved');
+    const rejected = mangaRequests.filter(r => r.status === 'rejected');
+    
+    if (pending.length > 0) {
+      pending.forEach(req => {
+        grid.appendChild(createRequestCard(req));
       });
     }
-    
-    // Renderizza richieste approvate
-    if (approvedRequests.length > 0) {
-      approvedRequests.forEach(req => {
-        grid.appendChild(createRequestCard(req, 'approvata'));
+    if (approved.length > 0) {
+      approved.forEach(req => {
+        grid.appendChild(createRequestCard(req));
       });
     }
-    
-    // Renderizza richieste rifiutate
-    if (rejectedRequests.length > 0) {
-      rejectedRequests.forEach(req => {
-        grid.appendChild(createRequestCard(req, 'rifiutata'));
+    if (rejected.length > 0) {
+      rejected.forEach(req => {
+        grid.appendChild(createRequestCard(req));
       });
     }
   }
   
-  function createRequestCard(req, statusText) {
+  function createRequestCard(req) {
     const card = document.createElement('div');
     card.className = 'card';
     
@@ -717,10 +760,12 @@
       statusLabel = '❌ Respinta';
     }
     
+    const coverUrl = req.cover && req.cover.startsWith('http') ? req.cover : `https://placehold.co/300x400/1a1a2e/a78bfa?text=${encodeURIComponent(req.title)}`;
+    
     card.innerHTML = `
       <div class="request-badge">📋 RICHIESTO</div>
       <div class="status-badge ${statusClass}">${statusLabel}</div>
-      <img src="https://placehold.co/300x400/1a1a2e/a78bfa?text=${encodeURIComponent(req.title)}" alt="${req.title}" onerror="this.src='https://placehold.co/300x400/1a1a2e/a78bfa?text=Manga'">
+      <img src="${coverUrl}" alt="${req.title}" onerror="this.src='https://placehold.co/300x400/1a1a2e/a78bfa?text=${encodeURIComponent(req.title)}'">
       <div class="info">
         <div class="title">${escapeHtml(req.title)}</div>
         <div class="chapter">Richiesto da: ${escapeHtml(req.requester)}</div>
@@ -746,7 +791,6 @@
     }
   }
 
-  // Carica manga esterni
   async function loadExternalMangas(forceReload = false) {
     try {
       const cacheBuster = forceReload ? Date.now() : Date.now();
@@ -932,17 +976,17 @@
     
     if (pending.length > 0) {
       pending.forEach(req => {
-        grid.appendChild(createRequestCard(req, 'in-attesa'));
+        grid.appendChild(createRequestCard(req));
       });
     }
     if (approved.length > 0) {
       approved.forEach(req => {
-        grid.appendChild(createRequestCard(req, 'approvata'));
+        grid.appendChild(createRequestCard(req));
       });
     }
     if (rejected.length > 0) {
       rejected.forEach(req => {
-        grid.appendChild(createRequestCard(req, 'rifiutata'));
+        grid.appendChild(createRequestCard(req));
       });
     }
   }
@@ -966,21 +1010,12 @@
   }
 
   function updateAddButton() {
-    if (currentTab === 'local' || currentTab === 'external') {
-      addMangaBtn.style.display = 'flex';
-      addMangaBtn.title = 'Richiedi un manga';
-      addMangaBtn.style.background = '#8b5cf6';
-      addMangaBtn.onclick = () => {
-        requestModal.classList.add('active');
-      };
-    } else {
-      addMangaBtn.style.display = 'flex';
-      addMangaBtn.title = 'Richiedi un manga';
-      addMangaBtn.style.background = '#8b5cf6';
-      addMangaBtn.onclick = () => {
-        requestModal.classList.add('active');
-      };
-    }
+    addMangaBtn.style.display = 'flex';
+    addMangaBtn.title = 'Richiedi un manga';
+    addMangaBtn.style.background = '#8b5cf6';
+    addMangaBtn.onclick = () => {
+      requestModal.classList.add('active');
+    };
   }
 
   async function switchTab(tab) {
@@ -1030,7 +1065,6 @@
     applySortAndFilter();
   }
 
-  // Event listeners
   sortSelect.addEventListener('change', applySortAndFilter);
   searchInput.addEventListener('input', handleSearch);
   searchClear.addEventListener('click', clearSearch);
@@ -1040,7 +1074,6 @@
   submitRequest.addEventListener('click', addRequest);
   closeModal.addEventListener('click', () => requestModal.classList.remove('active'));
   
-  // Chiudi modal cliccando fuori
   requestModal.addEventListener('click', (e) => {
     if (e.target === requestModal) requestModal.classList.remove('active');
   });
