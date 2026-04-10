@@ -594,6 +594,11 @@
       <button class="admin-tab-btn active" data-admin-tab="requests">📋 Richieste Manga</button>
       <button class="admin-tab-btn" data-admin-tab="bugs">🐛 Segnalazioni Bug</button>
     </div>
+<div style="margin-bottom: 20px; padding: 15px; background: rgba(0,0,0,0.3); border-radius: 15px;">
+  <h3 style="margin-bottom: 10px;">📥 Importa richieste da email</h3>
+  <textarea id="emailImportText" placeholder="Incolla qui il contenuto dell'email ricevuta..." style="width: 100%; padding: 10px; background: rgba(255,255,255,0.1); border: 1px solid #8b5cf6; border-radius: 10px; color: white; margin-bottom: 10px; min-height: 150px;"></textarea>
+  <button id="importFromEmailBtn" style="background: #10b981; border: none; color: white; padding: 8px 20px; border-radius: 8px; cursor: pointer;">📥 Importa richieste</button>
+</div>
     <div id="adminRequestsList"></div>
     <div id="adminBugsList" style="display: none;"></div>
   </div>
@@ -949,6 +954,86 @@
     if (currentTab === 'bugs') renderBugsTab();
     showToast('🗑️ Segnalazione eliminata');
   }
+  // ============================================================
+  // FUNZIONE PER IMPORTARE RICHIESTE DA EMAIL
+  // ============================================================
+  function importFromEmail() {
+    const text = document.getElementById('emailImportText').value;
+    if (!text.trim()) {
+      showToast('❌ Incolla prima il contenuto dell\'email', true);
+      return;
+    }
+    
+    const lines = text.split('\n');
+    let currentRequest = {};
+    let newRequests = [];
+    
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i];
+      
+      if (line.match(/【\d+】/)) {
+        if (currentRequest.title) newRequests.push(currentRequest);
+        currentRequest = {};
+        const titleMatch = line.match(/】\s*(.+)/);
+        if (titleMatch) currentRequest.title = titleMatch[1].trim();
+      }
+      else if (line.includes('Richiedente:')) {
+        currentRequest.requester = line.split('Richiedente:')[1].trim();
+      }
+      else if (line.includes('Autore:')) {
+        let val = line.split('Autore:')[1].trim();
+        if (val !== 'Non specificato') currentRequest.author = val;
+      }
+      else if (line.includes('URL:')) {
+        let val = line.split('URL:')[1].trim();
+        if (val !== 'Non specificato') currentRequest.url = val;
+      }
+      else if (line.includes('Motivo:')) {
+        let val = line.split('Motivo:')[1].trim();
+        if (val !== 'Nessuno') currentRequest.reason = val;
+      }
+      else if (line.includes('Cover:')) {
+        let val = line.split('Cover:')[1].trim();
+        if (val !== 'Non fornita') currentRequest.cover = val;
+      }
+    }
+    
+    if (currentRequest.title) newRequests.push(currentRequest);
+    
+    if (newRequests.length === 0) {
+      showToast('❌ Nessuna richiesta trovata nel testo', true);
+      return;
+    }
+    
+    let importate = 0;
+    for (const req of newRequests) {
+      if (req.title && req.requester) {
+        const newRequest = {
+          id: Date.now() + importate,
+          title: req.title,
+          author: req.author || '',
+          cover: req.cover || null,
+          url: req.url || '',
+          reason: req.reason || '',
+          requester: req.requester,
+          date: new Date().toISOString(),
+          status: 'pending'
+        };
+        mangaRequests.unshift(newRequest);
+        importate++;
+      }
+    }
+    
+    if (importate > 0) {
+      saveRequests();
+      renderAdminRequests();
+      if (currentTab === 'requests') renderRequestsTab();
+      showToast(`✅ Importate ${importate} richieste!`);
+      document.getElementById('emailImportText').value = '';
+    } else {
+      showToast('❌ Nessuna richiesta valida trovata', true);
+    }
+  }
 
   async function addRequest() {
   const title = document.getElementById('reqTitle').value.trim();
@@ -1102,9 +1187,14 @@
   inputFormat.name = '_format';
   inputFormat.value = 'text';
   
+  const inputNext = document.createElement('input');
+  inputNext.name = '_next';
+  inputNext.value = window.location.href;  // Torna alla pagina corrente
+
   form.appendChild(inputMessage);
   form.appendChild(inputSubject);
   form.appendChild(inputFormat);
+  form.appendChild(inputNext);
   document.body.appendChild(form);
   
   form.submit();
@@ -1543,6 +1633,7 @@
   submitBug.addEventListener('click', addBug);
   closeRequestModal.addEventListener('click', () => requestModal.classList.remove('active'));
   closeBugModal.addEventListener('click', () => bugModal.classList.remove('active'));
+  document.getElementById('importFromEmailBtn')?.addEventListener('click', importFromEmail);
   
   [requestModal, bugModal].forEach(modal => {
     modal.addEventListener('click', (e) => {
