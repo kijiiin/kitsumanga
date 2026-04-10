@@ -4,7 +4,6 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>KitsuManga</title>
-  <!-- Meta tag per disabilitare la cache -->
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
@@ -105,6 +104,20 @@
       background: rgba(139, 92, 246, 0.3);
       transform: scale(1.02);
     }
+    .admin-btn {
+      background: rgba(239, 68, 68, 0.3);
+      border: 1px solid rgba(239, 68, 68, 0.5);
+      padding: 8px 15px;
+      border-radius: 20px;
+      cursor: pointer;
+      color: white;
+      font-size: 0.9rem;
+      transition: 0.3s;
+    }
+    .admin-btn:hover {
+      background: rgba(239, 68, 68, 0.5);
+      transform: scale(1.02);
+    }
     .results-info {
       font-size: 0.85rem;
       color: #c4b5fd;
@@ -183,6 +196,29 @@
       font-weight: bold;
       backdrop-filter: blur(5px);
     }
+    .request-badge {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      background: rgba(239, 68, 68, 0.9);
+      padding: 4px 8px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: bold;
+      backdrop-filter: blur(5px);
+    }
+    .status-badge {
+      position: absolute;
+      bottom: 10px;
+      right: 10px;
+      padding: 4px 8px;
+      border-radius: 12px;
+      font-size: 10px;
+      font-weight: bold;
+    }
+    .status-pending { background: rgba(245, 158, 11, 0.9); }
+    .status-approved { background: rgba(16, 185, 129, 0.9); }
+    .status-rejected { background: rgba(239, 68, 68, 0.9); }
     .no-results {
       grid-column: 1/-1;
       text-align: center;
@@ -220,7 +256,136 @@
       margin-top: 40px;
     }
     
-    /* Toast per notifiche */
+    /* Modal per richieste */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.8);
+      z-index: 2000;
+      align-items: center;
+      justify-content: center;
+    }
+    .modal.active {
+      display: flex;
+    }
+    .modal-content {
+      background: linear-gradient(135deg, #1a1a2e, #16213e);
+      border-radius: 20px;
+      padding: 30px;
+      max-width: 500px;
+      width: 90%;
+      border: 1px solid #8b5cf6;
+      max-height: 80vh;
+      overflow-y: auto;
+    }
+    .modal-content h2 {
+      margin-bottom: 20px;
+      color: #c4b5fd;
+    }
+    .modal-content input, .modal-content textarea {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 15px;
+      background: rgba(255,255,255,0.1);
+      border: 1px solid rgba(139, 92, 246, 0.5);
+      border-radius: 10px;
+      color: white;
+      font-size: 0.9rem;
+    }
+    .modal-content textarea {
+      resize: vertical;
+      min-height: 80px;
+    }
+    .modal-content button {
+      background: #8b5cf6;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 1rem;
+      margin-right: 10px;
+    }
+    .modal-content button:hover {
+      background: #a78bfa;
+    }
+    .close-modal {
+      background: rgba(255,255,255,0.2) !important;
+    }
+    
+    /* Pannello admin */
+    .admin-panel {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.95);
+      z-index: 3000;
+      overflow-y: auto;
+      padding: 20px;
+    }
+    .admin-panel.active {
+      display: block;
+    }
+    .admin-container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    .request-card {
+      background: rgba(255,255,255,0.1);
+      border-radius: 15px;
+      padding: 20px;
+      margin-bottom: 20px;
+      border: 1px solid rgba(139, 92, 246, 0.3);
+    }
+    .request-card h3 {
+      color: #c4b5fd;
+      margin-bottom: 10px;
+    }
+    .request-card p {
+      margin-bottom: 8px;
+      opacity: 0.9;
+    }
+    .request-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 15px;
+    }
+    .approve-btn {
+      background: #10b981;
+      color: white;
+      border: none;
+      padding: 8px 20px;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    .reject-btn {
+      background: #ef4444;
+      color: white;
+      border: none;
+      padding: 8px 20px;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    .admin-close {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: #ef4444;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 20px;
+      cursor: pointer;
+      z-index: 3001;
+    }
+    
     .toast {
       position: fixed;
       bottom: 100px;
@@ -275,11 +440,13 @@
     <option value="default">📋 Ordine originale</option>
   </select>
   <button class="reload-btn" id="reloadBtn">🔄 Ricarica</button>
+  <button class="admin-btn" id="adminBtn">🔒 Admin</button>
 </div>
 
 <div class="tabs">
   <button class="tab-btn active" data-tab="local">📁 Manga Locali</button>
   <button class="tab-btn" data-tab="external">🌐 Manga Esterni</button>
+  <button class="tab-btn" data-tab="requests">📋 Richieste</button>
 </div>
 
 <div class="results-info" id="resultsInfo"></div>
@@ -292,11 +459,34 @@
   </div>
 </div>
 
-<a href="#" class="add-manga" id="addMangaBtn" title="Aggiungi Manga Locale">+</a>
+<button class="add-manga" id="addMangaBtn" title="Fai una richiesta">+</button>
 
 <footer>
   © 2026 KitsuManga
 </footer>
+
+<!-- Modal per richieste -->
+<div class="modal" id="requestModal">
+  <div class="modal-content">
+    <h2>📝 Richiedi un manga</h2>
+    <input type="text" id="reqTitle" placeholder="Titolo del manga *">
+    <input type="text" id="reqAuthor" placeholder="Autore">
+    <input type="url" id="reqUrl" placeholder="URL (dove leggerlo)">
+    <textarea id="reqReason" placeholder="Motivo della richiesta (opzionale)"></textarea>
+    <input type="text" id="reqRequester" placeholder="Il tuo nome/nickname *">
+    <button id="submitRequest">Invia richiesta</button>
+    <button class="close-modal" id="closeModal">Annulla</button>
+  </div>
+</div>
+
+<!-- Pannello Admin -->
+<div class="admin-panel" id="adminPanel">
+  <button class="admin-close" id="closeAdmin">✕ Chiudi</button>
+  <div class="admin-container">
+    <h2 style="margin-bottom: 20px;">🔒 Pannello Richieste</h2>
+    <div id="requestsList"></div>
+  </div>
+</div>
 
 <script>
   const grid = document.getElementById('grid');
@@ -307,11 +497,35 @@
   const tabs = document.querySelectorAll('.tab-btn');
   const addMangaBtn = document.getElementById('addMangaBtn');
   const reloadBtn = document.getElementById('reloadBtn');
+  const adminBtn = document.getElementById('adminBtn');
+  const requestModal = document.getElementById('requestModal');
+  const adminPanel = document.getElementById('adminPanel');
+  const submitRequest = document.getElementById('submitRequest');
+  const closeModal = document.getElementById('closeModal');
+  const closeAdmin = document.getElementById('closeAdmin');
   
   let mangasLocal = [];
   let mangasExternal = [];
+  let mangaRequests = [];
   let currentTab = 'local';
   let currentSearchTerm = '';
+  let isAdminAuthenticated = false;
+  const ADMIN_PASSWORD = 'admin123'; // Cambia con la password che preferisci
+
+  // Carica richieste da localStorage
+  function loadRequests() {
+    const saved = localStorage.getItem('mangaRequests');
+    if (saved) {
+      mangaRequests = JSON.parse(saved);
+    } else {
+      mangaRequests = [];
+    }
+  }
+
+  // Salva richieste in localStorage
+  function saveRequests() {
+    localStorage.setItem('mangaRequests', JSON.stringify(mangaRequests));
+  }
 
   // Mostra toast
   function showToast(message, isError = false) {
@@ -325,7 +539,200 @@
     setTimeout(() => toast.remove(), 3000);
   }
 
-  // Carica manga locali da manga.json (con cache busting)
+  // Autenticazione admin
+  function authenticateAdmin() {
+    const password = prompt('Inserisci la password amministratore:');
+    if (password === ADMIN_PASSWORD) {
+      isAdminAuthenticated = true;
+      showAdminPanel();
+      showToast('✅ Accesso amministratore consentito');
+    } else if (password !== null) {
+      showToast('❌ Password errata', true);
+    }
+  }
+
+  function showAdminPanel() {
+    adminPanel.classList.add('active');
+    renderAdminRequests();
+  }
+
+  function renderAdminRequests() {
+    const container = document.getElementById('requestsList');
+    if (mangaRequests.length === 0) {
+      container.innerHTML = '<div style="text-align:center;padding:50px;">📭 Nessuna richiesta in sospeso</div>';
+      return;
+    }
+    
+    container.innerHTML = '';
+    mangaRequests.forEach((req, index) => {
+      const card = document.createElement('div');
+      card.className = 'request-card';
+      card.innerHTML = `
+        <h3>${escapeHtml(req.title)}</h3>
+        <p><strong>Richiedente:</strong> ${escapeHtml(req.requester)}</p>
+        <p><strong>Autore:</strong> ${escapeHtml(req.author || 'Non specificato')}</p>
+        <p><strong>URL:</strong> ${req.url ? `<a href="${req.url}" target="_blank" style="color:#c4b5fd;">${req.url.substring(0, 50)}...</a>` : 'Non specificato'}</p>
+        <p><strong>Motivo:</strong> ${escapeHtml(req.reason || 'Nessun motivo specificato')}</p>
+        <p><strong>Data:</strong> ${new Date(req.date).toLocaleString()}</p>
+        <p><strong>Stato:</strong> <span style="color:${req.status === 'approved' ? '#10b981' : (req.status === 'rejected' ? '#ef4444' : '#f59e0b')}">${req.status === 'approved' ? '✅ Approvata' : (req.status === 'rejected' ? '❌ Respinta' : '⏳ In attesa')}</span></p>
+        <div class="request-actions">
+          ${req.status === 'pending' ? `<button class="approve-btn" data-index="${index}">✅ Approva</button>` : ''}
+          ${req.status === 'pending' ? `<button class="reject-btn" data-index="${index}">❌ Rifiuta</button>` : ''}
+          <button class="reject-btn" data-index="${index}" data-delete="true" style="background:#6b7280;">🗑️ Elimina</button>
+        </div>
+      `;
+      container.appendChild(card);
+    });
+    
+    // Aggiungi event listeners ai bottoni
+    document.querySelectorAll('.approve-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const idx = parseInt(btn.dataset.index);
+        approveRequest(idx);
+      });
+    });
+    document.querySelectorAll('.reject-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const idx = parseInt(btn.dataset.index);
+        if (btn.dataset.delete) {
+          deleteRequest(idx);
+        } else {
+          rejectRequest(idx);
+        }
+      });
+    });
+  }
+
+  function approveRequest(index) {
+    mangaRequests[index].status = 'approved';
+    saveRequests();
+    renderAdminRequests();
+    showToast('✅ Richiesta approvata!');
+    if (currentTab === 'requests') renderRequestsTab();
+  }
+
+  function rejectRequest(index) {
+    mangaRequests[index].status = 'rejected';
+    saveRequests();
+    renderAdminRequests();
+    showToast('❌ Richiesta rifiutata');
+    if (currentTab === 'requests') renderRequestsTab();
+  }
+
+  function deleteRequest(index) {
+    mangaRequests.splice(index, 1);
+    saveRequests();
+    renderAdminRequests();
+    if (currentTab === 'requests') renderRequestsTab();
+    showToast('🗑️ Richiesta eliminata');
+  }
+
+  // Aggiungi nuova richiesta
+  function addRequest() {
+    const title = document.getElementById('reqTitle').value.trim();
+    const author = document.getElementById('reqAuthor').value.trim();
+    const url = document.getElementById('reqUrl').value.trim();
+    const reason = document.getElementById('reqReason').value.trim();
+    const requester = document.getElementById('reqRequester').value.trim();
+    
+    if (!title || !requester) {
+      showToast('❌ Titolo e nome richiedente sono obbligatori', true);
+      return;
+    }
+    
+    const newRequest = {
+      id: Date.now(),
+      title: title,
+      author: author,
+      url: url,
+      reason: reason,
+      requester: requester,
+      date: new Date().toISOString(),
+      status: 'pending'
+    };
+    
+    mangaRequests.push(newRequest);
+    saveRequests();
+    
+    // Chiudi modal e resetta campi
+    requestModal.classList.remove('active');
+    document.getElementById('reqTitle').value = '';
+    document.getElementById('reqAuthor').value = '';
+    document.getElementById('reqUrl').value = '';
+    document.getElementById('reqReason').value = '';
+    document.getElementById('reqRequester').value = '';
+    
+    showToast('✅ Richiesta inviata! Verrà esaminata al più presto.');
+  }
+
+  // Renderizza il tab delle richieste (per tutti)
+  function renderRequestsTab() {
+    const pendingRequests = mangaRequests.filter(r => r.status === 'pending');
+    const approvedRequests = mangaRequests.filter(r => r.status === 'approved');
+    const rejectedRequests = mangaRequests.filter(r => r.status === 'rejected');
+    
+    if (mangaRequests.length === 0) {
+      grid.innerHTML = '<div class="no-results">📭 Nessuna richiesta inviata. Clicca sul pulsante + per richiedere un manga!</div>';
+      return;
+    }
+    
+    grid.innerHTML = '';
+    
+    // Renderizza richieste in attesa
+    if (pendingRequests.length > 0) {
+      pendingRequests.forEach(req => {
+        grid.appendChild(createRequestCard(req, 'in-attesa'));
+      });
+    }
+    
+    // Renderizza richieste approvate
+    if (approvedRequests.length > 0) {
+      approvedRequests.forEach(req => {
+        grid.appendChild(createRequestCard(req, 'approvata'));
+      });
+    }
+    
+    // Renderizza richieste rifiutate
+    if (rejectedRequests.length > 0) {
+      rejectedRequests.forEach(req => {
+        grid.appendChild(createRequestCard(req, 'rifiutata'));
+      });
+    }
+  }
+  
+  function createRequestCard(req, statusText) {
+    const card = document.createElement('div');
+    card.className = 'card';
+    
+    let statusClass = '';
+    let statusLabel = '';
+    if (req.status === 'pending') {
+      statusClass = 'status-pending';
+      statusLabel = '⏳ In attesa';
+    } else if (req.status === 'approved') {
+      statusClass = 'status-approved';
+      statusLabel = '✅ Approvata';
+    } else {
+      statusClass = 'status-rejected';
+      statusLabel = '❌ Respinta';
+    }
+    
+    card.innerHTML = `
+      <div class="request-badge">📋 RICHIESTO</div>
+      <div class="status-badge ${statusClass}">${statusLabel}</div>
+      <img src="https://placehold.co/300x400/1a1a2e/a78bfa?text=${encodeURIComponent(req.title)}" alt="${req.title}" onerror="this.src='https://placehold.co/300x400/1a1a2e/a78bfa?text=Manga'">
+      <div class="info">
+        <div class="title">${escapeHtml(req.title)}</div>
+        <div class="chapter">Richiesto da: ${escapeHtml(req.requester)}</div>
+        ${req.author ? `<div class="chapter" style="font-size: 11px;">✍️ ${escapeHtml(req.author)}</div>` : ''}
+        ${req.reason ? `<div class="chapter" style="font-size: 11px; margin-top: 5px;">💬 ${escapeHtml(req.reason.substring(0, 50))}${req.reason.length > 50 ? '...' : ''}</div>` : ''}
+      </div>
+    `;
+    
+    return card;
+  }
+
+  // Carica manga locali
   async function loadLocalMangas() {
     try {
       const timestamp = Date.now();
@@ -339,21 +746,18 @@
     }
   }
 
-  // Carica manga esterni da external.json (con cache busting e force reload)
+  // Carica manga esterni
   async function loadExternalMangas(forceReload = false) {
     try {
-      // Usa timestamp per evitare la cache del browser
       const cacheBuster = forceReload ? Date.now() : Date.now();
       const res = await fetch(`external.json?t=${cacheBuster}&_=${Date.now()}`);
       if (res.ok) {
         const data = await res.json();
         mangasExternal = data.map(m => ({ ...m, type: 'external' }));
         console.log('✅ Manga esterni caricati:', mangasExternal.length);
-        // Salva in sessionStorage come backup
         sessionStorage.setItem('externalMangas', JSON.stringify(mangasExternal));
         return true;
       } else {
-        // Prova a caricare da sessionStorage
         const cached = sessionStorage.getItem('externalMangas');
         if (cached) {
           mangasExternal = JSON.parse(cached);
@@ -364,8 +768,6 @@
         return false;
       }
     } catch (e) {
-      console.log('File external.json non trovato, uso cache locale');
-      // Prova a caricare da sessionStorage
       const cached = sessionStorage.getItem('externalMangas');
       if (cached) {
         mangasExternal = JSON.parse(cached);
@@ -377,70 +779,6 @@
     }
   }
 
-  // Salva manga esterni (simulato - mostra istruzioni)
-  async function saveExternalMangas() {
-    const externalData = mangasExternal.map(({ type, ...rest }) => rest);
-    console.log('📝 Per salvare permanentemente, copia questo JSON in external.json:');
-    console.log(JSON.stringify(externalData, null, 2));
-    
-    // Mostra un toast con le istruzioni
-    showToast('📝 Manga aggiunto! Apri la console (F12) e copia il JSON in external.json', false);
-    
-    // Salva anche in sessionStorage per persistenza temporanea
-    sessionStorage.setItem('externalMangas', JSON.stringify(mangasExternal));
-  }
-
-  // Ricarica tutti i dati
-  async function reloadAllData() {
-    showToast('🔄 Ricaricamento in corso...');
-    await loadLocalMangas();
-    await loadExternalMangas(true);
-    if (currentTab === 'external') {
-      applySortAndFilter();
-    } else {
-      applySortAndFilter();
-    }
-    showToast('✅ Libreria ricaricata!');
-  }
-
-  // Aggiungi manga esterno
-  async function addExternalManga() {
-    const title = prompt('📖 Inserisci il titolo del manga:', '');
-    if (!title) return;
-    
-    const externalUrl = prompt('🔗 Inserisci l\'URL del manga esterno:', 'https://');
-    if (!externalUrl) return;
-    
-    const author = prompt('✍️ Inserisci l\'autore (opzionale):', 'Autore sconosciuto') || 'Autore sconosciuto';
-    
-    const cover = prompt('🖼️ Inserisci l\'URL della copertina (opzionale, invio per default):', '');
-    const defaultCover = `https://placehold.co/300x400/1a1a2e/a78bfa?text=${encodeURIComponent(title)}`;
-    
-    const latest = prompt('📌 Ultimo capitolo/volume (es: Capitolo 1):', 'Capitolo 1');
-    
-    const newId = title.toLowerCase().replace(/[^a-z0-9]/g, '-');
-    
-    const newManga = {
-      id: newId,
-      title: title,
-      cover: cover || defaultCover,
-      latest: latest || 'Capitolo 1',
-      author: author,
-      externalUrl: externalUrl,
-      type: 'external'
-    };
-    
-    mangasExternal.push(newManga);
-    await saveExternalMangas();
-    
-    if (currentTab === 'external') {
-      applySortAndFilter();
-    }
-    
-    showToast(`✅ "${title}" aggiunto ai manga esterni! Ricorda di salvare il JSON`);
-  }
-
-  // Funzioni di ordinamento
   function sortByTitle(a, b) {
     return a.title.localeCompare(b.title);
   }
@@ -465,10 +803,8 @@
     return getNumber(a.latest) - getNumber(b.latest);
   }
 
-  // Filtra i manga in base al termine di ricerca
   function filterMangas(mangas, searchTerm) {
     if (!searchTerm.trim()) return mangas;
-    
     const term = searchTerm.toLowerCase().trim();
     return mangas.filter(m => 
       m.title.toLowerCase().includes(term) ||
@@ -480,9 +816,9 @@
   function renderMangas(mangas) {
     if (mangas.length === 0) {
       if (currentTab === 'local') {
-        grid.innerHTML = '<div class="no-results">😕 Nessun manga locale trovato. Clicca sul pulsante + per aggiungerne uno.</div>';
-      } else {
-        grid.innerHTML = '<div class="no-results">🌐 Nessun manga esterno trovato. Clicca sul pulsante + per aggiungerne uno.</div>';
+        grid.innerHTML = '<div class="no-results">😕 Nessun manga locale trovato.</div>';
+      } else if (currentTab === 'external') {
+        grid.innerHTML = '<div class="no-results">🌐 Nessun manga esterno trovato.</div>';
       }
       return;
     }
@@ -517,7 +853,6 @@
     });
   }
 
-  // Funzione per evitare XSS
   function escapeHtml(str) {
     if (!str) return '';
     return str.replace(/[&<>]/g, function(m) {
@@ -529,23 +864,37 @@
   }
 
   function updateResultsInfo(filteredCount, totalCount, searchTerm) {
-    const tabLabel = currentTab === 'local' ? 'manga locali' : 'manga esterni';
+    let tabLabel = '';
+    if (currentTab === 'local') tabLabel = 'manga locali';
+    else if (currentTab === 'external') tabLabel = 'manga esterni';
+    else tabLabel = 'richieste';
+    
     if (searchTerm && searchTerm.trim()) {
       resultsInfo.innerHTML = `🔍 Trovati ${filteredCount} ${tabLabel} su ${totalCount} per "${escapeHtml(searchTerm.trim())}"`;
     } else {
-      resultsInfo.innerHTML = `📚 Totale: ${totalCount} ${tabLabel} nella libreria`;
+      resultsInfo.innerHTML = `📚 Totale: ${totalCount} ${tabLabel}`;
     }
   }
 
-  function getCurrentMangas() {
-    return currentTab === 'local' ? [...mangasLocal] : [...mangasExternal];
+  function getCurrentItems() {
+    if (currentTab === 'local') return [...mangasLocal];
+    if (currentTab === 'external') return [...mangasExternal];
+    return [...mangaRequests];
   }
 
   function applySortAndFilter() {
-    const sortType = sortSelect.value;
-    let mangas = getCurrentMangas();
-    const totalCount = mangas.length;
+    if (currentTab === 'requests') {
+      const items = getCurrentItems();
+      const totalCount = items.length;
+      let filtered = filterMangas(items, currentSearchTerm);
+      renderRequestsTabContent(filtered);
+      updateResultsInfo(filtered.length, totalCount, currentSearchTerm);
+      return;
+    }
     
+    const sortType = sortSelect.value;
+    let mangas = getCurrentItems();
+    const totalCount = mangas.length;
     let filtered = filterMangas(mangas, currentSearchTerm);
     
     switch(sortType) {
@@ -568,16 +917,43 @@
     renderMangas(filtered);
     updateResultsInfo(filtered.length, totalCount, currentSearchTerm);
   }
+  
+  function renderRequestsTabContent(requests) {
+    if (requests.length === 0) {
+      grid.innerHTML = '<div class="no-results">📭 Nessuna richiesta trovata</div>';
+      return;
+    }
+    
+    grid.innerHTML = '';
+    
+    const pending = requests.filter(r => r.status === 'pending');
+    const approved = requests.filter(r => r.status === 'approved');
+    const rejected = requests.filter(r => r.status === 'rejected');
+    
+    if (pending.length > 0) {
+      pending.forEach(req => {
+        grid.appendChild(createRequestCard(req, 'in-attesa'));
+      });
+    }
+    if (approved.length > 0) {
+      approved.forEach(req => {
+        grid.appendChild(createRequestCard(req, 'approvata'));
+      });
+    }
+    if (rejected.length > 0) {
+      rejected.forEach(req => {
+        grid.appendChild(createRequestCard(req, 'rifiutata'));
+      });
+    }
+  }
 
   function handleSearch() {
     currentSearchTerm = searchInput.value;
-    
     if (currentSearchTerm.length > 0) {
       searchClear.style.display = 'flex';
     } else {
       searchClear.style.display = 'none';
     }
-    
     applySortAndFilter();
   }
 
@@ -589,20 +965,20 @@
     searchInput.focus();
   }
 
-  // Aggiorna il pulsante in base al tab
   function updateAddButton() {
-    if (currentTab === 'local') {
-      addMangaBtn.href = 'admin.html';
-      addMangaBtn.title = 'Aggiungi Manga Locale';
+    if (currentTab === 'local' || currentTab === 'external') {
+      addMangaBtn.style.display = 'flex';
+      addMangaBtn.title = 'Richiedi un manga';
       addMangaBtn.style.background = '#8b5cf6';
-      addMangaBtn.onclick = null;
+      addMangaBtn.onclick = () => {
+        requestModal.classList.add('active');
+      };
     } else {
-      addMangaBtn.href = '#';
-      addMangaBtn.title = 'Aggiungi Manga Esterno';
-      addMangaBtn.style.background = '#059669';
-      addMangaBtn.onclick = (e) => {
-        e.preventDefault();
-        addExternalManga();
+      addMangaBtn.style.display = 'flex';
+      addMangaBtn.title = 'Richiedi un manga';
+      addMangaBtn.style.background = '#8b5cf6';
+      addMangaBtn.onclick = () => {
+        requestModal.classList.add('active');
       };
     }
   }
@@ -618,9 +994,11 @@
       }
     });
     
-    // Se passo al tab esterni, ricarica i dati dal file
     if (tab === 'external') {
       await loadExternalMangas(true);
+    }
+    if (tab === 'requests') {
+      loadRequests();
     }
     
     searchInput.value = '';
@@ -631,9 +1009,23 @@
     applySortAndFilter();
   }
 
+  async function reloadAllData() {
+    showToast('🔄 Ricaricamento in corso...');
+    await loadLocalMangas();
+    await loadExternalMangas(true);
+    loadRequests();
+    if (currentTab === 'external' || currentTab === 'local') {
+      applySortAndFilter();
+    } else if (currentTab === 'requests') {
+      renderRequestsTab();
+    }
+    showToast('✅ Libreria ricaricata!');
+  }
+
   async function loadAllMangas() {
     await loadLocalMangas();
     await loadExternalMangas(true);
+    loadRequests();
     updateAddButton();
     applySortAndFilter();
   }
@@ -643,6 +1035,15 @@
   searchInput.addEventListener('input', handleSearch);
   searchClear.addEventListener('click', clearSearch);
   reloadBtn.addEventListener('click', reloadAllData);
+  adminBtn.addEventListener('click', authenticateAdmin);
+  closeAdmin.addEventListener('click', () => adminPanel.classList.remove('active'));
+  submitRequest.addEventListener('click', addRequest);
+  closeModal.addEventListener('click', () => requestModal.classList.remove('active'));
+  
+  // Chiudi modal cliccando fuori
+  requestModal.addEventListener('click', (e) => {
+    if (e.target === requestModal) requestModal.classList.remove('active');
+  });
   
   tabs.forEach(btn => {
     btn.addEventListener('click', () => switchTab(btn.dataset.tab));
