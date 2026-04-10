@@ -282,33 +282,6 @@
       margin-top: 40px;
     }
     
-    /* Contatore online */
-    .online-counter {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      background: rgba(0,0,0,0.4);
-      padding: 6px 15px;
-      border-radius: 30px;
-      margin: 0 auto 15px;
-      width: fit-content;
-      backdrop-filter: blur(5px);
-      border: 1px solid rgba(139, 92, 246, 0.3);
-    }
-    .online-dot {
-      width: 10px;
-      height: 10px;
-      background-color: #10b981;
-      border-radius: 50%;
-      display: inline-block;
-      animation: pulse 1.5s infinite;
-    }
-    @keyframes pulse {
-      0% { opacity: 0.4; transform: scale(0.8); }
-      100% { opacity: 1; transform: scale(1.2); }
-      100% { opacity: 0.4; transform: scale(0.8); }
-    }
-    
     /* Modal per richieste e bug */
     .modal {
       display: none;
@@ -525,7 +498,6 @@
       .tab-btn { padding: 6px 15px; font-size: 0.85rem; }
       .toast { font-size: 0.8rem; padding: 8px 16px; white-space: nowrap; bottom: 80px; }
       .admin-tab-btn { padding: 6px 15px; font-size: 0.85rem; }
-      .online-counter { padding: 4px 12px; font-size: 0.8rem; }
     }
   </style>
 </head>
@@ -573,13 +545,7 @@
 <button class="add-manga" id="addMangaBtn" title="Richiedi un manga">+</button>
 
 <footer>
-  <!-- Contatore visitatori online -->
-  <div class="online-counter">
-    <span class="online-dot"></span>
-    <span>👥 Visitatori online:</span>
-    <span id="onlineCount" style="color: #8b5cf6; font-weight: bold;">...</span>
-  </div>
-  <p>© 2026 KitsuManga</p>
+  © 2026 KitsuManga
 </footer>
 
 <!-- Modal per richieste manga -->
@@ -663,31 +629,6 @@
   let currentSearchTerm = '';
   let currentAdminTab = 'requests';
   const ADMIN_PASSWORD = 'admin123';
-
-  // Contatore visitatori online
-  const SITE_ID = 'kitsumanga';
-  let onlineCountElement = document.getElementById('onlineCount');
-  
-  function updateOnlineCount() {
-    fetch(`https://api.countapi.xyz/hit/${SITE_ID}/visits`)
-      .then(res => res.json())
-      .then(data => {
-        if (onlineCountElement) {
-          // Mostra il numero di visite totali (simula online)
-          const count = data.value;
-          onlineCountElement.innerText = count;
-        }
-      })
-      .catch(() => {
-        if (onlineCountElement) {
-          onlineCountElement.innerText = '?';
-        }
-      });
-  }
-  
-  // Aggiorna ogni 30 secondi
-  updateOnlineCount();
-  setInterval(updateOnlineCount, 30000);
 
   // Anteprima cover
   const reqCoverInput = document.getElementById('reqCover');
