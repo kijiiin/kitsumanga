@@ -5,11 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
   <title>Lettore Manga</title>
   <link rel="preconnect" href="https://ik.imagekit.io">
-  <link rel="dns-prefetch" href="https://ik.imagekit.io">
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
-      background: #000;
+      background: #0a0a0f;
       font-family: 'Segoe UI', system-ui, sans-serif;
       color: white;
       overflow: hidden;
@@ -92,6 +91,9 @@
       font-size: 0.9rem;
       transition: 0.2s;
     }
+    .fullscreen-btn:hover {
+      background: rgba(139, 92, 246, 0.6);
+    }
     
     .reader-container {
       height: 100vh;
@@ -122,20 +124,6 @@
       pointer-events: none;
     }
     
-    /* Placeholder istantaneo */
-    .page-placeholder {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      background: #0a0a0f;
-      z-index: 5;
-    }
-    
     .page img {
       max-height: 100vh;
       max-width: 100%;
@@ -146,8 +134,6 @@
       opacity: 0;
       transition: opacity 0.15s ease;
       pointer-events: auto;
-      position: relative;
-      z-index: 10;
     }
     .page img.loaded { opacity: 1; }
     
@@ -196,6 +182,7 @@
       transition: 0.2s;
       min-width: 70px;
     }
+    .nav-btn:hover { background: #8b5cf6; }
     .page-indicator {
       text-align: center;
       padding: 0.5rem;
@@ -220,7 +207,6 @@
       font-weight: 600;
       z-index: 1001;
       display: none;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.3);
     }
     
     body:fullscreen .fullscreen-exit-btn,
@@ -262,6 +248,7 @@
       font-size: 0.9rem;
       font-weight: 600;
     }
+    .mobile-nav-btn:active { background: #8b5cf6; }
     .mobile-page-indicator {
       font-size: 0.9rem;
       color: #c4b5fd;
@@ -325,6 +312,17 @@
       border-radius: 20px;
       z-index: 2000;
     }
+    .initial-loading { color: #c4b5fd; }
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border: 3px solid rgba(255,255,255,0.1);
+      border-top-color: #8b5cf6;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 1rem;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
     
     .toast {
       position: fixed;
@@ -390,15 +388,7 @@
   // CONFIGURAZIONE IMAGEKIT
   // ============================================================
   const IMAGEKIT_BASE = 'https://ik.imagekit.io/Kijiiin/manga';
-  
-  // Qualità ULTRA-VELOCE per apparizione immediata
-  const LIGHTNING_QUALITY = 'tr=w-800,q-60,f-auto,blur-5';
-  
-  // Qualità ALTA (sostituisce la lightning in background)
-  const HIGH_QUALITY = 'tr=w-1400,q-85,f-auto';
-  
-  // Qualità STANDARD per il resto
-  const BACKGROUND_QUALITY = 'tr=w-1200,q-80,f-auto';
+  const IMAGEKIT_OPTIONS = 'tr=w-1200,q-80,f-auto';
   
   const urlParams = new URLSearchParams(window.location.search);
   const mangaId = urlParams.get('manga');
@@ -440,12 +430,6 @@
   const fullscreenExitBtn = document.getElementById('fullscreenExitBtn');
   const exitFullscreenMobile = document.getElementById('exitFullscreenMobile');
 
-  // Preconnect a ImageKit per velocizzare
-  const preconnect = document.createElement('link');
-  preconnect.rel = 'preconnect';
-  preconnect.href = 'https://ik.imagekit.io';
-  document.head.appendChild(preconnect);
-
   function isFullscreen() {
     return !!(document.fullscreenElement || document.webkitFullscreenElement);
   }
@@ -482,8 +466,6 @@
         topBar.style.display = '';
         desktopHud.style.display = '';
         fullscreenExitBtn.style.display = 'none';
-        topBar.classList.remove('hide');
-        desktopHud.classList.remove('hide');
       } else {
         fullscreenBtnMobile.style.display = 'flex';
         exitFullscreenMobile.style.display = 'none';
@@ -508,32 +490,6 @@
     document.body.appendChild(toast);
     setTimeout(() => toast.remove(), 2000);
   }
-
-  let hideTimeout;
-  function resetHideTimer() {
-    if (isFullscreenActive || window.innerWidth <= 768) return;
-    clearTimeout(hideTimeout);
-    topBar.classList.remove('hide');
-    desktopHud.classList.remove('hide');
-    hideTimeout = setTimeout(() => {
-      if (!isFullscreenActive && window.innerWidth > 768) {
-        topBar.classList.add('hide');
-        desktopHud.classList.add('hide');
-      }
-    }, 2500);
-  }
-  
-  function showUI() {
-    if (isFullscreenActive || window.innerWidth <= 768) return;
-    topBar.classList.remove('hide');
-    desktopHud.classList.remove('hide');
-    resetHideTimer();
-  }
-  
-  document.addEventListener('mousemove', showUI);
-  document.addEventListener('click', showUI);
-  document.addEventListener('touchstart', showUI);
-  resetHideTimer();
 
   // ============================================================
   // SWIPE
@@ -657,109 +613,92 @@
     }
   }
 
-  async function findLastPage(basePath) {
-    try {
-      const res = await fetch(`${basePath}/manifest.json?t=${Date.now()}`);
-      if (res.ok) {
-        const data = await res.json();
-        if (Array.isArray(data)) return data.length;
-        if (data.pages) return data.pages.length;
-        if (data.totalPages) return data.totalPages;
-      }
-    } catch(e) {}
-    
-    // Fallback rapido
-    return 0;
-  }
-
+  // ============================================================
+  // CARICAMENTO PAGINE (versione stabile)
+  // ============================================================
   async function loadChapter() {
-    readerWrapper.innerHTML = '';
+    readerWrapper.innerHTML = '<div class="initial-loading"><div class="spinner"></div><div>Caricamento pagine...</div></div>';
     
     currentBasePath = `${IMAGEKIT_BASE}/${mangaId}/${currentNumber}`;
     
-    totalPages = await findLastPage(currentBasePath);
+    // Prima prova a leggere il manifest del capitolo
+    let pageFiles = [];
+    try {
+      const res = await fetch(`${currentBasePath}/manifest.json?t=${Date.now()}`);
+      if (res.ok) {
+        const data = await res.json();
+        if (Array.isArray(data)) {
+          pageFiles = data;
+        } else if (data.pages && Array.isArray(data.pages)) {
+          pageFiles = data.pages.map(p => typeof p === 'string' ? p : p.file);
+        }
+      }
+    } catch(e) {}
     
-    if (totalPages === 0) {
-      readerWrapper.innerHTML = '<div class="empty">😕 Nessuna pagina trovata</div>';
-      updateUI();
-      return;
+    // Se non c'è manifest, usa numerazione 1.jpg, 2.jpg...
+    if (pageFiles.length === 0) {
+      // Conta quante pagine esistono
+      let pageCount = 0;
+      let found = true;
+      while (found && pageCount < 200) {
+        pageCount++;
+        try {
+          const testRes = await fetch(`${currentBasePath}/${pageCount}.jpg`, { method: 'HEAD' });
+          if (!testRes.ok) {
+            found = false;
+            pageCount--;
+          }
+        } catch(e) {
+          found = false;
+          pageCount--;
+        }
+      }
+      
+      if (pageCount === 0) {
+        readerWrapper.innerHTML = '<div class="empty">😕 Nessuna pagina trovata</div>';
+        updateUI();
+        return;
+      }
+      
+      for (let i = 1; i <= pageCount; i++) {
+        pageFiles.push(`${i}.jpg`);
+      }
     }
     
-    renderPagesInstant(currentBasePath, totalPages);
+    totalPages = pageFiles.length;
+    currentPageFiles = pageFiles;
+    
+    renderPages(currentBasePath, pageFiles);
   }
 
-  // ============================================================
-  // RENDER ISTANTANEO: Placeholder + Lightning quality + Upgrade
-  // ============================================================
-  function renderPagesInstant(basePath, pageCount) {
+  function renderPages(basePath, pageFiles) {
     readerWrapper.innerHTML = '';
     readerWrapper.style.transform = 'translateX(0px)';
     
-    // Genera nomi file
-    let pageFiles = [];
-    for (let i = 1; i <= pageCount; i++) pageFiles.push(`${i}.jpg`);
-    
-    currentPageFiles = pageFiles;
-    currentBasePath = basePath;
-    
-    // === RENDERIZZA TUTTE LE PAGINE CON PLACEHOLDER ===
     for (let i = 0; i < pageFiles.length; i++) {
       const pageDiv = document.createElement('div');
       pageDiv.className = 'page';
       
-      // Placeholder istantaneo
-      const placeholder = document.createElement('div');
-      placeholder.className = 'page-placeholder';
-      placeholder.style.background = '#0a0a0f';
-      pageDiv.appendChild(placeholder);
-      
       const img = document.createElement('img');
+      img.src = `${basePath}/${pageFiles[i]}?${IMAGEKIT_OPTIONS}`;
       img.alt = `Pagina ${i + 1}`;
+      img.loading = i < 3 ? 'eager' : 'lazy';
+      img.fetchpriority = i < 3 ? 'high' : 'low';
       
-      if (i < 2) {
-        // === PRIME 2 PAGINE: LIGHTNING QUALITY (appare subito) ===
-        img.src = `${basePath}/${pageFiles[i]}?${LIGHTNING_QUALITY}`;
-        img.onload = () => {
-          img.classList.add('loaded');
-          placeholder.remove();
-          
-          // Dopo che è apparsa, carica l'alta qualità in background
-          const highResImg = new Image();
-          highResImg.src = `${basePath}/${pageFiles[i]}?${HIGH_QUALITY}`;
-          highResImg.onload = () => {
-            img.src = highResImg.src;
-          };
-        };
-      } else {
-        // === PAGINE SUCCESSIVE: Caricate in background ===
-        img.style.opacity = '0';
-        img.src = `${basePath}/${pageFiles[i]}?${BACKGROUND_QUALITY}`;
-        img.onload = () => {
-          img.style.opacity = '1';
-          img.classList.add('loaded');
-          placeholder.remove();
-        };
-      }
+      img.onload = () => img.classList.add('loaded');
       
       img.onerror = () => {
-        setTimeout(() => {
-          img.src = `${basePath}/${pageFiles[i]}?${BACKGROUND_QUALITY}&retry=${Date.now()}`;
-        }, 500);
+        // Prova senza parametri se fallisce
+        img.src = `${basePath}/${pageFiles[i]}`;
       };
       
       pageDiv.appendChild(img);
       readerWrapper.appendChild(pageDiv);
     }
     
-    // === PRECARICA TUTTO IL RESTO IN PARALLELO ===
-    for (let i = 2; i < pageFiles.length; i++) {
-      const preloadImg = new Image();
-      preloadImg.src = `${basePath}/${pageFiles[i]}?${BACKGROUND_QUALITY}`;
-    }
-    
     currentPageIndex = 0;
     updateWrapperPosition();
-    setTimeout(() => initSwipe(), 50);
+    setTimeout(() => initSwipe(), 100);
     updateUI();
   }
 
@@ -785,15 +724,15 @@
 
   document.addEventListener('keydown', async (e) => {
     if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
-      e.preventDefault(); await nextPage(); showUI();
+      e.preventDefault(); await nextPage();
     }
     if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
-      e.preventDefault(); await prevPage(); showUI();
+      e.preventDefault(); await prevPage();
     }
   });
 
-  prevBtn.onclick = async () => { await prevPage(); showUI(); };
-  nextBtn.onclick = async () => { await nextPage(); showUI(); };
+  prevBtn.onclick = prevPage;
+  nextBtn.onclick = nextPage;
   mobilePrevBtn.onclick = prevPage;
   mobileNextBtn.onclick = nextPage;
 
