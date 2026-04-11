@@ -136,6 +136,21 @@
     }
     .page img.loaded { opacity: 1; }
     
+    /* Indicatore di caricamento sulla pagina */
+    .page-loading {
+      position: absolute;
+      bottom: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0,0,0,0.7);
+      color: #c4b5fd;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 0.7rem;
+      pointer-events: none;
+      z-index: 10;
+    }
+    
     .desktop-hud {
       position: fixed;
       bottom: 50%;
@@ -401,6 +416,9 @@
   // ============================================================
   const IMAGEKIT_BASE = 'https://ik.imagekit.io/Kijiiin/manga';
   
+  // Parametri di ottimizzazione ImageKit
+  const IMAGEKIT_OPTIONS = 'tr=w-1200,q-80,f-auto';
+  
   const urlParams = new URLSearchParams(window.location.search);
   const mangaId = urlParams.get('manga');
   const mangaTitle = decodeURIComponent(urlParams.get('title') || 'Manga');
@@ -417,6 +435,8 @@
   let currentPageIndex = 0;
   let isLoadingChapter = false;
   let isFullscreenActive = false;
+  let currentBasePath = '';
+  let currentPageFiles = [];
 
   let startX = 0;
   let currentX = 0;
@@ -539,6 +559,21 @@
   document.addEventListener('click', showUI);
   document.addEventListener('touchstart', showUI);
   resetHideTimer();
+
+  // ============================================================
+  // OTTIMIZZAZIONE: Prefetch delle pagine successive
+  // ============================================================
+  function prefetchNextPages(startIndex, count = 3) {
+    if (!currentBasePath || !currentPageFiles.length) return;
+    
+    for (let i = startIndex; i < Math.min(startIndex + count, currentPageFiles.length); i++) {
+      const link = document.createElement('link');
+      link.rel = 'prefetch';
+      link.as = 'image';
+      link.href = `${currentBasePath}/${currentPageFiles[i]}?${IMAGEKIT_OPTIONS}`;
+      document.head.appendChild(link);
+    }
+  }
 
   function initSwipe() {
     const wrapper = readerWrapper;
@@ -682,6 +717,9 @@
     readerWrapper.style.transition = 'transform 0.3s cubic-bezier(0.2, 0.9, 0.4, 1.1)';
     readerWrapper.style.transform = `translateX(${-currentPageIndex * containerWidth}px)`;
     updateUI();
+    
+    // OTTIMIZZAZIONE: Prefetch delle prossime pagine quando si cambia pagina
+    prefetchNextPages(currentPageIndex + 1, 3);
   }
   
   function updateWrapperPosition() {
@@ -690,9 +728,6 @@
     readerWrapper.style.transform = `translateX(${-currentPageIndex * containerWidth}px)`;
   }
 
-  // ============================================================
-  // MODIFICA: loadManifest da ImageKit
-  // ============================================================
   async function loadManifest() {
     try {
       const manifestUrl = `${IMAGEKIT_BASE}/${mangaId}/manifest.json?t=${Date.now()}`;
@@ -759,11 +794,7 @@
     }
   }
 
-  // ============================================================
-  // MODIFICA: findLastPage da ImageKit con supporto manifest.json
-  // ============================================================
   async function findLastPage(basePath) {
-    // Prima prova a leggere il manifest.json del capitolo
     try {
       const chapterManifestUrl = `${basePath}/manifest.json?t=${Date.now()}`;
       const res = await fetch(chapterManifestUrl);
@@ -777,7 +808,6 @@
       console.log('Nessun manifest.json nel capitolo, provo a contare le pagine...');
     }
     
-    // Fallback: conta le pagine una per una
     let pageCount = 0;
     let found = true;
     
@@ -799,16 +829,13 @@
     return pageCount;
   }
 
-  // ============================================================
-  // MODIFICA: loadChapter da ImageKit
-  // ============================================================
   async function loadChapter() {
     readerWrapper.innerHTML = '<div class="initial-loading"><div class="spinner"></div><div>Rilevamento pagine...</div></div>';
     
-    const basePath = `${IMAGEKIT_BASE}/${mangaId}/${currentNumber}`;
+    currentBasePath = `${IMAGEKIT_BASE}/${mangaId}/${currentNumber}`;
     
     showToast('📖 Rilevamento pagine in corso...');
-    totalPages = await findLastPage(basePath);
+    totalPages = await findLastPage(currentBasePath);
     
     if (totalPages === 0) {
       readerWrapper.innerHTML = '<div class="empty">😕 Nessuna pagina trovata</div>';
@@ -817,11 +844,11 @@
     }
     
     showToast(`✅ ${totalPages} pagine trovate`);
-    renderPagesExact(basePath, totalPages);
+    renderPagesExact(currentBasePath, totalPages);
   }
 
   // ============================================================
-  // MODIFICA: renderPagesExact da ImageKit con supporto manifest.json
+  // OTTIMIZZAZIONE: renderPagesExact con parametri ImageKit
   // ============================================================
   async function renderPagesExact(basePath, pageCount) {
     readerWrapper.innerHTML = '';
@@ -851,24 +878,40 @@
       }
     }
     
-    // Renderizza le pagine
+    currentPageFiles = pageFiles;
+    currentBasePath = basePath;
+    
+    // Renderizza le pagine con OTTIMIZZAZIONI
     for (let i = 0; i < pageFiles.length; i++) {
       const pageDiv = document.createElement('div');
       pageDiv.className = 'page';
       pageDiv.setAttribute('data-page', i);
       
       const img = document.createElement('img');
-      img.src = `${basePath}/${pageFiles[i]}`;
+      
+      // === OTTIMIZZAZIONE: Aggiungi parametri ImageKit per compressione ===
+      img.src = `${basePath}/${pageFiles[i]}?${IMAGEKIT_OPTIONS}`;
       img.alt = `Pagina ${i + 1}`;
       img.loading = 'lazy';
+      img.decoding = 'async';
+      
+      // Priorità alta per le prime 3 pagine, bassa per il resto
+      img.fetchpriority = i < 3 ? 'high' : 'low';
+      
+      // Indicatore di caricamento
+      const loadingIndicator = document.createElement('div');
+      loadingIndicator.className = 'page-loading';
+      loadingIndicator.textContent = 'Caricamento...';
+      pageDiv.appendChild(loadingIndicator);
       
       img.onload = () => {
         img.classList.add('loaded');
+        loadingIndicator.remove();
       };
       
       img.onerror = () => {
         setTimeout(() => {
-          img.src = `${basePath}/${pageFiles[i]}?retry=${Date.now()}`;
+          img.src = `${basePath}/${pageFiles[i]}?${IMAGEKIT_OPTIONS}&retry=${Date.now()}`;
         }, 500);
       };
       
@@ -878,6 +921,9 @@
     
     currentPageIndex = 0;
     updateWrapperPosition();
+    
+    // OTTIMIZZAZIONE: Prefetch delle pagine successive
+    prefetchNextPages(3, 5);
     
     setTimeout(() => {
       initSwipe();
