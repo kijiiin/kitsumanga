@@ -4,10 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
   <title>Lettore Manga</title>
+  <link rel="preconnect" href="https://ik.imagekit.io">
+  <link rel="dns-prefetch" href="https://ik.imagekit.io">
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
-      background: #0a0a0f;
+      background: #000;
       font-family: 'Segoe UI', system-ui, sans-serif;
       color: white;
       overflow: hidden;
@@ -90,10 +92,6 @@
       font-size: 0.9rem;
       transition: 0.2s;
     }
-    .fullscreen-btn:hover {
-      background: rgba(139, 92, 246, 0.6);
-      transform: scale(1.05);
-    }
     
     .reader-container {
       height: 100vh;
@@ -107,7 +105,7 @@
       flex-direction: row;
       height: 100%;
       align-items: center;
-      transition: transform 0.3s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+      transition: transform 0.2s ease-out;
       will-change: transform;
       cursor: grab;
     }
@@ -123,6 +121,21 @@
       position: relative;
       pointer-events: none;
     }
+    
+    /* Placeholder istantaneo */
+    .page-placeholder {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: #0a0a0f;
+      z-index: 5;
+    }
+    
     .page img {
       max-height: 100vh;
       max-width: 100%;
@@ -131,24 +144,12 @@
       object-fit: contain;
       cursor: pointer;
       opacity: 0;
-      transition: opacity 0.2s ease;
+      transition: opacity 0.15s ease;
       pointer-events: auto;
-    }
-    .page img.loaded { opacity: 1; }
-    
-    .page-loading {
-      position: absolute;
-      bottom: 10px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: rgba(0,0,0,0.7);
-      color: #c4b5fd;
-      padding: 4px 12px;
-      border-radius: 20px;
-      font-size: 0.7rem;
-      pointer-events: none;
+      position: relative;
       z-index: 10;
     }
+    .page img.loaded { opacity: 1; }
     
     .desktop-hud {
       position: fixed;
@@ -195,7 +196,6 @@
       transition: 0.2s;
       min-width: 70px;
     }
-    .nav-btn:hover { background: #8b5cf6; transform: scale(1.05); }
     .page-indicator {
       text-align: center;
       padding: 0.5rem;
@@ -221,10 +221,6 @@
       z-index: 1001;
       display: none;
       box-shadow: 0 2px 10px rgba(0,0,0,0.3);
-    }
-    .fullscreen-exit-btn:hover {
-      background: #dc2626;
-      transform: scale(1.05);
     }
     
     body:fullscreen .fullscreen-exit-btn,
@@ -265,11 +261,6 @@
       cursor: pointer;
       font-size: 0.9rem;
       font-weight: 600;
-      transition: 0.2s;
-    }
-    .mobile-nav-btn:active {
-      transform: scale(0.95);
-      background: #8b5cf6;
     }
     .mobile-page-indicator {
       font-size: 0.9rem;
@@ -296,10 +287,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.3);
-      transition: 0.2s;
     }
-    .fullscreen-btn-mobile:active { transform: scale(0.95); }
     
     @media (min-width: 769px) {
       .fullscreen-btn-mobile { display: none !important; }
@@ -324,7 +312,6 @@
       display: none;
       align-items: center;
       justify-content: center;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.3);
     }
     
     .initial-loading, .error, .empty {
@@ -338,17 +325,6 @@
       border-radius: 20px;
       z-index: 2000;
     }
-    .initial-loading { color: #c4b5fd; }
-    .spinner {
-      width: 40px;
-      height: 40px;
-      border: 3px solid rgba(255,255,255,0.1);
-      border-top-color: #8b5cf6;
-      border-radius: 50%;
-      animation: spin 1s linear infinite;
-      margin: 0 auto 1rem;
-    }
-    @keyframes spin { to { transform: rotate(360deg); } }
     
     .toast {
       position: fixed;
@@ -415,10 +391,13 @@
   // ============================================================
   const IMAGEKIT_BASE = 'https://ik.imagekit.io/Kijiiin/manga';
   
-  // Qualità ALTA per le prime pagine (caricamento parallelo fulmineo)
+  // Qualità ULTRA-VELOCE per apparizione immediata
+  const LIGHTNING_QUALITY = 'tr=w-800,q-60,f-auto,blur-5';
+  
+  // Qualità ALTA (sostituisce la lightning in background)
   const HIGH_QUALITY = 'tr=w-1400,q-85,f-auto';
   
-  // Qualità STANDARD per il resto (caricate in background)
+  // Qualità STANDARD per il resto
   const BACKGROUND_QUALITY = 'tr=w-1200,q-80,f-auto';
   
   const urlParams = new URLSearchParams(window.location.search);
@@ -440,12 +419,8 @@
   let currentBasePath = '';
   let currentPageFiles = [];
 
-  let startX = 0;
-  let currentX = 0;
-  let isDragging = false;
-  let dragStartTime = 0;
-  const SWIPE_THRESHOLD = 50;
-  const SWIPE_MAX_TIME = 300;
+  let startX = 0, currentX = 0, isDragging = false, dragStartTime = 0;
+  const SWIPE_THRESHOLD = 50, SWIPE_MAX_TIME = 300;
 
   const topBar = document.getElementById('topBar');
   const desktopHud = document.getElementById('desktopHud');
@@ -465,26 +440,29 @@
   const fullscreenExitBtn = document.getElementById('fullscreenExitBtn');
   const exitFullscreenMobile = document.getElementById('exitFullscreenMobile');
 
+  // Preconnect a ImageKit per velocizzare
+  const preconnect = document.createElement('link');
+  preconnect.rel = 'preconnect';
+  preconnect.href = 'https://ik.imagekit.io';
+  document.head.appendChild(preconnect);
+
   function isFullscreen() {
-    return !!(document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement);
+    return !!(document.fullscreenElement || document.webkitFullscreenElement);
   }
 
   function enterFullscreen() {
     const elem = document.documentElement;
     if (elem.requestFullscreen) elem.requestFullscreen();
     else if (elem.webkitRequestFullscreen) elem.webkitRequestFullscreen();
-    else if (elem.msRequestFullscreen) elem.msRequestFullscreen();
   }
 
   function exitFullscreen() {
     if (document.exitFullscreen) document.exitFullscreen();
     else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
-    else if (document.msExitFullscreen) document.msExitFullscreen();
   }
 
   function toggleFullscreen() {
-    if (!isFullscreen()) enterFullscreen();
-    else exitFullscreen();
+    isFullscreen() ? exitFullscreen() : enterFullscreen();
   }
 
   function updateFullscreenState() {
@@ -515,8 +493,6 @@
 
   document.addEventListener('fullscreenchange', updateFullscreenState);
   document.addEventListener('webkitfullscreenchange', updateFullscreenState);
-  document.addEventListener('mozfullscreenchange', updateFullscreenState);
-  document.addEventListener('MSFullscreenChange', updateFullscreenState);
 
   fullscreenBtn.addEventListener('click', toggleFullscreen);
   fullscreenBtnMobile.addEventListener('click', enterFullscreen);
@@ -535,9 +511,7 @@
 
   let hideTimeout;
   function resetHideTimer() {
-    if (isFullscreenActive) return;
-    if (window.innerWidth <= 768) return;
-    
+    if (isFullscreenActive || window.innerWidth <= 768) return;
     clearTimeout(hideTimeout);
     topBar.classList.remove('hide');
     desktopHud.classList.remove('hide');
@@ -550,8 +524,7 @@
   }
   
   function showUI() {
-    if (isFullscreenActive) return;
-    if (window.innerWidth <= 768) return;
+    if (isFullscreenActive || window.innerWidth <= 768) return;
     topBar.classList.remove('hide');
     desktopHud.classList.remove('hide');
     resetHideTimer();
@@ -563,30 +536,8 @@
   resetHideTimer();
 
   // ============================================================
-  // PREFETCH AGGRESSIVO DI TUTTE LE PAGINE RIMANENTI
+  // SWIPE
   // ============================================================
-  function prefetchTutteLePagine(basePath, pageFiles, startIndex) {
-    // Preload delle successive 5 pagine (alta priorità)
-    for (let i = startIndex; i < Math.min(startIndex + 5, pageFiles.length); i++) {
-      const link = document.createElement('link');
-      link.rel = 'preload';
-      link.as = 'image';
-      link.href = `${basePath}/${pageFiles[i]}?${BACKGROUND_QUALITY}`;
-      document.head.appendChild(link);
-    }
-    
-    // Prefetch del resto in background (bassa priorità)
-    setTimeout(() => {
-      for (let i = startIndex + 5; i < pageFiles.length; i++) {
-        const link = document.createElement('link');
-        link.rel = 'prefetch';
-        link.as = 'image';
-        link.href = `${basePath}/${pageFiles[i]}?${BACKGROUND_QUALITY}`;
-        document.head.appendChild(link);
-      }
-    }, 1000);
-  }
-
   function initSwipe() {
     const wrapper = readerWrapper;
     
@@ -596,7 +547,6 @@
       isDragging = true;
       dragStartTime = Date.now();
       wrapper.style.transition = 'none';
-      wrapper.style.cursor = 'grabbing';
     });
     
     wrapper.addEventListener('touchmove', (e) => {
@@ -604,167 +554,63 @@
       e.preventDefault();
       currentX = e.touches[0].clientX;
       const deltaX = currentX - startX;
-      const containerWidth = readerContainer.clientWidth;
-      const translateX = -currentPageIndex * containerWidth + deltaX;
+      const translateX = -currentPageIndex * readerContainer.clientWidth + deltaX;
       wrapper.style.transform = `translateX(${translateX}px)`;
     });
     
     wrapper.addEventListener('touchend', (e) => {
       if (!isDragging) return;
       isDragging = false;
-      wrapper.style.cursor = 'grab';
       
       const deltaX = currentX - startX;
       const deltaTime = Date.now() - dragStartTime;
       const containerWidth = readerContainer.clientWidth;
       
-      let shouldChangePage = false;
-      let goToNext = false;
+      let shouldChange = false, goNext = false;
       
       if (deltaTime < SWIPE_MAX_TIME && Math.abs(deltaX) > 30) {
-        shouldChangePage = true;
-        goToNext = deltaX < 0;
+        shouldChange = true; goNext = deltaX < 0;
       } else if (Math.abs(deltaX) > SWIPE_THRESHOLD) {
-        shouldChangePage = true;
-        goToNext = deltaX < 0;
+        shouldChange = true; goNext = deltaX < 0;
       }
       
-      if (shouldChangePage) {
-        if (goToNext && currentPageIndex < totalPages - 1) {
-          goToPage(currentPageIndex + 1);
-        } else if (!goToNext && currentPageIndex > 0) {
-          goToPage(currentPageIndex - 1);
-        } else if (goToNext && currentPageIndex >= totalPages - 1) {
-          wrapper.style.transition = 'transform 0.3s cubic-bezier(0.2, 0.9, 0.4, 1.1)';
-          wrapper.style.transform = `translateX(${-currentPageIndex * containerWidth}px)`;
-          nextChapter();
-        } else if (!goToNext && currentPageIndex <= 0) {
-          wrapper.style.transition = 'transform 0.3s cubic-bezier(0.2, 0.9, 0.4, 1.1)';
-          wrapper.style.transform = `translateX(${-currentPageIndex * containerWidth}px)`;
-          prevChapter();
-        } else {
-          wrapper.style.transition = 'transform 0.3s cubic-bezier(0.2, 0.9, 0.4, 1.1)';
-          wrapper.style.transform = `translateX(${-currentPageIndex * containerWidth}px)`;
-        }
+      if (shouldChange) {
+        if (goNext && currentPageIndex < totalPages - 1) goToPage(currentPageIndex + 1);
+        else if (!goNext && currentPageIndex > 0) goToPage(currentPageIndex - 1);
+        else if (goNext) nextChapter();
+        else prevChapter();
       } else {
-        wrapper.style.transition = 'transform 0.3s cubic-bezier(0.2, 0.9, 0.4, 1.1)';
+        wrapper.style.transition = 'transform 0.2s ease-out';
         wrapper.style.transform = `translateX(${-currentPageIndex * containerWidth}px)`;
       }
       
-      startX = 0;
-      currentX = 0;
-    });
-    
-    wrapper.addEventListener('mousedown', (e) => {
-      e.preventDefault();
-      startX = e.clientX;
-      currentX = startX;
-      isDragging = true;
-      dragStartTime = Date.now();
-      wrapper.style.transition = 'none';
-      wrapper.style.cursor = 'grabbing';
-    });
-    
-    window.addEventListener('mousemove', (e) => {
-      if (!isDragging) return;
-      e.preventDefault();
-      currentX = e.clientX;
-      const deltaX = currentX - startX;
-      const containerWidth = readerContainer.clientWidth;
-      const translateX = -currentPageIndex * containerWidth + deltaX;
-      wrapper.style.transform = `translateX(${translateX}px)`;
-    });
-    
-    window.addEventListener('mouseup', (e) => {
-      if (!isDragging) return;
-      isDragging = false;
-      wrapper.style.cursor = 'grab';
-      
-      const deltaX = currentX - startX;
-      const deltaTime = Date.now() - dragStartTime;
-      const containerWidth = readerContainer.clientWidth;
-      
-      let shouldChangePage = false;
-      let goToNext = false;
-      
-      if (deltaTime < SWIPE_MAX_TIME && Math.abs(deltaX) > 30) {
-        shouldChangePage = true;
-        goToNext = deltaX < 0;
-      } else if (Math.abs(deltaX) > SWIPE_THRESHOLD) {
-        shouldChangePage = true;
-        goToNext = deltaX < 0;
-      }
-      
-      if (shouldChangePage) {
-        if (goToNext && currentPageIndex < totalPages - 1) {
-          goToPage(currentPageIndex + 1);
-        } else if (!goToNext && currentPageIndex > 0) {
-          goToPage(currentPageIndex - 1);
-        } else if (goToNext && currentPageIndex >= totalPages - 1) {
-          wrapper.style.transition = 'transform 0.3s cubic-bezier(0.2, 0.9, 0.4, 1.1)';
-          wrapper.style.transform = `translateX(${-currentPageIndex * containerWidth}px)`;
-          nextChapter();
-        } else if (!goToNext && currentPageIndex <= 0) {
-          wrapper.style.transition = 'transform 0.3s cubic-bezier(0.2, 0.9, 0.4, 1.1)';
-          wrapper.style.transform = `translateX(${-currentPageIndex * containerWidth}px)`;
-          prevChapter();
-        } else {
-          wrapper.style.transition = 'transform 0.3s cubic-bezier(0.2, 0.9, 0.4, 1.1)';
-          wrapper.style.transform = `translateX(${-currentPageIndex * containerWidth}px)`;
-        }
-      } else {
-        wrapper.style.transition = 'transform 0.3s cubic-bezier(0.2, 0.9, 0.4, 1.1)';
-        wrapper.style.transform = `translateX(${-currentPageIndex * containerWidth}px)`;
-      }
-      
-      startX = 0;
-      currentX = 0;
+      startX = currentX = 0;
     });
   }
   
   function goToPage(index) {
     if (index < 0 || index >= totalPages) return;
     currentPageIndex = index;
-    const containerWidth = readerContainer.clientWidth;
-    readerWrapper.style.transition = 'transform 0.3s cubic-bezier(0.2, 0.9, 0.4, 1.1)';
-    readerWrapper.style.transform = `translateX(${-currentPageIndex * containerWidth}px)`;
+    readerWrapper.style.transition = 'transform 0.2s ease-out';
+    readerWrapper.style.transform = `translateX(${-currentPageIndex * readerContainer.clientWidth}px)`;
     updateUI();
-    
-    // Continua a precaricare mentre leggi
-    if (currentBasePath && currentPageFiles.length) {
-      const nextToPreload = currentPageIndex + 3;
-      if (nextToPreload < currentPageFiles.length) {
-        const link = document.createElement('link');
-        link.rel = 'preload';
-        link.as = 'image';
-        link.href = `${currentBasePath}/${currentPageFiles[nextToPreload]}?${BACKGROUND_QUALITY}`;
-        document.head.appendChild(link);
-      }
-    }
   }
   
   function updateWrapperPosition() {
-    const containerWidth = readerContainer.clientWidth;
     readerWrapper.style.transition = 'none';
-    readerWrapper.style.transform = `translateX(${-currentPageIndex * containerWidth}px)`;
+    readerWrapper.style.transform = `translateX(${-currentPageIndex * readerContainer.clientWidth}px)`;
   }
 
   async function loadManifest() {
     try {
-      const manifestUrl = `${IMAGEKIT_BASE}/${mangaId}/manifest.json?t=${Date.now()}`;
-      const res = await fetch(manifestUrl);
+      const res = await fetch(`${IMAGEKIT_BASE}/${mangaId}/manifest.json?t=${Date.now()}`);
       if (res.ok) {
         const manifest = await res.json();
         contentType = manifest.type;
         allNumbers = manifest.numbers;
         
-        if (contentType === 'volumes') {
-          typeBadge.textContent = '📚 VOLUMI';
-          selectorLabel.textContent = 'Volume:';
-        } else {
-          typeBadge.textContent = '📖 CAPITOLI';
-          selectorLabel.textContent = 'Capitolo:';
-        }
+        typeBadge.textContent = contentType === 'volumes' ? '📚 VOLUMI' : '📖 CAPITOLI';
+        selectorLabel.textContent = contentType === 'volumes' ? 'Volume:' : 'Capitolo:';
         
         const label = contentType === 'volumes' ? 'Volume' : 'Capitolo';
         chapterSelect.innerHTML = allNumbers.map(n => `<option value="${n}" ${n == currentNumber ? 'selected' : ''}>${label} ${n}</option>`).join('');
@@ -777,9 +623,7 @@
         };
         return true;
       }
-    } catch(e) {
-      console.error('Errore manifest:', e);
-    }
+    } catch(e) {}
     return false;
   }
 
@@ -796,66 +640,43 @@
   async function nextChapter() {
     const idx = allNumbers.indexOf(currentNumber);
     if (idx < allNumbers.length - 1) {
-      const nextNum = allNumbers[idx + 1];
-      showToast(`${contentType === 'volumes' ? 'Volume' : 'Capitolo'} ${nextNum}`);
-      await changeChapter(nextNum);
+      showToast(`${contentType === 'volumes' ? 'Volume' : 'Capitolo'} ${allNumbers[idx + 1]}`);
+      await changeChapter(allNumbers[idx + 1]);
     } else {
-      showToast(`🏁 Ultimo ${contentType === 'volumes' ? 'volume' : 'capitolo'}`);
+      showToast(`🏁 Ultimo`);
     }
   }
 
   async function prevChapter() {
     const idx = allNumbers.indexOf(currentNumber);
     if (idx > 0) {
-      const prevNum = allNumbers[idx - 1];
-      showToast(`${contentType === 'volumes' ? 'Volume' : 'Capitolo'} ${prevNum}`);
-      await changeChapter(prevNum);
+      showToast(`${contentType === 'volumes' ? 'Volume' : 'Capitolo'} ${allNumbers[idx - 1]}`);
+      await changeChapter(allNumbers[idx - 1]);
     } else {
-      showToast(`🏁 Primo ${contentType === 'volumes' ? 'volume' : 'capitolo'}`);
+      showToast(`🏁 Primo`);
     }
   }
 
   async function findLastPage(basePath) {
     try {
-      const chapterManifestUrl = `${basePath}/manifest.json?t=${Date.now()}`;
-      const res = await fetch(chapterManifestUrl);
+      const res = await fetch(`${basePath}/manifest.json?t=${Date.now()}`);
       if (res.ok) {
-        const pages = await res.json();
-        if (Array.isArray(pages)) return pages.length;
-        if (pages.pages && Array.isArray(pages.pages)) return pages.pages.length;
-        if (pages.totalPages) return pages.totalPages;
+        const data = await res.json();
+        if (Array.isArray(data)) return data.length;
+        if (data.pages) return data.pages.length;
+        if (data.totalPages) return data.totalPages;
       }
-    } catch(e) {
-      console.log('Nessun manifest.json nel capitolo...');
-    }
+    } catch(e) {}
     
-    let pageCount = 0;
-    let found = true;
-    
-    while (found && pageCount < 200) {
-      pageCount++;
-      const testUrl = `${basePath}/${pageCount}.jpg`;
-      try {
-        const res = await fetch(testUrl, { method: 'HEAD' });
-        if (!res.ok) {
-          found = false;
-          pageCount--;
-        }
-      } catch(e) {
-        found = false;
-        pageCount--;
-      }
-    }
-    
-    return pageCount;
+    // Fallback rapido
+    return 0;
   }
 
   async function loadChapter() {
-    readerWrapper.innerHTML = '<div class="initial-loading"><div class="spinner"></div><div>Rilevamento pagine...</div></div>';
+    readerWrapper.innerHTML = '';
     
     currentBasePath = `${IMAGEKIT_BASE}/${mangaId}/${currentNumber}`;
     
-    showToast('📖 Rilevamento pagine in corso...');
     totalPages = await findLastPage(currentBasePath);
     
     if (totalPages === 0) {
@@ -864,125 +685,92 @@
       return;
     }
     
-    showToast(`✅ ${totalPages} pagine trovate`);
-    renderPagesExact(currentBasePath, totalPages);
+    renderPagesInstant(currentBasePath, totalPages);
   }
 
   // ============================================================
-  // OTTIMIZZAZIONE: Caricamento parallelo in ALTA QUALITÀ
+  // RENDER ISTANTANEO: Placeholder + Lightning quality + Upgrade
   // ============================================================
-  async function renderPagesExact(basePath, pageCount) {
+  function renderPagesInstant(basePath, pageCount) {
     readerWrapper.innerHTML = '';
     readerWrapper.style.transform = 'translateX(0px)';
     
-    // Prova a leggere il manifest.json del capitolo
+    // Genera nomi file
     let pageFiles = [];
-    try {
-      const chapterManifestUrl = `${basePath}/manifest.json?t=${Date.now()}`;
-      const res = await fetch(chapterManifestUrl);
-      if (res.ok) {
-        const data = await res.json();
-        if (Array.isArray(data)) pageFiles = data;
-        else if (data.pages) pageFiles = data.pages.map(p => typeof p === 'string' ? p : p.file);
-      }
-    } catch(e) {}
-    
-    if (pageFiles.length === 0) {
-      for (let i = 1; i <= pageCount; i++) pageFiles.push(`${i}.jpg`);
-    }
+    for (let i = 1; i <= pageCount; i++) pageFiles.push(`${i}.jpg`);
     
     currentPageFiles = pageFiles;
     currentBasePath = basePath;
     
-    // Array per tracciare il caricamento delle prime pagine
-    const loadPromises = [];
-    
-    // === RENDERIZZA TUTTE LE PAGINE ===
+    // === RENDERIZZA TUTTE LE PAGINE CON PLACEHOLDER ===
     for (let i = 0; i < pageFiles.length; i++) {
       const pageDiv = document.createElement('div');
       pageDiv.className = 'page';
-      pageDiv.setAttribute('data-page', i);
+      
+      // Placeholder istantaneo
+      const placeholder = document.createElement('div');
+      placeholder.className = 'page-placeholder';
+      placeholder.style.background = '#0a0a0f';
+      pageDiv.appendChild(placeholder);
       
       const img = document.createElement('img');
       img.alt = `Pagina ${i + 1}`;
       
-      if (i < 3) {
-        // === PRIME 3 PAGINE: ALTA QUALITÀ, CARICAMENTO PARALLELO ===
-        img.loading = 'eager';
-        img.decoding = 'sync';
-        img.fetchpriority = 'high';
-        
-        const loadPromise = new Promise((resolve) => {
-          img.onload = () => {
-            img.classList.add('loaded');
-            resolve();
+      if (i < 2) {
+        // === PRIME 2 PAGINE: LIGHTNING QUALITY (appare subito) ===
+        img.src = `${basePath}/${pageFiles[i]}?${LIGHTNING_QUALITY}`;
+        img.onload = () => {
+          img.classList.add('loaded');
+          placeholder.remove();
+          
+          // Dopo che è apparsa, carica l'alta qualità in background
+          const highResImg = new Image();
+          highResImg.src = `${basePath}/${pageFiles[i]}?${HIGH_QUALITY}`;
+          highResImg.onload = () => {
+            img.src = highResImg.src;
           };
-          img.onerror = () => {
-            setTimeout(() => {
-              img.src = `${basePath}/${pageFiles[i]}?${HIGH_QUALITY}&retry=${Date.now()}`;
-            }, 500);
-            resolve();
-          };
-        });
-        loadPromises.push(loadPromise);
-        
-        img.src = `${basePath}/${pageFiles[i]}?${HIGH_QUALITY}`;
+        };
       } else {
-        // === PAGINE SUCCESSIVE: Placeholder, caricate in background ===
-        img.loading = 'lazy';
-        img.decoding = 'async';
-        img.fetchpriority = 'low';
+        // === PAGINE SUCCESSIVE: Caricate in background ===
         img.style.opacity = '0';
-        
-        const loadingIndicator = document.createElement('div');
-        loadingIndicator.className = 'page-loading';
-        loadingIndicator.textContent = 'Caricamento...';
-        pageDiv.appendChild(loadingIndicator);
-        
         img.src = `${basePath}/${pageFiles[i]}?${BACKGROUND_QUALITY}`;
         img.onload = () => {
           img.style.opacity = '1';
           img.classList.add('loaded');
-          loadingIndicator.remove();
-        };
-        img.onerror = () => {
-          setTimeout(() => {
-            img.src = `${basePath}/${pageFiles[i]}?${BACKGROUND_QUALITY}&retry=${Date.now()}`;
-          }, 500);
+          placeholder.remove();
         };
       }
+      
+      img.onerror = () => {
+        setTimeout(() => {
+          img.src = `${basePath}/${pageFiles[i]}?${BACKGROUND_QUALITY}&retry=${Date.now()}`;
+        }, 500);
+      };
       
       pageDiv.appendChild(img);
       readerWrapper.appendChild(pageDiv);
     }
     
+    // === PRECARICA TUTTO IL RESTO IN PARALLELO ===
+    for (let i = 2; i < pageFiles.length; i++) {
+      const preloadImg = new Image();
+      preloadImg.src = `${basePath}/${pageFiles[i]}?${BACKGROUND_QUALITY}`;
+    }
+    
     currentPageIndex = 0;
     updateWrapperPosition();
-    
-    // === ASPETTA CHE LE PRIME PAGINE SIANO CARICATE ===
-    await Promise.all(loadPromises);
-    
-    // === PRECARICA AGGRESSIVAMENTE IL RESTO ===
-    prefetchTutteLePagine(basePath, pageFiles, 3);
-    
-    setTimeout(() => initSwipe(), 100);
+    setTimeout(() => initSwipe(), 50);
     updateUI();
   }
 
   async function nextPage() {
-    if (currentPageIndex < totalPages - 1) {
-      goToPage(currentPageIndex + 1);
-    } else {
-      await nextChapter();
-    }
+    if (currentPageIndex < totalPages - 1) goToPage(currentPageIndex + 1);
+    else await nextChapter();
   }
 
   async function prevPage() {
-    if (currentPageIndex > 0) {
-      goToPage(currentPageIndex - 1);
-    } else {
-      await prevChapter();
-    }
+    if (currentPageIndex > 0) goToPage(currentPageIndex - 1);
+    else await prevChapter();
   }
 
   function updateUI() {
@@ -993,28 +781,21 @@
     }
   }
 
-  window.addEventListener('resize', () => {
-    updateWrapperPosition();
-  });
+  window.addEventListener('resize', updateWrapperPosition);
 
   document.addEventListener('keydown', async (e) => {
     if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
-      e.preventDefault();
-      await nextPage();
-      if (window.innerWidth > 768 && !isFullscreenActive) showUI();
+      e.preventDefault(); await nextPage(); showUI();
     }
     if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
-      e.preventDefault();
-      await prevPage();
-      if (window.innerWidth > 768 && !isFullscreenActive) showUI();
+      e.preventDefault(); await prevPage(); showUI();
     }
   });
 
-  prevBtn.onclick = async () => { await prevPage(); if (!isFullscreenActive && window.innerWidth > 768) showUI(); };
-  nextBtn.onclick = async () => { await nextPage(); if (!isFullscreenActive && window.innerWidth > 768) showUI(); };
-  
-  mobilePrevBtn.onclick = async () => { await prevPage(); };
-  mobileNextBtn.onclick = async () => { await nextPage(); };
+  prevBtn.onclick = async () => { await prevPage(); showUI(); };
+  nextBtn.onclick = async () => { await nextPage(); showUI(); };
+  mobilePrevBtn.onclick = prevPage;
+  mobileNextBtn.onclick = nextPage;
 
   async function init() {
     if (!mangaId) {
@@ -1028,7 +809,6 @@
       readerWrapper.innerHTML = `
         <div class="empty">
           <h3>📝 File manifest.json mancante</h3>
-          <p>Crea il file <code style="background: #1a1a2e; padding: 2px 5px; border-radius: 3px;">manifest.json</code> nella cartella del manga su ImageKit</p>
           <p>Percorso: ${IMAGEKIT_BASE}/${mangaId}/manifest.json</p>
         </div>
       `;
