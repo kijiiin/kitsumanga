@@ -136,7 +136,6 @@
     }
     .page img.loaded { opacity: 1; }
     
-    /* Indicatore di caricamento sulla pagina */
     .page-loading {
       position: absolute;
       bottom: 10px;
@@ -416,8 +415,11 @@
   // ============================================================
   const IMAGEKIT_BASE = 'https://ik.imagekit.io/Kijiiin/manga';
   
-  // Parametri di ottimizzazione ImageKit
-  const IMAGEKIT_OPTIONS = 'tr=w-1200,q-80,f-auto';
+  // Qualità ALTA per le prime pagine (caricamento parallelo fulmineo)
+  const HIGH_QUALITY = 'tr=w-1400,q-85,f-auto';
+  
+  // Qualità STANDARD per il resto (caricate in background)
+  const BACKGROUND_QUALITY = 'tr=w-1200,q-80,f-auto';
   
   const urlParams = new URLSearchParams(window.location.search);
   const mangaId = urlParams.get('manga');
@@ -561,18 +563,28 @@
   resetHideTimer();
 
   // ============================================================
-  // OTTIMIZZAZIONE: Prefetch delle pagine successive
+  // PREFETCH AGGRESSIVO DI TUTTE LE PAGINE RIMANENTI
   // ============================================================
-  function prefetchNextPages(startIndex, count = 3) {
-    if (!currentBasePath || !currentPageFiles.length) return;
-    
-    for (let i = startIndex; i < Math.min(startIndex + count, currentPageFiles.length); i++) {
+  function prefetchTutteLePagine(basePath, pageFiles, startIndex) {
+    // Preload delle successive 5 pagine (alta priorità)
+    for (let i = startIndex; i < Math.min(startIndex + 5, pageFiles.length); i++) {
       const link = document.createElement('link');
-      link.rel = 'prefetch';
+      link.rel = 'preload';
       link.as = 'image';
-      link.href = `${currentBasePath}/${currentPageFiles[i]}?${IMAGEKIT_OPTIONS}`;
+      link.href = `${basePath}/${pageFiles[i]}?${BACKGROUND_QUALITY}`;
       document.head.appendChild(link);
     }
+    
+    // Prefetch del resto in background (bassa priorità)
+    setTimeout(() => {
+      for (let i = startIndex + 5; i < pageFiles.length; i++) {
+        const link = document.createElement('link');
+        link.rel = 'prefetch';
+        link.as = 'image';
+        link.href = `${basePath}/${pageFiles[i]}?${BACKGROUND_QUALITY}`;
+        document.head.appendChild(link);
+      }
+    }, 1000);
   }
 
   function initSwipe() {
@@ -718,8 +730,17 @@
     readerWrapper.style.transform = `translateX(${-currentPageIndex * containerWidth}px)`;
     updateUI();
     
-    // OTTIMIZZAZIONE: Prefetch delle prossime pagine quando si cambia pagina
-    prefetchNextPages(currentPageIndex + 1, 3);
+    // Continua a precaricare mentre leggi
+    if (currentBasePath && currentPageFiles.length) {
+      const nextToPreload = currentPageIndex + 3;
+      if (nextToPreload < currentPageFiles.length) {
+        const link = document.createElement('link');
+        link.rel = 'preload';
+        link.as = 'image';
+        link.href = `${currentBasePath}/${currentPageFiles[nextToPreload]}?${BACKGROUND_QUALITY}`;
+        document.head.appendChild(link);
+      }
+    }
   }
   
   function updateWrapperPosition() {
@@ -805,7 +826,7 @@
         if (pages.totalPages) return pages.totalPages;
       }
     } catch(e) {
-      console.log('Nessun manifest.json nel capitolo, provo a contare le pagine...');
+      console.log('Nessun manifest.json nel capitolo...');
     }
     
     let pageCount = 0;
@@ -848,72 +869,88 @@
   }
 
   // ============================================================
-  // OTTIMIZZAZIONE: renderPagesExact con parametri ImageKit
+  // OTTIMIZZAZIONE: Caricamento parallelo in ALTA QUALITÀ
   // ============================================================
   async function renderPagesExact(basePath, pageCount) {
     readerWrapper.innerHTML = '';
     readerWrapper.style.transform = 'translateX(0px)';
     
-    // Prova a leggere il manifest.json del capitolo per i nomi file
+    // Prova a leggere il manifest.json del capitolo
     let pageFiles = [];
     try {
       const chapterManifestUrl = `${basePath}/manifest.json?t=${Date.now()}`;
       const res = await fetch(chapterManifestUrl);
       if (res.ok) {
         const data = await res.json();
-        if (Array.isArray(data)) {
-          pageFiles = data;
-        } else if (data.pages && Array.isArray(data.pages)) {
-          pageFiles = data.pages.map(p => typeof p === 'string' ? p : p.file);
-        }
+        if (Array.isArray(data)) pageFiles = data;
+        else if (data.pages) pageFiles = data.pages.map(p => typeof p === 'string' ? p : p.file);
       }
-    } catch(e) {
-      // Ignora, useremo la numerazione automatica
-    }
+    } catch(e) {}
     
-    // Se non abbiamo i nomi file, genera 1.jpg, 2.jpg, ecc.
     if (pageFiles.length === 0) {
-      for (let i = 1; i <= pageCount; i++) {
-        pageFiles.push(`${i}.jpg`);
-      }
+      for (let i = 1; i <= pageCount; i++) pageFiles.push(`${i}.jpg`);
     }
     
     currentPageFiles = pageFiles;
     currentBasePath = basePath;
     
-    // Renderizza le pagine con OTTIMIZZAZIONI
+    // Array per tracciare il caricamento delle prime pagine
+    const loadPromises = [];
+    
+    // === RENDERIZZA TUTTE LE PAGINE ===
     for (let i = 0; i < pageFiles.length; i++) {
       const pageDiv = document.createElement('div');
       pageDiv.className = 'page';
       pageDiv.setAttribute('data-page', i);
       
       const img = document.createElement('img');
-      
-      // === OTTIMIZZAZIONE: Aggiungi parametri ImageKit per compressione ===
-      img.src = `${basePath}/${pageFiles[i]}?${IMAGEKIT_OPTIONS}`;
       img.alt = `Pagina ${i + 1}`;
-      img.loading = 'lazy';
-      img.decoding = 'async';
       
-      // Priorità alta per le prime 3 pagine, bassa per il resto
-      img.fetchpriority = i < 3 ? 'high' : 'low';
-      
-      // Indicatore di caricamento
-      const loadingIndicator = document.createElement('div');
-      loadingIndicator.className = 'page-loading';
-      loadingIndicator.textContent = 'Caricamento...';
-      pageDiv.appendChild(loadingIndicator);
-      
-      img.onload = () => {
-        img.classList.add('loaded');
-        loadingIndicator.remove();
-      };
-      
-      img.onerror = () => {
-        setTimeout(() => {
-          img.src = `${basePath}/${pageFiles[i]}?${IMAGEKIT_OPTIONS}&retry=${Date.now()}`;
-        }, 500);
-      };
+      if (i < 3) {
+        // === PRIME 3 PAGINE: ALTA QUALITÀ, CARICAMENTO PARALLELO ===
+        img.loading = 'eager';
+        img.decoding = 'sync';
+        img.fetchpriority = 'high';
+        
+        const loadPromise = new Promise((resolve) => {
+          img.onload = () => {
+            img.classList.add('loaded');
+            resolve();
+          };
+          img.onerror = () => {
+            setTimeout(() => {
+              img.src = `${basePath}/${pageFiles[i]}?${HIGH_QUALITY}&retry=${Date.now()}`;
+            }, 500);
+            resolve();
+          };
+        });
+        loadPromises.push(loadPromise);
+        
+        img.src = `${basePath}/${pageFiles[i]}?${HIGH_QUALITY}`;
+      } else {
+        // === PAGINE SUCCESSIVE: Placeholder, caricate in background ===
+        img.loading = 'lazy';
+        img.decoding = 'async';
+        img.fetchpriority = 'low';
+        img.style.opacity = '0';
+        
+        const loadingIndicator = document.createElement('div');
+        loadingIndicator.className = 'page-loading';
+        loadingIndicator.textContent = 'Caricamento...';
+        pageDiv.appendChild(loadingIndicator);
+        
+        img.src = `${basePath}/${pageFiles[i]}?${BACKGROUND_QUALITY}`;
+        img.onload = () => {
+          img.style.opacity = '1';
+          img.classList.add('loaded');
+          loadingIndicator.remove();
+        };
+        img.onerror = () => {
+          setTimeout(() => {
+            img.src = `${basePath}/${pageFiles[i]}?${BACKGROUND_QUALITY}&retry=${Date.now()}`;
+          }, 500);
+        };
+      }
       
       pageDiv.appendChild(img);
       readerWrapper.appendChild(pageDiv);
@@ -922,13 +959,13 @@
     currentPageIndex = 0;
     updateWrapperPosition();
     
-    // OTTIMIZZAZIONE: Prefetch delle pagine successive
-    prefetchNextPages(3, 5);
+    // === ASPETTA CHE LE PRIME PAGINE SIANO CARICATE ===
+    await Promise.all(loadPromises);
     
-    setTimeout(() => {
-      initSwipe();
-    }, 100);
+    // === PRECARICA AGGRESSIVAMENTE IL RESTO ===
+    prefetchTutteLePagine(basePath, pageFiles, 3);
     
+    setTimeout(() => initSwipe(), 100);
     updateUI();
   }
 
