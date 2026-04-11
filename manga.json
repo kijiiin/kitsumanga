@@ -5,7 +5,7 @@
   "cover": "https://ik.imagekit.io/Kijiiin/manga/kusakabe-san/cover.jpg",
   "latest": "Capitolo 1",
   "description": "A disturbing look into a sad relationship between a broken man who's clinging on a cheating elusive woman he's emotionally addicted to. A man finds a mysterious young woman on his doorstep. Her passion and hunger for life suddenly shine bright for him in what has been a pretty mundane existence.",
-  "genres": ["Drama", "Ecchi", "Psicologico", "Romantico", "Slice of Life"],
+  "genres": ["Drama", "Ecchi", "Psicologico", "Sentimentale", "Slice of Life"],
   "status": "Finished",
   "year": "2020-2020",
   "type": "📚 Volumi"
@@ -13,7 +13,7 @@
 {
   "id": "ayashimon",
   "title": "Ayashimon",
-  "cover": "manga/ayashimon/cover.jpg",
+  "cover": "https://ik.imagekit.io/Kijiiin/manga/ayashimon/cover.jpg",
   "latest": "Volume 3",
   "description": "Maruo Kaido insegue un sogno irrealizzabile, quello di essere come il protagonista di un manga. Per quanto allenandosi abbia ottenuto una forza incredibile la sua vita trascorre tranquilla senza particolari sorprese. Un giorno incontra Urara, una ragazza che apparentemente cerca di fuggire da alcuni yakuza che la inseguono, ma questi non sono comuni esseri umani...",
   "genres": ["Azione", "Commedia", "Fantasy", "Soprannaturale"],
@@ -24,15 +24,19 @@
   {
   "id": "rikudo",
   "title": "Rikudo",
-  "cover": "manga/rikudo/cover.jpg",
+  "cover": "https://ik.imagekit.io/Kijiiin/manga/rikudo/cover.jpg",
   "latest": "Volume 23",
+  "description": "Da piccolo Riku ha vissuto molte dolorose tragedie. Dopo la morte di suo padre, un ex pugile yakuza gli insegna come sferrare un pugno, e quel pugno salva la sua vita quando si vede costretto a difendersi dallo spacciatore di droga di sua madre. Lo scontro però si conclude con la morte dello spacciatore e Riku diventa un assassino. I criminali continuano a presentarsi dinnanzi a lui, portando sempre più tragedie nella vita di coloro che hanno provato a prendersene cura. Tutto ciò lo porta a chiedere allo stesso ex pugile di insegnargli a diventare più forte, il che lo condurrà a quella palestra che sarà la porta per la boxe professionistica.",
+"genres": ["Azione", "Dramamtico", "Sport"],
   "type": "📚 Volumi"
   },
 {
   "id": "boku-to-senpai-no-tekken-kousai",
   "title": "Boku to senpai no tekken kousai",
-  "cover": "manga/boku-to-senpai-no-tekken-kousai/cover.jpg",
+  "cover": "https://ik.imagekit.io/Kijiiin/manga/boku-to-senpai-no-tekken-kousai/cover.jpg",
   "latest": "Capitolo 19",
+  "description": "Himeko Reijou, ereditiera di una delle maggiori società giapponesi, è inconsciamente attratta dai criminali e tipi violenti. Shuuji Aoyama lavora presso la società come sua guardia del corpo, ed è il suo unico amico, detesta la violenza ma ha giurato di vegliarla e proteggerla... Che strano tipo di rapporto avranno questi due?",
+"genres": ["Commedia", "Mistero", "Sentimentale"],
   "type": "📖 Capitoli"
 }
 ]
