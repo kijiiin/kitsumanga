@@ -1,5 +1,16 @@
 [
 {
+  "id": "kusakabe-san",
+  "title": "Kusakabe-san",
+  "cover": "manga/ayashimon/cover.jpg",
+  "latest": "Capitolo 1",
+  "description": "A disturbing look into a sad relationship between a broken man who's clinging on a cheating elusive woman he's emotionally addicted to. A man finds a mysterious young woman on his doorstep. Her passion and hunger for life suddenly shine bright for him in what has been a pretty mundane existence.",
+  "genres": ["Drama", "Ecchi", "Psicologico", "Romantico", "Slice of Life"],
+  "status": "Finished",
+  "year": "2020-2020",
+  "type": "📚 Volumi"
+},
+{
   "id": "ayashimon",
   "title": "Ayashimon",
   "cover": "manga/ayashimon/cover.jpg",

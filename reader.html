@@ -15,11 +15,8 @@
       touch-action: pan-y pinch-zoom;
     }
     
-    body:fullscreen {
-      background: #000;
-    }
+    body:fullscreen { background: #000; }
     
-    /* TOP BAR COMPLETA - solo su desktop FUORI fullscreen */
     .top-bar {
       position: fixed;
       top: 0;
@@ -38,18 +35,12 @@
     }
     .top-bar.hide { transform: translateY(-100%); }
     
-    /* Su mobile nascondi la top bar completa */
     @media (max-width: 768px) {
-      .top-bar {
-        display: none !important;
-      }
+      .top-bar { display: none !important; }
     }
     
-    /* In fullscreen su desktop nascondi la top bar */
     body:fullscreen .top-bar,
-    body:-webkit-full-screen .top-bar {
-      display: none !important;
-    }
+    body:-webkit-full-screen .top-bar { display: none !important; }
     
     .back-btn {
       background: rgba(139, 92, 246, 0.3);
@@ -89,7 +80,6 @@
       color: #c4b5fd;
     }
     
-    /* Pulsante fullscreen universale */
     .fullscreen-btn {
       background: rgba(139, 92, 246, 0.3);
       color: white;
@@ -121,9 +111,7 @@
       will-change: transform;
       cursor: grab;
     }
-    .reader-wrapper:active {
-      cursor: grabbing;
-    }
+    .reader-wrapper:active { cursor: grabbing; }
     
     .page {
       flex: 0 0 100%;
@@ -146,11 +134,8 @@
       transition: opacity 0.2s ease;
       pointer-events: auto;
     }
-    .page img.loaded {
-      opacity: 1;
-    }
+    .page img.loaded { opacity: 1; }
     
-    /* HUD LATERALE DESKTOP - visibile sia fuori che in fullscreen su desktop */
     .desktop-hud {
       position: fixed;
       bottom: 50%;
@@ -173,14 +158,10 @@
       pointer-events: none;
     }
     
-    /* Su mobile nascondi l'HUD desktop */
     @media (max-width: 768px) {
-      .desktop-hud {
-        display: none !important;
-      }
+      .desktop-hud { display: none !important; }
     }
     
-    /* In fullscreen su desktop, l'HUD laterale rimane visibile ma senza auto-hide */
     body:fullscreen .desktop-hud,
     body:-webkit-full-screen .desktop-hud {
       opacity: 1 !important;
@@ -211,7 +192,6 @@
       border-radius: 20px;
     }
     
-    /* Pulsante esci fullscreen per desktop (solo in fullscreen, in alto a destra) */
     .fullscreen-exit-btn {
       position: fixed;
       top: 1rem;
@@ -234,11 +214,8 @@
     }
     
     body:fullscreen .fullscreen-exit-btn,
-    body:-webkit-full-screen .fullscreen-exit-btn {
-      display: flex !important;
-    }
+    body:-webkit-full-screen .fullscreen-exit-btn { display: flex !important; }
     
-    /* HUD MOBILE - solo su mobile (fuori fullscreen) */
     .mobile-hud {
       position: fixed;
       bottom: 20px;
@@ -255,14 +232,10 @@
       z-index: 1000;
     }
     
-    /* Su desktop nascondi l'HUD mobile */
     @media (min-width: 769px) {
-      .mobile-hud {
-        display: none !important;
-      }
+      .mobile-hud { display: none !important; }
     }
     
-    /* In fullscreen su mobile, mostra l'HUD mobile in basso */
     body:fullscreen .mobile-hud,
     body:-webkit-full-screen .mobile-hud {
       display: flex !important;
@@ -293,7 +266,6 @@
       border-radius: 30px;
     }
     
-    /* Pulsante fullscreen per mobile (fuori fullscreen) */
     .fullscreen-btn-mobile {
       position: fixed;
       bottom: 20px;
@@ -313,21 +285,14 @@
       box-shadow: 0 2px 10px rgba(0,0,0,0.3);
       transition: 0.2s;
     }
-    .fullscreen-btn-mobile:active {
-      transform: scale(0.95);
-    }
+    .fullscreen-btn-mobile:active { transform: scale(0.95); }
     
     @media (min-width: 769px) {
-      .fullscreen-btn-mobile {
-        display: none !important;
-      }
+      .fullscreen-btn-mobile { display: none !important; }
     }
     
-    /* In fullscreen su mobile, mostra il pulsante esci in basso a destra */
     body:fullscreen .exit-fullscreen-mobile,
-    body:-webkit-full-screen .exit-fullscreen-mobile {
-      display: flex !important;
-    }
+    body:-webkit-full-screen .exit-fullscreen-mobile { display: flex !important; }
     
     .exit-fullscreen-mobile {
       position: fixed;
@@ -396,7 +361,6 @@
 </head>
 <body>
 
-<!-- Top bar completa DESKTOP (solo fuori fullscreen) -->
 <div class="top-bar" id="topBar">
   <a href="javascript:history.back()" class="back-btn">← Libreria</a>
   <span class="manga-title" id="mangaTitle">Caricamento...</span>
@@ -410,27 +374,21 @@
   <button class="fullscreen-btn" id="fullscreenBtn">⛶ Schermo intero</button>
 </div>
 
-<!-- HUD laterale DESKTOP (visibile sempre su desktop, sia fuori che in fullscreen) -->
 <div class="desktop-hud" id="desktopHud">
   <button class="nav-btn" id="prevBtn">◀ PREV</button>
   <span class="page-indicator" id="pageIndicator">0 / 0</span>
   <button class="nav-btn" id="nextBtn">NEXT ▶</button>
 </div>
 
-<!-- Pulsante esci fullscreen per DESKTOP (solo in fullscreen, in alto a destra) -->
 <button class="fullscreen-exit-btn" id="fullscreenExitBtn">✕ Esci</button>
 
-<!-- HUD MOBILE (sempre visibile in basso al centro su mobile) -->
 <div class="mobile-hud" id="mobileHud">
   <button class="mobile-nav-btn" id="mobilePrevBtn">◀</button>
   <span class="mobile-page-indicator" id="mobilePageIndicator">0 / 0</span>
   <button class="mobile-nav-btn" id="mobileNextBtn">▶</button>
 </div>
 
-<!-- Pulsante fullscreen MOBILE (fuori fullscreen) -->
 <button class="fullscreen-btn-mobile" id="fullscreenBtnMobile">⛶</button>
-
-<!-- Pulsante esci fullscreen MOBILE (solo in fullscreen, in basso a destra) -->
 <button class="exit-fullscreen-mobile" id="exitFullscreenMobile">✕</button>
 
 <div class="reader-container" id="readerContainer">
@@ -438,6 +396,11 @@
 </div>
 
 <script>
+  // ============================================================
+  // CONFIGURAZIONE IMAGEKIT
+  // ============================================================
+  const IMAGEKIT_BASE = 'https://ik.imagekit.io/Kijiiin/manga';
+  
   const urlParams = new URLSearchParams(window.location.search);
   const mangaId = urlParams.get('manga');
   const mangaTitle = decodeURIComponent(urlParams.get('title') || 'Manga');
@@ -455,7 +418,6 @@
   let isLoadingChapter = false;
   let isFullscreenActive = false;
 
-  // Variabili per lo swipe manuale
   let startX = 0;
   let currentX = 0;
   let isDragging = false;
@@ -481,70 +443,48 @@
   const fullscreenExitBtn = document.getElementById('fullscreenExitBtn');
   const exitFullscreenMobile = document.getElementById('exitFullscreenMobile');
 
-  // Controlla se siamo in fullscreen
   function isFullscreen() {
     return !!(document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement);
   }
 
-  // Gestione schermo intero
   function enterFullscreen() {
     const elem = document.documentElement;
-    if (elem.requestFullscreen) {
-      elem.requestFullscreen();
-    } else if (elem.webkitRequestFullscreen) {
-      elem.webkitRequestFullscreen();
-    } else if (elem.msRequestFullscreen) {
-      elem.msRequestFullscreen();
-    }
+    if (elem.requestFullscreen) elem.requestFullscreen();
+    else if (elem.webkitRequestFullscreen) elem.webkitRequestFullscreen();
+    else if (elem.msRequestFullscreen) elem.msRequestFullscreen();
   }
 
   function exitFullscreen() {
-    if (document.exitFullscreen) {
-      document.exitFullscreen();
-    } else if (document.webkitExitFullscreen) {
-      document.webkitExitFullscreen();
-    } else if (document.msExitFullscreen) {
-      document.msExitFullscreen();
-    }
+    if (document.exitFullscreen) document.exitFullscreen();
+    else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+    else if (document.msExitFullscreen) document.msExitFullscreen();
   }
 
   function toggleFullscreen() {
-    if (!isFullscreen()) {
-      enterFullscreen();
-    } else {
-      exitFullscreen();
-    }
+    if (!isFullscreen()) enterFullscreen();
+    else exitFullscreen();
   }
 
-  // Aggiorna stato fullscreen
   function updateFullscreenState() {
     const fs = isFullscreen();
     isFullscreenActive = fs;
     
     if (fs) {
-      // Siamo in fullscreen
       if (window.innerWidth > 768) {
-        // DESKTOP in fullscreen: nascondi topBar, mostra HUD laterale e pulsante esci
         topBar.style.display = 'none';
-        // desktopHud rimane visibile (CSS lo forza)
         fullscreenExitBtn.style.display = 'flex';
       } else {
-        // MOBILE in fullscreen: nascondi pulsante fullscreen mobile, mostra hud mobile e pulsante esci
         fullscreenBtnMobile.style.display = 'none';
         exitFullscreenMobile.style.display = 'flex';
       }
     } else {
-      // Fuori fullscreen
       if (window.innerWidth > 768) {
-        // DESKTOP fuori fullscreen
         topBar.style.display = '';
         desktopHud.style.display = '';
         fullscreenExitBtn.style.display = 'none';
-        // Resetta auto-hide
         topBar.classList.remove('hide');
         desktopHud.classList.remove('hide');
       } else {
-        // MOBILE fuori fullscreen
         fullscreenBtnMobile.style.display = 'flex';
         exitFullscreenMobile.style.display = 'none';
       }
@@ -556,7 +496,6 @@
   document.addEventListener('mozfullscreenchange', updateFullscreenState);
   document.addEventListener('MSFullscreenChange', updateFullscreenState);
 
-  // Pulsanti fullscreen
   fullscreenBtn.addEventListener('click', toggleFullscreen);
   fullscreenBtnMobile.addEventListener('click', enterFullscreen);
   fullscreenExitBtn.addEventListener('click', exitFullscreen);
@@ -572,7 +511,6 @@
     setTimeout(() => toast.remove(), 2000);
   }
 
-  // Auto-hide UI solo su desktop FUORI fullscreen
   let hideTimeout;
   function resetHideTimer() {
     if (isFullscreenActive) return;
@@ -602,7 +540,6 @@
   document.addEventListener('touchstart', showUI);
   resetHideTimer();
 
-  // Gestione swipe
   function initSwipe() {
     const wrapper = readerWrapper;
     
@@ -753,9 +690,13 @@
     readerWrapper.style.transform = `translateX(${-currentPageIndex * containerWidth}px)`;
   }
 
+  // ============================================================
+  // MODIFICA: loadManifest da ImageKit
+  // ============================================================
   async function loadManifest() {
     try {
-      const res = await fetch(`manga/${mangaId}/manifest.json?t=${Date.now()}`);
+      const manifestUrl = `${IMAGEKIT_BASE}/${mangaId}/manifest.json?t=${Date.now()}`;
+      const res = await fetch(manifestUrl);
       if (res.ok) {
         const manifest = await res.json();
         contentType = manifest.type;
@@ -780,7 +721,9 @@
         };
         return true;
       }
-    } catch(e) {}
+    } catch(e) {
+      console.error('Errore manifest:', e);
+    }
     return false;
   }
 
@@ -816,54 +759,56 @@
     }
   }
 
-  async function findLastPage(basePath, startGuess = 50) {
-    let low = 1;
-    let high = startGuess;
+  // ============================================================
+  // MODIFICA: findLastPage da ImageKit con supporto manifest.json
+  // ============================================================
+  async function findLastPage(basePath) {
+    // Prima prova a leggere il manifest.json del capitolo
+    try {
+      const chapterManifestUrl = `${basePath}/manifest.json?t=${Date.now()}`;
+      const res = await fetch(chapterManifestUrl);
+      if (res.ok) {
+        const pages = await res.json();
+        if (Array.isArray(pages)) return pages.length;
+        if (pages.pages && Array.isArray(pages.pages)) return pages.pages.length;
+        if (pages.totalPages) return pages.totalPages;
+      }
+    } catch(e) {
+      console.log('Nessun manifest.json nel capitolo, provo a contare le pagine...');
+    }
+    
+    // Fallback: conta le pagine una per una
+    let pageCount = 0;
     let found = true;
     
-    while (found) {
-      const testUrl = `${basePath}${high}.jpg`;
+    while (found && pageCount < 200) {
+      pageCount++;
+      const testUrl = `${basePath}/${pageCount}.jpg`;
       try {
         const res = await fetch(testUrl, { method: 'HEAD' });
-        if (res.ok) {
-          low = high;
-          high = high * 2;
-          if (high > 2000) break;
-        } else {
+        if (!res.ok) {
           found = false;
+          pageCount--;
         }
       } catch(e) {
         found = false;
+        pageCount--;
       }
     }
     
-    let lastValid = low;
-    while (low <= high) {
-      const mid = Math.floor((low + high) / 2);
-      const testUrl = `${basePath}${mid}.jpg`;
-      try {
-        const res = await fetch(testUrl, { method: 'HEAD' });
-        if (res.ok) {
-          lastValid = mid;
-          low = mid + 1;
-        } else {
-          high = mid - 1;
-        }
-      } catch(e) {
-        high = mid - 1;
-      }
-    }
-    
-    return lastValid;
+    return pageCount;
   }
 
+  // ============================================================
+  // MODIFICA: loadChapter da ImageKit
+  // ============================================================
   async function loadChapter() {
     readerWrapper.innerHTML = '<div class="initial-loading"><div class="spinner"></div><div>Rilevamento pagine...</div></div>';
     
-    const basePath = `manga/${mangaId}/${contentType}/${currentNumber}/`;
+    const basePath = `${IMAGEKIT_BASE}/${mangaId}/${currentNumber}`;
     
     showToast('📖 Rilevamento pagine in corso...');
-    totalPages = await findLastPage(basePath, 50);
+    totalPages = await findLastPage(basePath);
     
     if (totalPages === 0) {
       readerWrapper.innerHTML = '<div class="empty">😕 Nessuna pagina trovata</div>';
@@ -875,18 +820,46 @@
     renderPagesExact(basePath, totalPages);
   }
 
-  function renderPagesExact(basePath, pageCount) {
+  // ============================================================
+  // MODIFICA: renderPagesExact da ImageKit con supporto manifest.json
+  // ============================================================
+  async function renderPagesExact(basePath, pageCount) {
     readerWrapper.innerHTML = '';
     readerWrapper.style.transform = 'translateX(0px)';
     
-    for (let i = 1; i <= pageCount; i++) {
+    // Prova a leggere il manifest.json del capitolo per i nomi file
+    let pageFiles = [];
+    try {
+      const chapterManifestUrl = `${basePath}/manifest.json?t=${Date.now()}`;
+      const res = await fetch(chapterManifestUrl);
+      if (res.ok) {
+        const data = await res.json();
+        if (Array.isArray(data)) {
+          pageFiles = data;
+        } else if (data.pages && Array.isArray(data.pages)) {
+          pageFiles = data.pages.map(p => typeof p === 'string' ? p : p.file);
+        }
+      }
+    } catch(e) {
+      // Ignora, useremo la numerazione automatica
+    }
+    
+    // Se non abbiamo i nomi file, genera 1.jpg, 2.jpg, ecc.
+    if (pageFiles.length === 0) {
+      for (let i = 1; i <= pageCount; i++) {
+        pageFiles.push(`${i}.jpg`);
+      }
+    }
+    
+    // Renderizza le pagine
+    for (let i = 0; i < pageFiles.length; i++) {
       const pageDiv = document.createElement('div');
       pageDiv.className = 'page';
-      pageDiv.setAttribute('data-page', i - 1);
+      pageDiv.setAttribute('data-page', i);
       
       const img = document.createElement('img');
-      img.src = `${basePath}${i}.jpg`;
-      img.alt = `Pagina ${i}`;
+      img.src = `${basePath}/${pageFiles[i]}`;
+      img.alt = `Pagina ${i + 1}`;
       img.loading = 'lazy';
       
       img.onload = () => {
@@ -895,7 +868,7 @@
       
       img.onerror = () => {
         setTimeout(() => {
-          img.src = `${basePath}${i}.jpg?retry=${Date.now()}`;
+          img.src = `${basePath}/${pageFiles[i]}?retry=${Date.now()}`;
         }, 500);
       };
       
@@ -941,7 +914,6 @@
     updateWrapperPosition();
   });
 
-  // Tasti freccia per desktop
   document.addEventListener('keydown', async (e) => {
     if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
       e.preventDefault();
@@ -955,11 +927,9 @@
     }
   });
 
-  // Pulsanti desktop
   prevBtn.onclick = async () => { await prevPage(); if (!isFullscreenActive && window.innerWidth > 768) showUI(); };
   nextBtn.onclick = async () => { await nextPage(); if (!isFullscreenActive && window.innerWidth > 768) showUI(); };
   
-  // Pulsanti mobile
   mobilePrevBtn.onclick = async () => { await prevPage(); };
   mobileNextBtn.onclick = async () => { await nextPage(); };
 
@@ -975,7 +945,8 @@
       readerWrapper.innerHTML = `
         <div class="empty">
           <h3>📝 File manifest.json mancante</h3>
-          <p>Crea il file <code style="background: #1a1a2e; padding: 2px 5px; border-radius: 3px;">manga/${mangaId}/manifest.json</code></p>
+          <p>Crea il file <code style="background: #1a1a2e; padding: 2px 5px; border-radius: 3px;">manifest.json</code> nella cartella del manga su ImageKit</p>
+          <p>Percorso: ${IMAGEKIT_BASE}/${mangaId}/manifest.json</p>
         </div>
       `;
       return;
