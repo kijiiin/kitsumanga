@@ -22,7 +22,7 @@
       backdrop-filter: blur(10px);
       border-bottom: 1px solid rgba(255,255,255,0.1);
     }
-        h1 { 
+    h1 { 
       font-size: 2.5em; 
       font-weight: bold;
       background: linear-gradient(135deg, #10b981, #34d399, #8b5cf6, #a78bfa);
@@ -158,19 +158,21 @@
     .tabs {
       display: flex;
       justify-content: center;
-      gap: 10px;
+      gap: 8px;
       margin-bottom: 30px;
       padding: 0 20px;
+      flex-wrap: wrap;
     }
     .tab-btn {
       background: rgba(255,255,255,0.1);
       border: 1px solid rgba(139, 92, 246, 0.3);
-      padding: 10px 25px;
+      padding: 10px 18px;
       border-radius: 25px;
       cursor: pointer;
       color: white;
-      font-size: 1rem;
+      font-size: 0.9rem;
       transition: 0.3s;
+      white-space: nowrap;
     }
     .tab-btn.active {
       background: #8b5cf6;
@@ -296,6 +298,24 @@
       padding: 20px;
       background: rgba(0,0,0,0.2);
       margin-top: 40px;
+    }
+    
+    /* Pulsante rimuovi dalle liste */
+    .remove-from-list-btn {
+      background: #ef4444;
+      border: none;
+      color: white;
+      padding: 6px 12px;
+      border-radius: 15px;
+      margin-top: 10px;
+      cursor: pointer;
+      font-size: 11px;
+      width: 100%;
+      transition: 0.2s;
+      font-weight: 500;
+    }
+    .remove-from-list-btn:hover {
+      background: #dc2626;
     }
     
     .modal {
@@ -509,7 +529,8 @@
       .search-container { max-width: 100%; }
       .grid { gap: 15px; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
       .card img { height: 200px; }
-      .tab-btn { padding: 6px 15px; font-size: 0.85rem; }
+      .tab-btn { padding: 8px 12px; font-size: 0.8rem; white-space: nowrap; }
+      .tabs { gap: 5px; }
       .toast { font-size: 0.8rem; padding: 8px 16px; white-space: nowrap; bottom: 80px; }
       .admin-tab-btn { padding: 6px 15px; font-size: 0.85rem; }
     }
@@ -542,6 +563,9 @@
 <div class="tabs">
   <button class="tab-btn active" data-tab="local">📁 Manga Locali</button>
   <button class="tab-btn" data-tab="external">🌐 Manga Esterni</button>
+  <button class="tab-btn" data-tab="reading">📖 Sto leggendo</button>
+  <button class="tab-btn" data-tab="plan">📝 Da leggere</button>
+  <button class="tab-btn" data-tab="completed">✅ Completati</button>
   <button class="tab-btn" data-tab="requests">📋 Richieste</button>
   <button class="tab-btn" data-tab="bugs">🐛 Bug</button>
 </div>
@@ -622,9 +646,9 @@
 
 <script>
   // ============================================================
-  // CONFIGURAZIONE EMAIL (CAMBIARE CON LA TUA EMAIL!)
+  // CONFIGURAZIONE EMAIL
   // ============================================================
-  const ADMIN_EMAIL = 'KitsuMangaFeedback@gmail.com'; // <-- METTI LA TUA EMAIL QUI!
+  const ADMIN_EMAIL = 'KitsuMangaFeedback@gmail.com';
   
   const grid = document.getElementById('grid');
   const sortSelect = document.getElementById('sortSelect');
@@ -655,7 +679,93 @@
   const ADMIN_PASSWORD = 'admin123';
 
   // ============================================================
-  // INVIO VIA EMAIL CON FORMSUBMIT (gratuito, senza registrazione)
+  // GESTIONE LISTE PERSONALI
+  // ============================================================
+  const LISTS_KEY = 'kitsumanga_lists';
+  
+  function loadLists() {
+    const saved = localStorage.getItem(LISTS_KEY);
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch(e) {
+        return { reading: [], plan: [], completed: [] };
+      }
+    }
+    return { reading: [], plan: [], completed: [] };
+  }
+  
+  function saveLists(lists) {
+    localStorage.setItem(LISTS_KEY, JSON.stringify(lists));
+  }
+  
+  function removeFromList(listType, mangaId) {
+    const lists = loadLists();
+    lists[listType] = lists[listType].filter(m => m.id !== mangaId);
+    saveLists(lists);
+  }
+  
+  function renderListTab(listType) {
+    const lists = loadLists();
+    const items = lists[listType] || [];
+    
+    const tabNames = {
+      reading: 'Sto leggendo',
+      plan: 'Da leggere',
+      completed: 'Completati'
+    };
+    
+    // Nascondi ordinamento e pulsante +
+    sortSelect.style.display = 'none';
+    addMangaBtn.style.display = 'none';
+    
+    if (items.length === 0) {
+      grid.innerHTML = `<div class="no-results">📭 Nessun manga in "${tabNames[listType]}"</div>`;
+      resultsInfo.innerHTML = `📚 0 manga in "${tabNames[listType]}"`;
+      return;
+    }
+    
+    grid.innerHTML = '';
+    
+    items.forEach(manga => {
+      const card = document.createElement('div');
+      card.className = 'card';
+      
+      card.innerHTML = `
+        <img src="${manga.cover}" alt="${manga.title}" onerror="this.src='https://placehold.co/300x400/1a1a2e/a78bfa?text=${encodeURIComponent(manga.title)}'">
+        <div class="info">
+          <div class="title">${escapeHtml(manga.title)}</div>
+          <div class="chapter">${manga.latest || ''}</div>
+          ${manga.author ? `<div class="chapter" style="font-size: 11px;">✍️ ${escapeHtml(manga.author)}</div>` : ''}
+          <button class="remove-from-list-btn" data-id="${manga.id}" data-list="${listType}">🗑️ Rimuovi</button>
+        </div>
+      `;
+      
+      card.onclick = (e) => {
+        if (e.target.classList.contains('remove-from-list-btn')) return;
+        window.location.href = `manga-detail.html?manga=${encodeURIComponent(manga.id)}&title=${encodeURIComponent(manga.title)}`;
+      };
+      
+      grid.appendChild(card);
+    });
+    
+    // Listener per i pulsanti rimuovi
+    document.querySelectorAll('.remove-from-list-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const id = btn.dataset.id;
+        const list = btn.dataset.list;
+        removeFromList(list, id);
+        renderListTab(list);
+        showToast(`🗑️ Rimosso dalla lista`);
+      });
+    });
+    
+    resultsInfo.innerHTML = `📚 ${items.length} manga in "${tabNames[listType]}"`;
+  }
+
+  // ============================================================
+  // INVIO VIA EMAIL CON FORMSUBMIT
   // ============================================================
   async function inviaEmail(tipo, dati) {
   let messaggio = '';
@@ -691,7 +801,6 @@
     });
   }
   
-  // Usa FormSubmit
   const form = document.createElement('form');
   form.method = 'POST';
   form.action = `https://formsubmit.co/${ADMIN_EMAIL}`;
@@ -764,7 +873,6 @@
     }
   });
 
-  // Carica dati da localStorage
   function loadRequests() {
     const saved = localStorage.getItem('mangaRequests');
     if (saved) {
@@ -959,9 +1067,7 @@
     if (currentTab === 'bugs') renderBugsTab();
     showToast('🗑️ Segnalazione eliminata');
   }
-  // ============================================================
-  // FUNZIONE PER IMPORTARE RICHIESTE DA EMAIL
-  // ============================================================
+  
   function importFromEmail() {
   const text = document.getElementById('emailImportText').value;
   if (!text.trim()) {
@@ -969,20 +1075,14 @@
     return;
   }
   
-  // Pulisci il testo: sostituisci le emoji senza spazio con emoji + spazio
   let cleanText = text;
   
-  // Se tutto è su una riga, prova a separare i campi
   if (!cleanText.includes('\n') || cleanText.split('\n').length < 3) {
-    // Aggiungi newline prima di ogni emoji chiave
     cleanText = cleanText.replace(/([👤✍️🔗💬🖼️📖🏷️])/g, '\n$1');
-    // Aggiungi newline dopo la parentesi
     cleanText = cleanText.replace(/(【\d+】)/g, '$1\n');
-    // Pulisci righe vuote multiple
     cleanText = cleanText.replace(/\n\s*\n/g, '\n');
   }
   
-  // Normalizza il testo: assicura che ogni campo sia su una riga separata
   const lines = cleanText.split('\n');
   let currentRequest = {};
   let newRequests = [];
@@ -991,49 +1091,40 @@
     let line = lines[i].trim();
     if (line === '') continue;
     
-    // Rileva l'inizio di una nuova richiesta (【数字】)
     if (line.match(/【\d+】/)) {
       if (currentRequest.title && currentRequest.requester) {
         newRequests.push(currentRequest);
       }
       currentRequest = {};
-      // Estrai il titolo (tutto ciò che viene dopo la parentesi)
       const titleMatch = line.match(/】\s*(.+)/);
       if (titleMatch) currentRequest.title = titleMatch[1].trim();
     }
-    // Estrai Richiedente
     else if (line.includes('👤') && line.includes('Richiedente:')) {
       let val = line.replace(/👤/, '').replace('Richiedente:', '').trim();
       if (val && val !== 'Non specificato') currentRequest.requester = val;
     }
-    // Estrai Titolo (se presente come campo separato)
     else if (line.includes('📖') && line.includes('Titolo:')) {
       let val = line.replace(/📖/, '').replace('Titolo:', '').trim();
       if (val && val !== 'Non specificato') currentRequest.title = val;
     }
-    // Estrai Autore
     else if (line.includes('✍️') && line.includes('Autore:')) {
       let val = line.replace(/✍️/, '').replace('Autore:', '').trim();
       if (val && val !== 'Non specificato') currentRequest.author = val;
     }
-    // Estrai URL
     else if (line.includes('🔗') && line.includes('URL:')) {
       let val = line.replace(/🔗/, '').replace('URL:', '').trim();
       if (val && val !== 'Non specificato' && val !== 'no') currentRequest.url = val;
     }
-    // Estrai Motivo
     else if (line.includes('💬') && line.includes('Motivo:')) {
       let val = line.replace(/💬/, '').replace('Motivo:', '').trim();
       if (val && val !== 'Nessuno') currentRequest.reason = val;
     }
-    // Estrai Cover
     else if (line.includes('🖼️') && line.includes('Cover:')) {
       let val = line.replace(/🖼️/, '').replace('Cover:', '').trim();
       if (val && val !== 'Non fornita' && val !== 'non lo so') currentRequest.cover = val;
     }
   }
   
-  // Aggiungi l'ultima richiesta
   if (currentRequest.title && currentRequest.requester) {
     newRequests.push(currentRequest);
   }
@@ -1084,7 +1175,6 @@
     return;
   }
   
-  // Crea l'oggetto richiesta
   const newRequest = {
     id: Date.now(),
     title: title,
@@ -1097,11 +1187,9 @@
     status: 'pending'
   };
   
-  // Salva nel localStorage
   mangaRequests.push(newRequest);
   saveRequests();
   
-  // === INVIO VIA EMAIL ===
   const messaggio = `[1]📋 NUOVA RICHIESTA MANGA\n\n`;
   const emailBody = `${messaggio}
 📅 Data: ${new Date().toLocaleString()}
@@ -1113,7 +1201,6 @@
 🖼️ Cover: ${cover || 'Non fornita'}
 🏷️ Stato locale: ⏳ In attesa`;
 
-  // Invia email con FormSubmit
   const form = document.createElement('form');
   form.method = 'POST';
   form.action = `https://formsubmit.co/${ADMIN_EMAIL}`;
@@ -1133,7 +1220,7 @@
   
   const inputNext = document.createElement('input');
   inputNext.name = '_next';
-  inputNext.value = window.location.href;  // Torna alla pagina corrente
+  inputNext.value = window.location.href;
 
   form.appendChild(inputMessage);
   form.appendChild(inputSubject);
@@ -1143,9 +1230,7 @@
   
   form.submit();
   document.body.removeChild(form);
-  // =========================
   
-  // Pulisci il modulo
   document.getElementById('reqTitle').value = '';
   document.getElementById('reqAuthor').value = '';
   document.getElementById('reqCover').value = '';
@@ -1170,7 +1255,6 @@
     return;
   }
   
-  // Crea l'oggetto bug
   const newBug = {
     id: Date.now(),
     type: type,
@@ -1182,11 +1266,9 @@
     status: 'pending'
   };
   
-  // Salva nel localStorage
   bugReports.push(newBug);
   saveBugs();
   
-  // === INVIO VIA EMAIL ===
   const tipoLabel = {
     'visual': '🎨 Problema visivo',
     'functional': '⚙️ Problema funzionale',
@@ -1205,7 +1287,6 @@
 📍 Pagina: ${page || 'Non specificata'}
 🏷️ Stato locale: ⏳ In attesa`;
 
-  // Invia email con FormSubmit
   const form = document.createElement('form');
   form.method = 'POST';
   form.action = `https://formsubmit.co/${ADMIN_EMAIL}`;
@@ -1225,7 +1306,7 @@
   
   const inputNext = document.createElement('input');
   inputNext.name = '_next';
-  inputNext.value = window.location.href;  // Torna alla pagina corrente
+  inputNext.value = window.location.href;
 
   form.appendChild(inputMessage);
   form.appendChild(inputSubject);
@@ -1235,9 +1316,7 @@
   
   form.submit();
   document.body.removeChild(form);
-  // =========================
   
-  // Pulisci il modulo
   document.getElementById('bugType').value = 'visual';
   document.getElementById('bugTitle').value = '';
   document.getElementById('bugDescription').value = '';
@@ -1249,7 +1328,6 @@
 }
 
   function renderRequestsTab() {
-    // Aggiungi pulsante invia email
     const existingBtn = document.getElementById('sendRequestsEmailBtn');
     if (!existingBtn) {
       const btnContainer = document.createElement('div');
@@ -1275,19 +1353,12 @@
     const approved = mangaRequests.filter(r => r.status === 'approved');
     const rejected = mangaRequests.filter(r => r.status === 'rejected');
     
-    if (pending.length > 0) {
-      pending.forEach(req => { grid.appendChild(createRequestCard(req)); });
-    }
-    if (approved.length > 0) {
-      approved.forEach(req => { grid.appendChild(createRequestCard(req)); });
-    }
-    if (rejected.length > 0) {
-      rejected.forEach(req => { grid.appendChild(createRequestCard(req)); });
-    }
+    if (pending.length > 0) pending.forEach(req => grid.appendChild(createRequestCard(req)));
+    if (approved.length > 0) approved.forEach(req => grid.appendChild(createRequestCard(req)));
+    if (rejected.length > 0) rejected.forEach(req => grid.appendChild(createRequestCard(req)));
   }
 
   function renderBugsTab() {
-    // Aggiungi pulsante invia email
     const existingBtn = document.getElementById('sendBugsEmailBtn');
     if (!existingBtn) {
       const btnContainer = document.createElement('div');
@@ -1312,12 +1383,8 @@
     const pending = bugReports.filter(b => b.status === 'pending');
     const fixed = bugReports.filter(b => b.status === 'fixed');
     
-    if (pending.length > 0) {
-      pending.forEach(bug => { grid.appendChild(createBugCard(bug)); });
-    }
-    if (fixed.length > 0) {
-      fixed.forEach(bug => { grid.appendChild(createBugCard(bug)); });
-    }
+    if (pending.length > 0) pending.forEach(bug => grid.appendChild(createBugCard(bug)));
+    if (fixed.length > 0) fixed.forEach(bug => grid.appendChild(createBugCard(bug)));
   }
   
   function createRequestCard(req) {
@@ -1497,7 +1564,10 @@
     if (currentTab === 'local') tabLabel = 'manga locali';
     else if (currentTab === 'external') tabLabel = 'manga esterni';
     else if (currentTab === 'requests') tabLabel = 'richieste';
-    else tabLabel = 'segnalazioni bug';
+    else if (currentTab === 'bugs') tabLabel = 'segnalazioni bug';
+    else if (currentTab === 'reading') tabLabel = 'manga in lettura';
+    else if (currentTab === 'plan') tabLabel = 'manga da leggere';
+    else if (currentTab === 'completed') tabLabel = 'manga completati';
     
     if (searchTerm && searchTerm.trim()) {
       resultsInfo.innerHTML = `🔍 Trovati ${filteredCount} ${tabLabel} su ${totalCount} per "${escapeHtml(searchTerm.trim())}"`;
@@ -1510,7 +1580,11 @@
     if (currentTab === 'local') return [...mangasLocal];
     if (currentTab === 'external') return [...mangasExternal];
     if (currentTab === 'requests') return [...mangaRequests];
-    return [...bugReports];
+    if (currentTab === 'bugs') return [...bugReports];
+    if (currentTab === 'reading') return loadLists().reading;
+    if (currentTab === 'plan') return loadLists().plan;
+    if (currentTab === 'completed') return loadLists().completed;
+    return [];
   }
 
   function applySortAndFilter() {
@@ -1529,6 +1603,12 @@
       let filtered = filterItems(items, currentSearchTerm);
       renderBugsTabContent(filtered);
       updateResultsInfo(filtered.length, totalCount, currentSearchTerm);
+      return;
+    }
+    
+    // Per le liste (reading, plan, completed) non applichiamo ordinamento complesso
+    if (currentTab === 'reading' || currentTab === 'plan' || currentTab === 'completed') {
+      renderListTab(currentTab);
       return;
     }
     
@@ -1599,6 +1679,8 @@
       addMangaBtn.title = 'Richiedi un manga';
       addMangaBtn.style.background = '#8b5cf6';
       addMangaBtn.onclick = () => { requestModal.classList.add('active'); };
+    } else {
+      addMangaBtn.style.display = 'none';
     }
   }
 
@@ -1608,6 +1690,20 @@
       if (btn.dataset.tab === tab) btn.classList.add('active');
       else btn.classList.remove('active');
     });
+    
+    // Mostra/nascondi controlli
+    if (tab === 'reading' || tab === 'plan' || tab === 'completed') {
+      sortSelect.style.display = 'none';
+      addMangaBtn.style.display = 'none';
+      searchInput.value = '';
+      currentSearchTerm = '';
+      searchClear.style.display = 'none';
+      renderListTab(tab);
+      return;
+    } else {
+      sortSelect.style.display = 'block';
+      addMangaBtn.style.display = 'flex';
+    }
     
     if (tab === 'external') await loadExternalMangas(true);
     if (tab === 'requests') loadRequests();

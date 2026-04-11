@@ -188,6 +188,35 @@
       box-shadow: 0 5px 20px rgba(139, 92, 246, 0.4);
     }
     
+    /* Pulsanti liste */
+    .list-buttons {
+      margin-top: 20px;
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .list-btn {
+      background: rgba(255,255,255,0.1);
+      color: white;
+      border: 1px solid rgba(139, 92, 246, 0.3);
+      padding: 10px 18px;
+      border-radius: 25px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      font-weight: 500;
+      transition: 0.2s;
+      backdrop-filter: blur(5px);
+    }
+    .list-btn:hover {
+      background: rgba(139, 92, 246, 0.3);
+      transform: scale(1.02);
+    }
+    .list-btn.active {
+      background: #8b5cf6;
+      border-color: #8b5cf6;
+      box-shadow: 0 0 15px rgba(139, 92, 246, 0.3);
+    }
+    
     /* Container principale */
     .container {
       padding: 30px 20px;
@@ -320,6 +349,30 @@
       text-align: center;
     }
     
+    /* Toast */
+    .toast {
+      position: fixed;
+      bottom: 30px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(139, 92, 246, 0.95);
+      color: white;
+      padding: 12px 24px;
+      border-radius: 40px;
+      font-size: 0.9rem;
+      font-weight: 500;
+      z-index: 2000;
+      animation: toastFade 2.5s ease forwards;
+      pointer-events: none;
+      box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+    }
+    @keyframes toastFade {
+      0% { opacity: 0; transform: translateX(-50%) translateY(20px); }
+      15% { opacity: 1; transform: translateX(-50%) translateY(0); }
+      85% { opacity: 1; }
+      100% { opacity: 0; transform: translateX(-50%) translateY(-20px); visibility: hidden; }
+    }
+    
     /* Scroll reveal */
     .fade-up {
       opacity: 0;
@@ -364,6 +417,9 @@
         justify-content: center;
       }
       .genres {
+        justify-content: center;
+      }
+      .list-buttons {
         justify-content: center;
       }
       .stats {
@@ -412,6 +468,13 @@
         <p>Caricamento descrizione...</p>
       </div>
       <a href="#" class="read-btn" id="readFirstBtn">▶ Inizia a leggere</a>
+      
+      <!-- Pulsanti liste personalizzate -->
+      <div class="list-buttons">
+        <button class="list-btn" id="readingBtn" data-list="reading">📖 Sto leggendo</button>
+        <button class="list-btn" id="planBtn" data-list="plan">📝 Da leggere</button>
+        <button class="list-btn" id="completedBtn" data-list="completed">✅ Completato</button>
+      </div>
     </div>
   </div>
 </div>
@@ -453,6 +516,95 @@
   const statusBadge = document.getElementById('statusBadge');
   const yearBadge = document.getElementById('yearBadge');
 
+  // ============================================================
+  // GESTIONE LISTE PERSONALI
+  // ============================================================
+  const LISTS_KEY = 'kitsumanga_lists';
+  
+  function loadLists() {
+    const saved = localStorage.getItem(LISTS_KEY);
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch(e) {
+        return { reading: [], plan: [], completed: [] };
+      }
+    }
+    return { reading: [], plan: [], completed: [] };
+  }
+  
+  function saveLists(lists) {
+    localStorage.setItem(LISTS_KEY, JSON.stringify(lists));
+  }
+  
+  function getCurrentList(mangaId) {
+    const lists = loadLists();
+    if (lists.reading.some(m => m.id === mangaId)) return 'reading';
+    if (lists.plan.some(m => m.id === mangaId)) return 'plan';
+    if (lists.completed.some(m => m.id === mangaId)) return 'completed';
+    return null;
+  }
+  
+  function getListName(type) {
+    const names = { reading: 'Sto leggendo', plan: 'Da leggere', completed: 'Completato' };
+    return names[type] || type;
+  }
+  
+  function showToast(message) {
+    const existingToast = document.querySelector('.toast');
+    if (existingToast) existingToast.remove();
+    const toast = document.createElement('div');
+    toast.className = 'toast';
+    toast.textContent = message;
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 2500);
+  }
+  
+  function addToList(listType) {
+    const lists = loadLists();
+    
+    const manga = {
+      id: mangaId,
+      title: mangaTitle,
+      cover: coverImg.src || `${IMAGEKIT_BASE}/${mangaId}/cover.jpg`,
+      latest: mangaDetails?.latest || '',
+      author: mangaDetails?.author || ''
+    };
+    
+    // Rimuovi da altre liste
+    ['reading', 'plan', 'completed'].forEach(type => {
+      lists[type] = lists[type].filter(m => m.id !== manga.id);
+    });
+    
+    // Aggiungi alla lista selezionata
+    if (!lists[listType].some(m => m.id === manga.id)) {
+      lists[listType].push(manga);
+    }
+    
+    saveLists(lists);
+    updateButtonStates(listType);
+    showToast(`✅ Aggiunto a "${getListName(listType)}"`);
+  }
+  
+  function updateButtonStates(activeList) {
+    const buttons = document.querySelectorAll('.list-btn');
+    buttons.forEach(btn => {
+      btn.classList.remove('active');
+      if (btn.dataset.list === activeList) {
+        btn.classList.add('active');
+      }
+    });
+  }
+  
+  function initListButtons() {
+    const currentList = getCurrentList(mangaId);
+    updateButtonStates(currentList);
+    
+    document.getElementById('readingBtn').addEventListener('click', () => addToList('reading'));
+    document.getElementById('planBtn').addEventListener('click', () => addToList('plan'));
+    document.getElementById('completedBtn').addEventListener('click', () => addToList('completed'));
+  }
+
   async function loadMangaDetails() {
     try {
       const res = await fetch('manga.json');
@@ -466,7 +618,6 @@
             coverImg.src = mangaDetails.cover;
             heroBg.style.backgroundImage = `url(${mangaDetails.cover})`;
           } else {
-            // Fallback: prova a usare la cover da ImageKit
             coverImg.src = `${IMAGEKIT_BASE}/${mangaId}/cover.jpg`;
             heroBg.style.backgroundImage = `url(${IMAGEKIT_BASE}/${mangaId}/cover.jpg)`;
           }
@@ -497,6 +648,9 @@
             yearBadge.innerHTML = `📅 ${mangaDetails.year}`;
           }
           
+          // Inizializza i pulsanti delle liste
+          initListButtons();
+          
           return true;
         }
       }
@@ -504,17 +658,17 @@
       console.log('Impossibile caricare dettagli manga');
     }
     
-    // Fallback finale
     coverImg.src = `${IMAGEKIT_BASE}/${mangaId}/cover.jpg`;
     heroBg.style.backgroundImage = `url(${IMAGEKIT_BASE}/${mangaId}/cover.jpg)`;
     descriptionContainer.innerHTML = `<p>Nessuna descrizione disponibile per questo manga.</p>`;
     genresContainer.innerHTML = '<span class="genre-tag">🎭 Generi non specificati</span>';
+    
+    // Inizializza comunque i pulsanti
+    initListButtons();
+    
     return false;
   }
 
-  // ============================================================
-  // MODIFICA: loadFromManifest da ImageKit
-  // ============================================================
   async function loadFromManifest() {
     try {
       const manifestUrl = `${IMAGEKIT_BASE}/${mangaId}/manifest.json?t=${Date.now()}`;
@@ -541,9 +695,6 @@
     return false;
   }
 
-  // ============================================================
-  // MODIFICA: showManifestGuide con percorso ImageKit
-  // ============================================================
   function showManifestGuide() {
     const exampleNumbers = contentType === 'volumes' ? '[1, 2, 3]' : '[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]';
     const exampleType = contentType === 'volumes' ? 'volumes' : 'chapters';
