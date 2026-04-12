@@ -1679,16 +1679,40 @@
   }
 
   function filterItems(items, searchTerm) {
-    if (!searchTerm.trim()) return items;
-    const term = searchTerm.toLowerCase().trim();
-    return items.filter(item => 
-      item.title?.toLowerCase().includes(term) ||
-      item.requester?.toLowerCase().includes(term) ||
-      item.reporter?.toLowerCase().includes(term) ||
-      (item.latest && item.latest.toLowerCase().includes(term)) ||
-      (item.author && item.author.toLowerCase().includes(term))
-    );
-  }
+  if (!searchTerm.trim()) return items;
+  const term = searchTerm.toLowerCase().trim();
+  return items.filter(item => {
+    // Controlla il titolo
+    if (item.title?.toLowerCase().includes(term)) return true;
+    
+    // Controlla il richiedente (per le richieste)
+    if (item.requester?.toLowerCase().includes(term)) return true;
+    
+    // Controlla il segnalatore (per i bug)
+    if (item.reporter?.toLowerCase().includes(term)) return true;
+    
+    // Controlla l'ultimo capitolo/volume
+    if (item.latest && item.latest.toLowerCase().includes(term)) return true;
+    
+    // Controlla l'autore (gestisce sia stringhe che array)
+    if (item.author) {
+      if (Array.isArray(item.author)) {
+        // Per array di autori, controlla se qualcuno corrisponde
+        if (item.author.some(a => a.toLowerCase().includes(term))) return true;
+      } else {
+        // Per stringa singola
+        if (item.author.toLowerCase().includes(term)) return true;
+      }
+    }
+    
+    // Controlla i generi (array)
+    if (item.genres && Array.isArray(item.genres)) {
+      if (item.genres.some(g => g.toLowerCase().includes(term))) return true;
+    }
+    
+    return false;
+  });
+}
 
   function renderMangas(mangas) {
     if (mangas.length === 0) {
