@@ -1901,6 +1901,25 @@
     });
   });
 
+// Funzioni mancanti per la ricerca
+  function renderRequestsTabContent(requests) {
+    if (requests.length === 0) {
+      grid.innerHTML = '<div class="no-results">📭 Nessuna richiesta trovata</div>';
+      return;
+    }
+    grid.innerHTML = '';
+    requests.forEach(req => grid.appendChild(createRequestCard(req)));
+  }
+
+  function renderBugsTabContent(bugs) {
+    if (bugs.length === 0) {
+      grid.innerHTML = '<div class="no-results">🐛 Nessuna segnalazione trovata</div>';
+      return;
+    }
+    grid.innerHTML = '';
+    bugs.forEach(bug => grid.appendChild(createBugCard(bug)));
+  }
+
   async function loadAllMangas() {
     await loadLocalMangas();
     await loadExternalMangas(true);
