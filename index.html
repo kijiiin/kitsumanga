@@ -1737,7 +1737,7 @@
         <div class="info">
           <div class="title">${escapeHtml(m.title)}</div>
           <div class="chapter">${m.latest || 'Nessun capitolo'}</div>
-          ${m.author ? `<div class="chapter" style="font-size: 11px;">✍️ ${escapeHtml(m.author)}</div>` : ''}
+          ${m.author ? `<div class="chapter" style="font-size: 11px;">✍️ ${Array.isArray(m.author) ? escapeHtml(m.author.join(', ')) : escapeHtml(m.author)}</div>` : ''}
         </div>
       `;
       card.onclick = function() {
