@@ -114,7 +114,7 @@
     "latest": "Volume 1",
     "author": "Yoshitoshi ABe",
     "description": "Una ragazza cade nel cielo e si sveglia all'interno di un bocciolo. Riprende i sensi su un letto e non si ricorda nulla del suo passato, a parte un nebuloso sogno. Le crescono due angeliche ali e le viene donata un'aureola, elementi che da quel giorno la contraddistinguono come Haibane. Dovrà quindi ambientarsi in questa nuova realtà e prendere confidenza con le compagne, con le regole e con le persone della vicina cittadina... per giungere a cercare di comprendere il motivo della sua rinascita come Haibane.",
-    "genres": ["Fantasy", "Slice Of Life", "Soprannaturale"],
+    "genres": ["Fantasy", "Slice of Life", "Soprannaturale"],
     "status": "Finished",
     "year": "2001",
     "type": "📚 Volumi"
@@ -174,9 +174,81 @@
     "latest": "Volume 1",
     "author": "Inio Asano",
     "description": "In un quartiere residenziale, chiamato \"La Città della Luce\", si consumano ogni giorno le storie dei suoi abitanti. Vita, morte, fiducia e disillusione s'intrecciano nel suo quotidiano gioco di ombre e luci, a cavallo tra sogni di bambini e incubi di adulti",
-    "genres": ["Drammatico", "Slice Of Life"],
+    "genres": ["Drammatico", "Slice of Life"],
     "status": "Finished",
     "year": "2005",
     "type": "📚 Volumi"
+  },
+{
+  "id": "la fotografa",
+  "title": "La Fotografa",
+  "cover": "https://ik.imagekit.io/Kijiiin/manga/la fotografa/cover.jpg",
+  "latest": "Volume 3",
+  "author": "Kenichi Kiriki",
+  "description": "Il manga è incentrato sulla liceale Ayumi Yumeji, membro del club di fotografia della sua scuola. Mentre la ragazza gira per la città scattando foto, incontra molte persone diverse e ognuna di esse contribuisce a farla crescere.",
+"genres": ["Scolastico", "Slice of Life"],
+"status": "Finished",
+"year": "2010",
+  "type": "📚 Volumi"
+  },
+{
+  "id": "line - sul filo della tensione",
+  "title": "Line - Sul Filo Della Tensione",
+  "cover": "https://ik.imagekit.io/Kijiiin/manga/ine - sul filo della tensione/cover.jpg",
+  "latest": "Volume 1",
+  "author": "Yua Kotegawa",
+  "description": "Se trovi un cellulare abbandonato su una panchina, non lo raccogliere. E se lo senti suonare, non rispondere. Perché potresti venire trascinato in un incubo, come la protagonista di questo thriller mozzafiato in un volume unico con cui Yua Kotegawa esordisce in Italia. Chiko è una ragazza spensierata, che ama divertirsi. Un giorno trova un misterioso cellulare che comincia a squillare. Non immagina che questo sarà per lei l’inizio di una sconvolgente notte, in cui entrerà in contatto con il mondo al di là della “linea” e la morte non sarà più qualcosa di cui ha sentito parlare unicamente nei telegiornali…",
+"genres": ["Drammatico", "Psicologico"],
+"status": "Finished",
+"year": "2003",
+  "type": "📚 Volumi"
+  },
+{
+  "id": "l'isola dei bambini dimenticati",
+  "title": "L'Isola Dei Bambini Dimenticati",
+  "cover": "https://ik.imagekit.io/Kijiiin/manga/l'isola dei bambini dimenticati/cover.jpg",
+  "latest": "Volume 4",
+  "author": "Kei Sanbe",
+  "description": "Dopo essere stati abbandonati dai genitori, Kokoro Mizuhara e Yume, la sua sorellina cieca, vengono presi in custodia e mandati sulla sperduta isola di Hoozuki, luogo in cui si trovano la loro nuova scuola e casa. Purtroppo, ciò che li attende non è una vita facile e felice: interagendo con gli altri bambini, Kokoro scopre che tutti pensano di essere stati riuniti in quel luogo per qualche sinistro proposito. Solo dopo aver fatto delle spaventose scoperte, Kokoro inizierà a credere alla parole dei compagni...",
+"genres": ["Azione", "Drammatico", "Ecchi", "Horror", "Mistero"],
+"status": "Finished",
+"year": "2008-2009",
+  "type": "📚 Volumi"
+  },
+{
+  "id": "lo squalificato - furuya",
+  "title": "Lo Squalificato - Furuya",
+  "cover": "https://ik.imagekit.io/Kijiiin/manga/lo squalificato - furuya/cover.jpg",
+  "latest": "Volume 3",
+  "author": ["Osamu Dazai", "Usamaru Furuya"],
+  "description": "Ningen Shikkaku, letteralmente "Non più umano" mostra la vita di Yozo Ohba, un'anima tormentata costretta a mantenere una facciata di normalità, celando al suo interno il vuoto e la disperazione.",
+"genres": ["Drammatico", "Psicologico", "Storico"],
+"status": "Finished",
+"year": "2009-2011",
+  "type": "📚 Volumi"
+  },
+{
+  "id": "lo squalificato - junji ito",
+  "title": "Lo Squalificato - Junji Ito",
+  "cover": "https://ik.imagekit.io/Kijiiin/manga/lo squalificato - junji ito/cover.jpg",
+  "latest": "Volume 3",
+  "author": ["Osamu Dazai", "Junji Ito"],
+  "description": "Tratto dal romanzo omonimo di Osamu Dazai, Ningen Shikkaku racconta la tormentata storia di Yozo Oba. Incapace di sentirsi "umano tra gli umani", Yozo conduce una vita sregolata e tormentata, segnata da relazioni amorose fallimentari e svariati tentativi di suicidio.",
+"genres": ["Drammatico", "Psicologico"],
+"status": "Finished",
+"year": "2017-2018",
+  "type": "📚 Volumi"
+  },
+{
+  "id": "quartieri lontani",
+  "title": "Quartieri Lontani",
+  "cover": "https://ik.imagekit.io/Kijiiin/manga/quartieri lontani/cover.jpg",
+  "latest": "VOlume 1",
+  "author": "Jiro Taniguchi",
+  "description": "Hiroshi Nakahara ha 48 anni. La sua è un'esistenza ordinaria, impiegatizia, senza sussulti o emozioni particolari, In un giorno come tanti, senza nemmeno rendersene conto, sale su un treno diretto al suo paese natale. Si risveglierà in una città lontana nel tempo, nel suo corpo di adolescente ma con i ricordi, le conoscenze e la consapevolezza di un uomo di mezza età. Costretto a rivivere l'estate dei suoi 14 anni, Hiroshi deve confrontarsi nuovamente con le voci e i volti del suo passato, sapendo già cosa il futuro riserverà loro. E, inevitabilmente, comincia a carezzare il sogno di poter riscrivere la propria storia..",
+"genres": ["Drammatico", "Slice of Life"],
+"status": "Finished",
+"year": "1998-1999",
+  "type": "📚 Volumi"
   }
 ]
