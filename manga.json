@@ -70,5 +70,17 @@
     "status": "Finished",
     "year": "1995-1998",
     "type": "📚 Volumi"
+  },
+{
+    "id": "duds hunt",
+    "title": "Duds Hunt",
+    "cover": "https://ik.imagekit.io/Kijiiin/manga/duds hunt/cover.jpg",
+    "latest": "Volume 1",
+    "author": "Tetsuya Tsutsui",
+    "description": "Appena uscito dal riformatorio, il giovane Nakanishi prova a scrostarsi di dosso un passato da criminale, ma ben presto si renderà conto di non essere portato per questo tipo di rimorsi. Quando la vita comincia a diventare stressante, quando il nuovo lavoro puzza più della cella e il capo è più squallido del peggior secondino, Nakanishi, invitato da un utente anonimo, decide di partecipare ad un misterioso gioco online: Duds Hunt. Un telefonino, un localizzatore che permette di stanare ogni giocatore, ma che implica la possibilità di essere scoperti da altri cacciatori, un premio in denaro, una sola regola: tutto è lecito.",
+    "genres": ["Azione", "Combattimento", "Drammatico", "Psicologico"],
+    "status": "Finished",
+    "year": "2002",
+    "type": "📚 Volumi"
   }
 ]
