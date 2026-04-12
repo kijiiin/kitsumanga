@@ -130,11 +130,15 @@
       width: auto;
       height: auto;
       object-fit: contain;
-      cursor: pointer;
+      cursor: grab;
       opacity: 0;
       transition: opacity 0.15s ease;
       pointer-events: auto;
+      transform-origin: center center;
+      will-change: transform;
     }
+    .page img:active { cursor: grabbing; }
+    .page img.zoomed { cursor: move; }
     .page img.loaded { opacity: 1; }
     
     .desktop-hud {
@@ -414,7 +418,6 @@
     const saved = progress[mangaId];
     
     if (saved && saved.number === currentNumber && saved.page !== undefined) {
-      // Verifica che la pagina salvata esista ancora
       return Math.min(saved.page, totalPages - 1);
     }
     return 0;
@@ -438,7 +441,17 @@
   let isFullscreenActive = false;
   let currentBasePath = '';
   let currentPageFiles = [];
-  let hasRestoredPage = false; // Per evitare di ripristinare più volte
+  let hasRestoredPage = false;
+
+  // Variabili per zoom
+  let currentZoom = 1;
+  let isZoomed = false;
+  let panX = 0, panY = 0;
+  let startPanX = 0, startPanY = 0;
+  let isPanning = false;
+  let initialDistance = 0;
+  let initialZoom = 1;
+  let currentZoomedImg = null;
 
   let startX = 0, currentX = 0, isDragging = false, dragStartTime = 0;
   const SWIPE_THRESHOLD = 50, SWIPE_MAX_TIME = 300;
@@ -523,12 +536,158 @@
   }
 
   // ============================================================
+  // ZOOM E PAN
+  // ============================================================
+  function getDistance(touches) {
+    const dx = touches[0].clientX - touches[1].clientX;
+    const dy = touches[0].clientY - touches[1].clientY;
+    return Math.sqrt(dx * dx + dy * dy);
+  }
+
+  function resetZoom(img) {
+    currentZoom = 1;
+    isZoomed = false;
+    panX = 0;
+    panY = 0;
+    img.style.transform = '';
+    img.classList.remove('zoomed');
+    currentZoomedImg = null;
+  }
+
+  function applyTransform(img) {
+    if (isZoomed) {
+      img.style.transform = `scale(${currentZoom}) translate(${panX}px, ${panY}px)`;
+    } else {
+      img.style.transform = '';
+    }
+  }
+
+  function handleTouchStart(e) {
+    const img = e.target;
+    if (img.tagName !== 'IMG') return;
+    
+    if (e.touches.length === 2) {
+      e.preventDefault();
+      initialDistance = getDistance(e.touches);
+      initialZoom = currentZoom;
+      currentZoomedImg = img;
+    } else if (e.touches.length === 1 && isZoomed) {
+      e.preventDefault();
+      isPanning = true;
+      startPanX = e.touches[0].clientX - panX;
+      startPanY = e.touches[0].clientY - panY;
+    }
+  }
+
+  function handleTouchMove(e) {
+    const img = e.target;
+    if (img.tagName !== 'IMG') return;
+    
+    if (e.touches.length === 2) {
+      e.preventDefault();
+      const currentDistance = getDistance(e.touches);
+      const scale = currentDistance / initialDistance;
+      currentZoom = Math.min(Math.max(initialZoom * scale, 1), 4);
+      isZoomed = currentZoom > 1;
+      applyTransform(img);
+      img.classList.toggle('zoomed', isZoomed);
+    } else if (e.touches.length === 1 && isPanning && isZoomed) {
+      e.preventDefault();
+      panX = e.touches[0].clientX - startPanX;
+      panY = e.touches[0].clientY - startPanY;
+      applyTransform(img);
+    }
+  }
+
+  function handleTouchEnd(e) {
+    if (e.touches.length < 2) {
+      initialDistance = 0;
+    }
+    if (e.touches.length === 0) {
+      isPanning = false;
+    }
+  }
+
+  function handleWheel(e) {
+    e.preventDefault();
+    const img = e.target;
+    if (img.tagName !== 'IMG') return;
+    
+    const delta = e.deltaY > 0 ? 0.9 : 1.1;
+    currentZoom = Math.min(Math.max(currentZoom * delta, 1), 4);
+    isZoomed = currentZoom > 1;
+    applyTransform(img);
+    img.classList.toggle('zoomed', isZoomed);
+    currentZoomedImg = img;
+  }
+
+  function handleDoubleClick(e) {
+    const img = e.target;
+    if (img.tagName !== 'IMG') return;
+    
+    if (isZoomed) {
+      resetZoom(img);
+    } else {
+      currentZoom = 2;
+      isZoomed = true;
+      applyTransform(img);
+      img.classList.add('zoomed');
+      currentZoomedImg = img;
+    }
+  }
+
+  function handleMouseDown(e) {
+    const img = e.target;
+    if (img.tagName !== 'IMG' || !isZoomed) return;
+    
+    e.preventDefault();
+    isPanning = true;
+    startPanX = e.clientX - panX;
+    startPanY = e.clientY - panY;
+    
+    function onMouseMove(e) {
+      if (!isPanning) return;
+      panX = e.clientX - startPanX;
+      panY = e.clientY - startPanY;
+      applyTransform(img);
+    }
+    
+    function onMouseUp() {
+      isPanning = false;
+      window.removeEventListener('mousemove', onMouseMove);
+      window.removeEventListener('mouseup', onMouseUp);
+    }
+    
+    window.addEventListener('mousemove', onMouseMove);
+    window.addEventListener('mouseup', onMouseUp);
+  }
+
+  function enableZoom(img) {
+    img.removeEventListener('touchstart', handleTouchStart);
+    img.removeEventListener('touchmove', handleTouchMove);
+    img.removeEventListener('touchend', handleTouchEnd);
+    img.removeEventListener('wheel', handleWheel);
+    img.removeEventListener('dblclick', handleDoubleClick);
+    img.removeEventListener('mousedown', handleMouseDown);
+    
+    img.addEventListener('touchstart', handleTouchStart, { passive: false });
+    img.addEventListener('touchmove', handleTouchMove, { passive: false });
+    img.addEventListener('touchend', handleTouchEnd);
+    img.addEventListener('wheel', handleWheel, { passive: false });
+    img.addEventListener('dblclick', handleDoubleClick);
+    img.addEventListener('mousedown', handleMouseDown);
+    
+    resetZoom(img);
+  }
+
+  // ============================================================
   // SWIPE
   // ============================================================
   function initSwipe() {
     const wrapper = readerWrapper;
     
     wrapper.addEventListener('touchstart', (e) => {
+      if (isZoomed) return;
       startX = e.touches[0].clientX;
       currentX = startX;
       isDragging = true;
@@ -537,7 +696,7 @@
     });
     
     wrapper.addEventListener('touchmove', (e) => {
-      if (!isDragging) return;
+      if (!isDragging || isZoomed) return;
       e.preventDefault();
       currentX = e.touches[0].clientX;
       const deltaX = currentX - startX;
@@ -546,7 +705,7 @@
     });
     
     wrapper.addEventListener('touchend', (e) => {
-      if (!isDragging) return;
+      if (!isDragging || isZoomed) return;
       isDragging = false;
       
       const deltaX = currentX - startX;
@@ -581,8 +740,6 @@
     readerWrapper.style.transition = 'transform 0.2s ease-out';
     readerWrapper.style.transform = `translateX(${-currentPageIndex * readerContainer.clientWidth}px)`;
     updateUI();
-    
-    // Salva il progresso quando si cambia pagina
     saveReadingProgress();
   }
   
@@ -649,15 +806,11 @@
     }
   }
 
-  // ============================================================
-  // CARICAMENTO PAGINE
-  // ============================================================
   async function loadChapter() {
     readerWrapper.innerHTML = '<div class="initial-loading"><div class="spinner"></div><div>Caricamento pagine...</div></div>';
     
     currentBasePath = `${IMAGEKIT_BASE}/${mangaId}/${currentNumber}`;
     
-    // Prima prova a leggere il manifest del capitolo
     let pageFiles = [];
     try {
       const res = await fetch(`${currentBasePath}/manifest.json?t=${Date.now()}`);
@@ -671,7 +824,6 @@
       }
     } catch(e) {}
     
-    // Se non c'è manifest, usa numerazione 1.jpg, 2.jpg...
     if (pageFiles.length === 0) {
       let pageCount = 0;
       let found = true;
@@ -726,11 +878,12 @@
         img.src = `${basePath}/${pageFiles[i]}`;
       };
       
+      enableZoom(img);
+      
       pageDiv.appendChild(img);
       readerWrapper.appendChild(pageDiv);
     }
     
-    // Determina la pagina iniziale
     let startPage = 0;
     
     if (!hasRestoredPage) {
@@ -747,7 +900,6 @@
     setTimeout(() => initSwipe(), 100);
     updateUI();
     
-    // Salva il progresso iniziale
     saveReadingProgress();
   }
 
@@ -771,12 +923,10 @@
 
   window.addEventListener('resize', updateWrapperPosition);
   
-  // Salva quando l'utente lascia la pagina
   window.addEventListener('beforeunload', () => {
     saveReadingProgress();
   });
   
-  // Salva quando la pagina va in background
   document.addEventListener('visibilitychange', () => {
     if (document.hidden) {
       saveReadingProgress();
