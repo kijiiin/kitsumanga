@@ -148,7 +148,7 @@
     "title": "K",
     "cover": "https://ik.imagekit.io/Kijiiin/manga/k/cover.jpg",
     "latest": "Volume 1",
-    "author": "Jirou Taniguchi",
+    "author": "Jiro Taniguchi",
     "description": "La storia di un uomo che sfida un dio bianco imponente. L'uomo continua a scalare solo per ricostruire il suo passato. Un'epopea alpina di Taniguchi Jiro, vincitore del Premio Culturale Osamu Tezuka.",
     "genres": ["Avventura", "Drammatico"],
     "status": "Finished",
@@ -249,6 +249,68 @@
 "genres": ["Drammatico", "Slice of Life"],
 "status": "Finished",
 "year": "1998-1999",
+  "type": "📚 Volumi"
+  },
+{
+  "id": "run with the wind",
+  "title": "Run With The Wind",
+  "cover": "https://ik.imagekit.io/Kijiiin/manga/run with the wind/cover.jpg",
+  "latest": "Volume 6",
+  "author": ["Shion Miura", "Sorata Unno"],
+  "description": "Kakeru, un ex corridore d'élite alle superiori, viene inseguito da un negoziante per aver rubato del cibo. Viene salvato da Haiji, uno studente dell'Università Kansei anch'egli corridore. Haiji convince Kakeru a vivere nel vecchio appartamento \"Chikuseisou\", dove ha intenzione di aggregarsi ad altri residenti per partecipare alla Maratona Hakone Ekiden, una delle più importanti corse universitarie del Giappone. Kakeru scopre presto che tutti i residenti, fatta eccezione per lui e Haiji, sono dei principianti.",
+"genres": ["Sport"],
+"status": "Finished",
+"year": "2007-2009",
+  "type": "📚 Volumi"
+  },
+{
+  "id": "si chiamava tomoji",
+  "title": "Si Chiamava Tomoji",
+  "cover": "https://ik.imagekit.io/Kijiiin/manga/si chiamava tomoji/cover.jpg",
+  "latest": "Volume 1",
+  "author": ["Miwako Ogihara", "Jiro Taniguchi"],
+  "description": "Campagna giapponese, inizi del XX secolo. Tomoji Uchida, tredici anni, torna a casa dopo la scuola. Fumiaki Itô, diciannove anni, termina proprio in quel momento la sua breve visita in casa Uchida, e si allontana con la macchina fotografica in spalla. Il richiamo di un falco echeggia d’improvviso e gli occhi dei due giovani scrutano all'unisono l’azzurro terso tra le nuvole. Non sanno l’uno dell’altro. Non sanno di essere così vicini. Non sanno che da quel momento li unisce una sottile e inconsapevole connessione cerebrale. E che le loro vite si incroceranno sette anni dopo, destinate a una delicata e dolcissima storia d’amore.
+Ispirandosi all'esistenza di due personaggi reali – fondatori di un’importante branca religiosa del buddismo – Jirô Taniguchi traccia il tenero ritratto di un’adolescente che cresce nell'atmosfera del Giappone rurale tra le due guerre, con i suoi ritmi scanditi dalle stagioni e dal lavoro della terra. Una ragazza dalla forza straordinaria, il cui cuore freme di speranza per il futuro, una donna che si chiamava Tomoji.",
+"genres": ["Drammatico", "Sentimentale", "Slice of Life", "Storico"],
+"status": "Finished",
+"year": "2012",
+  "type": "📚 Volumi"
+  },
+{
+  "id": "the rock 'n roll band",
+  "title": "The Rock 'N Roll Band",
+  "cover": "https://ik.imagekit.io/Kijiiin/manga/the rock 'n roll band/cover.jpg",
+  "latest": "Capitolo 1",
+  "author": "Naoki Urasawa",
+  "description": "Scoppia il caos dopo che la chitarra di Take, appartenuta al suo defunto zio, viene rubata.",
+"genres": ["Drammatico", "Musica"],
+"status": "Finished",
+"year": "2023",
+  "type": "📖 Capitoli"
+  },
+{
+  "id": "una vita tra i margini",
+  "title": "Una Vita Tra I Margini",
+  "cover": "https://ik.imagekit.io/Kijiiin/manga/una vita tra i margini/cover.jpg",
+  "latest": "Volume 1",
+  "author": "Yoshihiro Tatsumi",
+  "description": "Nelle 840 pagine di A Drifting Life, Tatsumi ci regala un racconto semi-autobiografico che narra di un autore che lotta per trovare il suo posto nel difficile dopoguerra e guadagnarsi il pane con il mestiere di mangaka, mentre tenta di superare preconcetti e luoghi comuni per stabilire una nuova forma d'arte. La nuova arte è il \"gekiga\", uno stile realista che rompe i legami con il popolare mainstream manga.
+Uno dei momenti centrali della vita di Tatsumi è stato l'incontro con Osamu Tezuka, questo evento ha trasformato una passione in lavoro, poiché prima il disegno era per lui solo un modo per impiegare il tempo.",
+"genres": ["Drammatico", "Psicologico", "Sentimentale", "Slice of Life", "Storico"],
+"status": "Finished",
+"year": "2008",
+  "type": "📚 Volumi"
+  },
+{
+  "id": "venezia",
+  "title": "Venezia",
+  "cover": "https://ik.imagekit.io/Kijiiin/manga/venezia/cover.jpg",
+  "latest": "Volume 1",
+  "author": "Jiro Taniguchi",
+  "description": "\"La partenza non è altro che l'inizio del viaggio di ritorno verso casa.\" è una frase che in tanti hanno letto su qualche muro, aggirandosi per le calli di Venezia. Parole che racchiudono il senso di questo libro suggestivo, in cui Taniguchi ha trasfigurato il suo soggiorno veneziano nella vicenda di un uomo alla ricerca delle proprie radici. L'inattesa scoperta di un legame tra le sue origini giapponesi e la città lagunare crea un corto circuito emotivo ammaliante, un flusso visivo dal quale – proprio come dalle meraviglie di Venezia – è impossibile distogliere lo sguardo.",
+"genres": ["Slice of Life"],
+"status": "Finished",
+"year": "2016",
   "type": "📚 Volumi"
   }
 ]
