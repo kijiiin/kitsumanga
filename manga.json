@@ -10,5 +10,17 @@
     "status": "Finished",
     "year": "2020-2020",
     "type": "📚 Volumi"
+  },
+{
+    "id": "ayashimon",
+    "title": "Ayashimon",
+    "cover": "https://ik.imagekit.io/Kijiiin/manga/ayashimon/cover.jpg",
+    "latest": "Volume 3",
+    "author": "Yuji Kaku",
+    "description": "Maruo Kaido insegue un sogno irrealizzabile, quello di essere come il protagonista di un manga. Per quanto allenandosi abbia ottenuto una forza incredibile la sua vita trascorre tranquilla senza particolari sorprese. Un giorno incontra Urara, una ragazza che apparentemente cerca di fuggire da alcuni yakuza che la inseguono, ma questi non sono comuni esseri umani...",
+    "genres": ["Azione", "Commedia", "Fantasy", "Soprannaturale"],
+    "status": "Finished",
+    "year": "2021-2022",
+    "type": "📚 Volumi"
   }
 ]
