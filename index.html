@@ -1438,7 +1438,7 @@
     document.getElementById('emailImportText').value = '';
   }
 
-  async function addRequest() {
+  function addRequest() {
     const title = document.getElementById('reqTitle').value.trim();
     const author = document.getElementById('reqAuthor').value.trim();
     const cover = document.getElementById('reqCover').value.trim();
@@ -1504,7 +1504,7 @@
     showToast('✅ Richiesta inviata!');
   }
 
-  async function addBug() {
+  function addBug() {
     const type = document.getElementById('bugType').value;
     const title = document.getElementById('bugTitle').value.trim();
     const description = document.getElementById('bugDescription').value.trim();
@@ -1918,8 +1918,18 @@
   adminBtn.addEventListener('click', authenticateAdmin);
   bugBtn.addEventListener('click', () => bugModal.classList.add('active'));
   closeAdmin.addEventListener('click', () => adminPanel.classList.remove('active'));
-  submitRequest.addEventListener('click', addRequest);
-  submitBug.addEventListener('click', addBug);
+  
+  // === FIX: Event listener per i pulsanti di submit ===
+  submitRequest.addEventListener('click', (e) => {
+    e.preventDefault();
+    addRequest();
+  });
+  
+  submitBug.addEventListener('click', (e) => {
+    e.preventDefault();
+    addBug();
+  });
+  
   closeRequestModal.addEventListener('click', () => requestModal.classList.remove('active'));
   closeBugModal.addEventListener('click', () => bugModal.classList.remove('active'));
   document.getElementById('importFromEmailBtn')?.addEventListener('click', importFromEmail);
