@@ -94,5 +94,77 @@
     "status": "Finished",
     "year": "2021-2023",
     "type": "📚 Volumi"
+  },
+{
+    "id": "glaucos",
+    "title": "Glaucos",
+    "cover": "https://ik.imagekit.io/Kijiiin/manga/glaucos/cover.jpg",
+    "latest": "Volume 4",
+    "author": "Akio Tanaka",
+    "description": "Un ragazzo nato dal mare vive in un'isola del Pacifico, consumando in segreto il suo misterioso rapporto con l'oceano. Sarà l'incontro con un campione mondiale di immersione in apnea a portarlo via da quel mondo, ma non in cerca della gloria, bensì per scoprire cosa si cela oltre il suo limite, nell'abisso...",
+    "genres": ["Sport"],
+    "status": "Finished",
+    "year": "2004",
+    "type": "📚 Volumi"
+  },
+  {
+    "id": "haibane renmei",
+    "title": "Haibane Renmei",
+    "cover": "https://ik.imagekit.io/Kijiiin/manga/haibane renmei/cover.jpg",
+    "latest": "Volume 1",
+    "author": "Yoshitoshi ABe",
+    "description": "Una ragazza cade nel cielo e si sveglia all'interno di un bocciolo. Riprende i sensi su un letto e non si ricorda nulla del suo passato, a parte un nebuloso sogno. Le crescono due angeliche ali e le viene donata un'aureola, elementi che da quel giorno la contraddistinguono come Haibane. Dovrà quindi ambientarsi in questa nuova realtà e prendere confidenza con le compagne, con le regole e con le persone della vicina cittadina... per giungere a cercare di comprendere il motivo della sua rinascita come Haibane.",
+    "genres": ["Fantasy", "Slice Of Life", "Soprannaturale"],
+    "status": "Finished",
+    "year": "2001",
+    "type": "📚 Volumi"
+  },
+  {
+    "id": "il colore venuto dallo spazio",
+    "title": "Il Colore Venuto Dallo Spazio",
+    "cover": "https://ik.imagekit.io/Kijiiin/manga/il colore venuto dallo spazio/cover.jpg",
+    "latest": "Volume 1",
+    "author": ["H. P. Lovecraft", "Gō Tanabe"],
+    "description": "Adattamento del romanzo omonimo di H. P. Lovecraft",
+    "genres": ["Horror", "Soprannaturale"],
+    "status": "Finished",
+    "year": "2015",
+    "type": "📚 Volumi"
+  },
+  {
+    "id": "il. la ragazza dai mille volti",
+    "title": "I.L - La Ragazza Dai Mille Volti",
+    "cover": "https://ik.imagekit.io/Kijiiin/manga/il. la ragazza dai mille volti/cover.jpg",
+    "latest": "Volume 1",
+    "author": "Osamu Tezuka",
+    "description": "Il manga è una sorta di favola per adulti con la quale Tezuka, attraverso gli occhi di un uomo di nome Daisaku Imari, e di I.L, una misteriosa donna capace di trasformarsi in qualunque persona, mette alla luce i problemi della società visti da varie angolature. Imari è un famoso regista che ha lasciato l'industria cinematografica da tre anni dopo aver prodotto intenzionalmente un film di scarso valore a causa della perdita di interesse per il suo lavoro. Un giorno s'imbatte in un indovino che gli racconta di una casa in cui dimora il conte degli Alucard. L'uomo si reca sul posto e vi trova il conte che gli affida I.L, una donna misteriosa. Entrando dentro un particolare scrigno ella può trasformarsi in qualunque essere umano desideri, uomo o donna, giovane o anziano. Imari è ovviamente affascinato da tutto ciò e inizia ad usarla nel suo business. I.L prende le sembianze di qualunque persona il cliente richieda mentre Imari manovra il tutto da dietro le quinte.",
+    "genres": ["Drammatico", "Psicologico", "Soprannaturale"],
+    "status": "Finished",
+    "year": "1969",
+    "type": "📚 Volumi"
+  },
+  {
+    "id": "k",
+    "title": "K",
+    "cover": "https://ik.imagekit.io/Kijiiin/manga/k/cover.jpg",
+    "latest": "Volume 1",
+    "author": "Jirou Taniguchi",
+    "description": "La storia di un uomo che sfida un dio bianco imponente. L'uomo continua a scalare solo per ricostruire il suo passato. Un'epopea alpina di Taniguchi Jiro, vincitore del Premio Culturale Osamu Tezuka.",
+    "genres": ["Avventura", "Drammatico"],
+    "status": "Finished",
+    "year": "1988",
+    "type": "📚 Volumi"
+  },
+  {
+    "id": "kirihito",
+    "title": "Kirihito",
+    "cover": "https://ik.imagekit.io/Kijiiin/manga/kirihito/cover.jpg",
+    "latest": "Volume 4",
+    "author": "Osamu Tezuka",
+    "description": "Kirihito Osanai è un giovane medico, alle prese con una strana e misteriosa malattia che colpisce gli abitanti di Inugamisawa – un piccolo e sperduto villaggio di montagna – e il cui decorso modifica i lineamenti degli ammalati, rendendoli simili a cani o a procioni. Gli abitanti del villaggio, terrorizzati, sono persuasi che sul villaggio regni la maledizione di Monmo, uno spirito dalle sembianze canine, e chiamano la malattia morbo di Monmo; le autorità mediche sostengono che essa è dovuta a un virus che non si è diffuso al di fuori del villaggio a causa del suo isolamento; l'ipotesi di Kirihito è che si tratti di una endemia prodotta da agenti ambientali da indagare sul posto, e a tal scopo vi si reca. Così comincia il suo dramma umano che espone a tutti i mali della società: razzismo, vizio, arrivismo...",
+    "genres": ["Drammatico", "Mistero", "Psicologico"],
+    "status": "Finished",
+    "year": "1970-1971",
+    "type": "📚 Volumi"
   }
 ]
