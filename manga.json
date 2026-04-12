@@ -275,17 +275,5 @@ Ispirandosi all'esistenza di due personaggi reali – fondatori di un’importan
 "status": "Finished",
 "year": "2012",
   "type": "📚 Volumi"
-  },
-{
-  "id": "the rock 'n roll band",
-  "title": "The Rock 'N Roll Band",
-  "cover": "https://ik.imagekit.io/Kijiiin/manga/the rock 'n roll band/cover.jpg",
-  "latest": "Capitolo 1",
-  "author": "Naoki Urasawa",
-  "description": "Scoppia il caos dopo che la chitarra di Take, appartenuta al suo defunto zio, viene rubata.",
-"genres": ["Drammatico", "Musica"],
-"status": "Finished",
-"year": "2023",
-  "type": "📖 Capitoli"
   }
 ]
