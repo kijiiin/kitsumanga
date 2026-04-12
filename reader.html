@@ -390,6 +390,36 @@
   const IMAGEKIT_BASE = 'https://ik.imagekit.io/Kijiiin/manga';
   const IMAGEKIT_OPTIONS = 'tr=w-1200,q-80,f-auto';
   
+  // ============================================================
+  // GESTIONE PROGRESSO LETTURA
+  // ============================================================
+  const PROGRESS_KEY = 'kitsumanga_reading_progress';
+  
+  function saveReadingProgress() {
+    if (!mangaId || !contentType) return;
+    
+    const progress = JSON.parse(localStorage.getItem(PROGRESS_KEY) || '{}');
+    progress[mangaId] = {
+      number: currentNumber,
+      type: contentType,
+      page: currentPageIndex,
+      totalPages: totalPages,
+      timestamp: Date.now()
+    };
+    localStorage.setItem(PROGRESS_KEY, JSON.stringify(progress));
+  }
+  
+  function getSavedPage() {
+    const progress = JSON.parse(localStorage.getItem(PROGRESS_KEY) || '{}');
+    const saved = progress[mangaId];
+    
+    if (saved && saved.number === currentNumber && saved.page !== undefined) {
+      // Verifica che la pagina salvata esista ancora
+      return Math.min(saved.page, totalPages - 1);
+    }
+    return 0;
+  }
+  
   const urlParams = new URLSearchParams(window.location.search);
   const mangaId = urlParams.get('manga');
   const mangaTitle = decodeURIComponent(urlParams.get('title') || 'Manga');
@@ -408,6 +438,7 @@
   let isFullscreenActive = false;
   let currentBasePath = '';
   let currentPageFiles = [];
+  let hasRestoredPage = false; // Per evitare di ripristinare più volte
 
   let startX = 0, currentX = 0, isDragging = false, dragStartTime = 0;
   const SWIPE_THRESHOLD = 50, SWIPE_MAX_TIME = 300;
@@ -550,6 +581,9 @@
     readerWrapper.style.transition = 'transform 0.2s ease-out';
     readerWrapper.style.transform = `translateX(${-currentPageIndex * readerContainer.clientWidth}px)`;
     updateUI();
+    
+    // Salva il progresso quando si cambia pagina
+    saveReadingProgress();
   }
   
   function updateWrapperPosition() {
@@ -575,6 +609,7 @@
         chapterSelect.onchange = async (e) => {
           if (isLoadingChapter) return;
           currentNumber = parseInt(e.target.value);
+          hasRestoredPage = false;
           await loadChapter();
         };
         return true;
@@ -588,6 +623,7 @@
     isLoadingChapter = true;
     currentNumber = newNumber;
     chapterSelect.value = currentNumber;
+    hasRestoredPage = false;
     await loadChapter();
     isLoadingChapter = false;
     return true;
@@ -614,7 +650,7 @@
   }
 
   // ============================================================
-  // CARICAMENTO PAGINE (versione stabile)
+  // CARICAMENTO PAGINE
   // ============================================================
   async function loadChapter() {
     readerWrapper.innerHTML = '<div class="initial-loading"><div class="spinner"></div><div>Caricamento pagine...</div></div>';
@@ -637,7 +673,6 @@
     
     // Se non c'è manifest, usa numerazione 1.jpg, 2.jpg...
     if (pageFiles.length === 0) {
-      // Conta quante pagine esistono
       let pageCount = 0;
       let found = true;
       while (found && pageCount < 200) {
@@ -688,7 +723,6 @@
       img.onload = () => img.classList.add('loaded');
       
       img.onerror = () => {
-        // Prova senza parametri se fallisce
         img.src = `${basePath}/${pageFiles[i]}`;
       };
       
@@ -696,10 +730,25 @@
       readerWrapper.appendChild(pageDiv);
     }
     
-    currentPageIndex = 0;
+    // Determina la pagina iniziale
+    let startPage = 0;
+    
+    if (!hasRestoredPage) {
+      const savedPage = getSavedPage();
+      if (savedPage > 0) {
+        startPage = savedPage;
+        hasRestoredPage = true;
+        showToast(`📖 Ripreso da pagina ${startPage + 1}`);
+      }
+    }
+    
+    currentPageIndex = startPage;
     updateWrapperPosition();
     setTimeout(() => initSwipe(), 100);
     updateUI();
+    
+    // Salva il progresso iniziale
+    saveReadingProgress();
   }
 
   async function nextPage() {
@@ -721,6 +770,18 @@
   }
 
   window.addEventListener('resize', updateWrapperPosition);
+  
+  // Salva quando l'utente lascia la pagina
+  window.addEventListener('beforeunload', () => {
+    saveReadingProgress();
+  });
+  
+  // Salva quando la pagina va in background
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) {
+      saveReadingProgress();
+    }
+  });
 
   document.addEventListener('keydown', async (e) => {
     if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
