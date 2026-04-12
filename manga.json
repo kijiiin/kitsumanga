@@ -46,5 +46,17 @@
     "status": "Finished",
     "year": "2002",
     "type": "📚 Volumi"
+  },
+{
+    "id": "demon tune",
+    "title": "Demon Tune",
+    "cover": "https://ik.imagekit.io/Kijiiin/manga/demon tune/cover.jpg",
+    "latest": "Volume 4",
+    "author": "Yūki Kodama",
+    "description": "Wizard city. L'incontro tra maschi ninja e femmine fatine darà vita a una leggenda.",
+    "genres": ["Avventura", "Azione", "Fantasy", "Soprannaturale"],
+    "status": "Finished",
+    "year": "2018-2019",
+    "type": "📚 Volumi"
   }
 ]
