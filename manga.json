@@ -166,5 +166,17 @@
     "status": "Finished",
     "year": "1970-1971",
     "type": "📚 Volumi"
+  },
+{
+    "id": "la citta della luce",
+    "title": "La Città Della Luce",
+    "cover": "https://ik.imagekit.io/Kijiiin/manga/la citta della luce/cover.jpg",
+    "latest": "Volume 1",
+    "author": "Inio Asano",
+    "description": "In un quartiere residenziale, chiamato \"La Città della Luce\", si consumano ogni giorno le storie dei suoi abitanti. Vita, morte, fiducia e disillusione s'intrecciano nel suo quotidiano gioco di ombre e luci, a cavallo tra sogni di bambini e incubi di adulti",
+    "genres": ["Drammatico", "Slice Of Life"],
+    "status": "Finished",
+    "year": "2005",
+    "type": "📚 Volumi"
   }
 ]
