@@ -39,6 +39,204 @@
       50% { background-position: 100% 50%; }
       100% { background-position: 0% 50%; }
     }
+    
+    /* Layout principale con sidebar */
+    .app-layout {
+      display: flex;
+      min-height: calc(100vh - 140px);
+    }
+    
+    /* === SIDEBAR LISTE (DESKTOP) - STESSO SFONDO === */
+    .lists-sidebar {
+      width: 260px;
+      background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+      border-right: 1px solid rgba(139, 92, 246, 0.3);
+      padding: 25px 0;
+      position: sticky;
+      top: 0;
+      height: calc(100vh - 140px);
+      overflow-y: auto;
+      flex-shrink: 0;
+      transition: transform 0.3s ease;
+    }
+    
+    .sidebar-header {
+      padding: 0 20px 20px;
+      font-size: 1.2rem;
+      font-weight: 600;
+      color: #c4b5fd;
+      border-bottom: 1px solid rgba(139, 92, 246, 0.3);
+      margin-bottom: 15px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .sidebar-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 20px;
+      margin: 5px 10px;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      color: #e2d9ff;
+      background: transparent;
+    }
+    
+    .sidebar-item:hover {
+      background: rgba(139, 92, 246, 0.2);
+      padding-left: 25px;
+    }
+    
+    .sidebar-item.active {
+      background: linear-gradient(135deg, rgba(139, 92, 246, 0.3), rgba(107, 33, 168, 0.3));
+      border: 1px solid rgba(139, 92, 246, 0.4);
+      color: white;
+    }
+    
+    .sidebar-icon {
+      font-size: 1.3rem;
+      width: 28px;
+      text-align: center;
+    }
+    
+    .sidebar-count {
+      margin-left: auto;
+      background: rgba(139, 92, 246, 0.3);
+      padding: 2px 10px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: 600;
+    }
+    
+    .sidebar-item.active .sidebar-count {
+      background: #8b5cf6;
+    }
+    
+    /* Contenuto principale */
+    .main-content {
+      flex: 1;
+      padding: 0;
+      min-width: 0;
+    }
+    
+    /* === MENU A TENDINA LISTE (MOBILE) === */
+    .lists-dropdown-mobile {
+      display: none;
+      position: relative;
+    }
+    
+    .lists-dropdown-btn {
+      background: linear-gradient(135deg, rgba(139, 92, 246, 0.2), rgba(107, 33, 168, 0.3));
+      color: white;
+      border: 1px solid rgba(139, 92, 246, 0.5);
+      padding: 10px 20px;
+      border-radius: 30px;
+      cursor: pointer;
+      font-size: 0.95rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      backdrop-filter: blur(10px);
+      transition: all 0.3s ease;
+      white-space: nowrap;
+    }
+    
+    .lists-dropdown-btn:hover {
+      background: linear-gradient(135deg, rgba(139, 92, 246, 0.4), rgba(107, 33, 168, 0.5));
+    }
+    
+    .dropdown-arrow {
+      font-size: 0.7rem;
+      transition: transform 0.3s ease;
+    }
+    
+    .lists-dropdown-mobile.active .dropdown-arrow {
+      transform: rotate(180deg);
+    }
+    
+    .lists-dropdown-content {
+      position: absolute;
+      top: calc(100% + 10px);
+      right: 0;
+      background: rgba(20, 20, 40, 0.98);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(139, 92, 246, 0.4);
+      border-radius: 20px;
+      min-width: 220px;
+      overflow: hidden;
+      z-index: 1000;
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(-10px);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+    }
+    
+    .lists-dropdown-mobile.active .lists-dropdown-content {
+      opacity: 1;
+      visibility: visible;
+      transform: translateY(0);
+    }
+    
+    .dropdown-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 20px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      color: #e2d9ff;
+    }
+    
+    .dropdown-item:last-child {
+      border-bottom: none;
+    }
+    
+    .dropdown-item:hover {
+      background: rgba(139, 92, 246, 0.25);
+      padding-left: 25px;
+    }
+    
+    .dropdown-item.active {
+      background: rgba(139, 92, 246, 0.3);
+      color: white;
+    }
+    
+    .dropdown-icon {
+      font-size: 1.2rem;
+      width: 24px;
+      text-align: center;
+    }
+    
+    .dropdown-count {
+      margin-left: auto;
+      background: rgba(139, 92, 246, 0.3);
+      padding: 2px 8px;
+      border-radius: 20px;
+      font-size: 0.75rem;
+    }
+    
+    /* Nascondi sidebar su mobile, mostra dropdown */
+    @media (max-width: 900px) {
+      .lists-sidebar {
+        display: none;
+      }
+      .lists-dropdown-mobile {
+        display: block;
+      }
+    }
+    
+    @media (min-width: 901px) {
+      .lists-dropdown-mobile {
+        display: none;
+      }
+    }
+    
     .controls {
       display: flex;
       justify-content: space-between;
@@ -158,7 +356,7 @@
     .tabs {
       display: flex;
       justify-content: center;
-      gap: 8px;
+      gap: 10px;
       margin-bottom: 30px;
       padding: 0 20px;
       flex-wrap: wrap;
@@ -166,7 +364,7 @@
     .tab-btn {
       background: rgba(255,255,255,0.1);
       border: 1px solid rgba(139, 92, 246, 0.3);
-      padding: 10px 18px;
+      padding: 10px 20px;
       border-radius: 25px;
       cursor: pointer;
       color: white;
@@ -185,8 +383,8 @@
     .container { padding: 0 20px 30px; max-width: 1400px; margin: 0 auto; }
     .grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-      gap: 25px;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 20px;
     }
     .card {
       background: rgba(255,255,255,0.1);
@@ -204,7 +402,7 @@
     }
     .card img {
       width: 100%;
-      height: 260px;
+      height: 240px;
       object-fit: cover;
       background: #1a1a2e;
     }
@@ -216,7 +414,7 @@
       overflow: hidden;
       text-overflow: ellipsis;
     }
-    .chapter { font-size: 13px; color: #c4b5fd; }
+    .chapter { font-size: 12px; color: #c4b5fd; }
     .external-badge {
       position: absolute;
       top: 10px;
@@ -263,6 +461,25 @@
     .status-approved { background: rgba(16, 185, 129, 0.9); }
     .status-rejected { background: rgba(239, 68, 68, 0.9); }
     .status-fixed { background: rgba(16, 185, 129, 0.9); }
+    
+    /* Pulsante rimuovi dalle liste */
+    .remove-from-list-btn {
+      background: #ef4444;
+      border: none;
+      color: white;
+      padding: 6px 12px;
+      border-radius: 15px;
+      margin-top: 10px;
+      cursor: pointer;
+      font-size: 11px;
+      width: 100%;
+      transition: 0.2s;
+      font-weight: 500;
+    }
+    .remove-from-list-btn:hover {
+      background: #dc2626;
+    }
+    
     .no-results {
       grid-column: 1/-1;
       text-align: center;
@@ -298,24 +515,6 @@
       padding: 20px;
       background: rgba(0,0,0,0.2);
       margin-top: 40px;
-    }
-    
-    /* Pulsante rimuovi dalle liste */
-    .remove-from-list-btn {
-      background: #ef4444;
-      border: none;
-      color: white;
-      padding: 6px 12px;
-      border-radius: 15px;
-      margin-top: 10px;
-      cursor: pointer;
-      font-size: 11px;
-      width: 100%;
-      transition: 0.2s;
-      font-weight: 500;
-    }
-    .remove-from-list-btn:hover {
-      background: #dc2626;
     }
     
     .modal {
@@ -505,8 +704,8 @@
       bottom: 100px;
       left: 50%;
       transform: translateX(-50%);
-      background: rgba(0,0,0,0.9);
-      color: #c4b5fd;
+      background: linear-gradient(135deg, #8b5cf6, #6b21a8);
+      color: white;
       padding: 12px 24px;
       border-radius: 40px;
       font-size: 0.9rem;
@@ -514,23 +713,22 @@
       animation: toastFade 3s ease forwards;
       pointer-events: none;
       white-space: nowrap;
-      border: 1px solid #8b5cf6;
+      box-shadow: 0 5px 20px rgba(139, 92, 246, 0.4);
     }
     @keyframes toastFade {
       0% { opacity: 0; transform: translateX(-50%) translateY(20px); }
       15% { opacity: 1; transform: translateX(-50%) translateY(0); }
-      85% { opacity: 1; transform: translateX(-50%) translateY(0); }
+      85% { opacity: 1; }
       100% { opacity: 0; transform: translateX(-50%) translateY(-20px); visibility: hidden; }
     }
     
     @media (max-width: 768px) {
       h1 { font-size: 1.8em; }
-      .controls { flex-direction: column; align-items: stretch; }
+      .controls { flex-direction: row; align-items: center; }
       .search-container { max-width: 100%; }
-      .grid { gap: 15px; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
-      .card img { height: 200px; }
-      .tab-btn { padding: 8px 12px; font-size: 0.8rem; white-space: nowrap; }
-      .tabs { gap: 5px; }
+      .grid { gap: 15px; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); }
+      .card img { height: 180px; }
+      .tab-btn { padding: 8px 12px; font-size: 0.8rem; }
       .toast { font-size: 0.8rem; padding: 8px 16px; white-space: nowrap; bottom: 80px; }
       .admin-tab-btn { padding: 6px 15px; font-size: 0.85rem; }
     }
@@ -555,6 +753,32 @@
     <option value="latest-desc">🕐 Meno recenti prima</option>
     <option value="default">📋 Ordine originale</option>
   </select>
+  
+  <!-- Menu a tendina liste (MOBILE) -->
+  <div class="lists-dropdown-mobile" id="listsDropdownMobile">
+    <button class="lists-dropdown-btn" id="listsDropdownBtn">
+      <span>📋 Le mie liste</span>
+      <span class="dropdown-arrow">▼</span>
+    </button>
+    <div class="lists-dropdown-content" id="listsDropdownContent">
+      <div class="dropdown-item" data-list="reading">
+        <span class="dropdown-icon">📖</span>
+        <span>Sto leggendo</span>
+        <span class="dropdown-count" id="mobileReadingCount">0</span>
+      </div>
+      <div class="dropdown-item" data-list="plan">
+        <span class="dropdown-icon">📝</span>
+        <span>Da leggere</span>
+        <span class="dropdown-count" id="mobilePlanCount">0</span>
+      </div>
+      <div class="dropdown-item" data-list="completed">
+        <span class="dropdown-icon">✅</span>
+        <span>Completati</span>
+        <span class="dropdown-count" id="mobileCompletedCount">0</span>
+      </div>
+    </div>
+  </div>
+  
   <button class="reload-btn" id="reloadBtn">🔄 Ricarica</button>
   <button class="bug-btn" id="bugBtn">🐛 Segnala Bug</button>
   <button class="admin-btn" id="adminBtn">🔒 Admin</button>
@@ -563,19 +787,44 @@
 <div class="tabs">
   <button class="tab-btn active" data-tab="local">📁 Manga Locali</button>
   <button class="tab-btn" data-tab="external">🌐 Manga Esterni</button>
-  <button class="tab-btn" data-tab="reading">📖 Sto leggendo</button>
-  <button class="tab-btn" data-tab="plan">📝 Da leggere</button>
-  <button class="tab-btn" data-tab="completed">✅ Completati</button>
   <button class="tab-btn" data-tab="requests">📋 Richieste</button>
   <button class="tab-btn" data-tab="bugs">🐛 Bug</button>
 </div>
 
-<div class="results-info" id="resultsInfo"></div>
-
-<div class="container">
-  <div class="grid" id="grid">
-    <div style="grid-column: 1/-1; text-align: center; padding: 50px; color: #c4b5fd;">
-      Caricamento libreria...
+<div class="app-layout">
+  <!-- Sidebar liste (DESKTOP) - STESSO SFONDO -->
+  <div class="lists-sidebar" id="listsSidebar">
+    <div class="sidebar-header">
+      <span>📋</span>
+      <span>Le mie liste</span>
+    </div>
+    <div class="sidebar-item" data-list="reading">
+      <span class="sidebar-icon">📖</span>
+      <span>Sto leggendo</span>
+      <span class="sidebar-count" id="readingCount">0</span>
+    </div>
+    <div class="sidebar-item" data-list="plan">
+      <span class="sidebar-icon">📝</span>
+      <span>Da leggere</span>
+      <span class="sidebar-count" id="planCount">0</span>
+    </div>
+    <div class="sidebar-item" data-list="completed">
+      <span class="sidebar-icon">✅</span>
+      <span>Completati</span>
+      <span class="sidebar-count" id="completedCount">0</span>
+    </div>
+  </div>
+  
+  <!-- Contenuto principale -->
+  <div class="main-content">
+    <div class="results-info" id="resultsInfo"></div>
+    
+    <div class="container">
+      <div class="grid" id="grid">
+        <div style="grid-column: 1/-1; text-align: center; padding: 50px; color: #c4b5fd;">
+          Caricamento libreria...
+        </div>
+      </div>
     </div>
   </div>
 </div>
@@ -634,11 +883,11 @@
       <button class="admin-tab-btn active" data-admin-tab="requests">📋 Richieste Manga</button>
       <button class="admin-tab-btn" data-admin-tab="bugs">🐛 Segnalazioni Bug</button>
     </div>
-<div style="margin-bottom: 20px; padding: 15px; background: rgba(0,0,0,0.3); border-radius: 15px;">
-  <h3 style="margin-bottom: 10px;">📥 Importa richieste da email</h3>
-  <textarea id="emailImportText" placeholder="Incolla qui il contenuto dell'email ricevuta..." style="width: 100%; padding: 10px; background: rgba(255,255,255,0.1); border: 1px solid #8b5cf6; border-radius: 10px; color: white; margin-bottom: 10px; min-height: 150px;"></textarea>
-  <button id="importFromEmailBtn" style="background: #10b981; border: none; color: white; padding: 8px 20px; border-radius: 8px; cursor: pointer;">📥 Importa richieste</button>
-</div>
+    <div style="margin-bottom: 20px; padding: 15px; background: rgba(0,0,0,0.3); border-radius: 15px;">
+      <h3 style="margin-bottom: 10px;">📥 Importa richieste da email</h3>
+      <textarea id="emailImportText" placeholder="Incolla qui il contenuto dell'email ricevuta..." style="width: 100%; padding: 10px; background: rgba(255,255,255,0.1); border: 1px solid #8b5cf6; border-radius: 10px; color: white; margin-bottom: 10px; min-height: 150px;"></textarea>
+      <button id="importFromEmailBtn" style="background: #10b981; border: none; color: white; padding: 8px 20px; border-radius: 8px; cursor: pointer;">📥 Importa richieste</button>
+    </div>
     <div id="adminRequestsList"></div>
     <div id="adminBugsList" style="display: none;"></div>
   </div>
@@ -699,10 +948,21 @@
     localStorage.setItem(LISTS_KEY, JSON.stringify(lists));
   }
   
+  function updateListCounts() {
+    const lists = loadLists();
+    document.getElementById('readingCount').textContent = lists.reading.length;
+    document.getElementById('planCount').textContent = lists.plan.length;
+    document.getElementById('completedCount').textContent = lists.completed.length;
+    document.getElementById('mobileReadingCount').textContent = lists.reading.length;
+    document.getElementById('mobilePlanCount').textContent = lists.plan.length;
+    document.getElementById('mobileCompletedCount').textContent = lists.completed.length;
+  }
+  
   function removeFromList(listType, mangaId) {
     const lists = loadLists();
     lists[listType] = lists[listType].filter(m => m.id !== mangaId);
     saveLists(lists);
+    updateListCounts();
   }
   
   function renderListTab(listType) {
@@ -715,7 +975,6 @@
       completed: 'Completati'
     };
     
-    // Nascondi ordinamento e pulsante +
     sortSelect.style.display = 'none';
     addMangaBtn.style.display = 'none';
     
@@ -749,7 +1008,6 @@
       grid.appendChild(card);
     });
     
-    // Listener per i pulsanti rimuovi
     document.querySelectorAll('.remove-from-list-btn').forEach(btn => {
       btn.addEventListener('click', (e) => {
         e.stopPropagation();
@@ -763,86 +1021,145 @@
     
     resultsInfo.innerHTML = `📚 ${items.length} manga in "${tabNames[listType]}"`;
   }
+  
+  function setActiveList(activeList) {
+    // Aggiorna sidebar
+    document.querySelectorAll('.sidebar-item').forEach(item => {
+      item.classList.remove('active');
+      if (item.dataset.list === activeList) {
+        item.classList.add('active');
+      }
+    });
+    
+    // Aggiorna dropdown mobile
+    document.querySelectorAll('.dropdown-item').forEach(item => {
+      item.classList.remove('active');
+      if (item.dataset.list === activeList) {
+        item.classList.add('active');
+      }
+    });
+    
+    // Aggiorna tab
+    tabs.forEach(btn => btn.classList.remove('active'));
+  }
+  
+  function initListsUI() {
+    updateListCounts();
+    
+    // Sidebar desktop
+    document.querySelectorAll('.sidebar-item').forEach(item => {
+      item.addEventListener('click', () => {
+        const listType = item.dataset.list;
+        currentTab = listType;
+        setActiveList(listType);
+        renderListTab(listType);
+      });
+    });
+    
+    // Dropdown mobile
+    const dropdown = document.getElementById('listsDropdownMobile');
+    const dropdownBtn = document.getElementById('listsDropdownBtn');
+    
+    dropdownBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      dropdown.classList.toggle('active');
+    });
+    
+    document.addEventListener('click', (e) => {
+      if (!dropdown.contains(e.target)) {
+        dropdown.classList.remove('active');
+      }
+    });
+    
+    document.querySelectorAll('.dropdown-item').forEach(item => {
+      item.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const listType = item.dataset.list;
+        currentTab = listType;
+        setActiveList(listType);
+        renderListTab(listType);
+        dropdown.classList.remove('active');
+      });
+    });
+  }
 
   // ============================================================
   // INVIO VIA EMAIL CON FORMSUBMIT
   // ============================================================
   async function inviaEmail(tipo, dati) {
-  let messaggio = '';
-  
-  if (tipo === 'richieste') {
-    dati.forEach((req, i) => {
-      messaggio += `【${i+1}】 ${req.title}\n`;
-      messaggio += `   👤 Richiedente: ${req.requester}\n`;
-      messaggio += `   ✍️ Autore: ${req.author || 'Non specificato'}\n`;
-      messaggio += `   🔗 URL: ${req.url || 'Non specificato'}\n`;
-      messaggio += `   💬 Motivo: ${req.reason || 'Nessuno'}\n`;
-      messaggio += `   🏷️ Stato locale: ${req.status === 'pending' ? '⏳ In attesa' : (req.status === 'approved' ? '✅ Approvata' : '❌ Respinta')}\n`;
-      if (req.cover) messaggio += `   🖼️ Cover: ${req.cover}\n`;
-      messaggio += `\n`;
-    });
-  } 
-  else if (tipo === 'bugs') {
-    dati.forEach((bug, i) => {
-      const tipoLabel = {
-        'visual': '🎨 Problema visivo',
-        'functional': '⚙️ Problema funzionale',
-        'loading': '🔄 Problema di caricamento',
-        'reader': '📖 Problema nel lettore',
-        'other': '📝 Altro'
-      };
-      messaggio += `【${i+1}】 ${bug.title}\n`;
-      messaggio += `   👤 Segnalato da: ${bug.reporter}\n`;
-      messaggio += `   🏷️ Tipo: ${tipoLabel[bug.type] || bug.type}\n`;
-      messaggio += `   📝 Descrizione: ${bug.description}\n`;
-      messaggio += `   📄 Pagina: ${bug.page || 'Non specificata'}\n`;
-      messaggio += `   🏷️ Stato locale: ${bug.status === 'pending' ? '⏳ In attesa' : '✅ Risolto'}\n`;
-      messaggio += `\n`;
-    });
+    let messaggio = '';
+    
+    if (tipo === 'richieste') {
+      dati.forEach((req, i) => {
+        messaggio += `【${i+1}】 ${req.title}\n`;
+        messaggio += `   👤 Richiedente: ${req.requester}\n`;
+        messaggio += `   ✍️ Autore: ${req.author || 'Non specificato'}\n`;
+        messaggio += `   🔗 URL: ${req.url || 'Non specificato'}\n`;
+        messaggio += `   💬 Motivo: ${req.reason || 'Nessuno'}\n`;
+        messaggio += `   🏷️ Stato locale: ${req.status === 'pending' ? '⏳ In attesa' : (req.status === 'approved' ? '✅ Approvata' : '❌ Respinta')}\n`;
+        if (req.cover) messaggio += `   🖼️ Cover: ${req.cover}\n`;
+        messaggio += `\n`;
+      });
+    } else if (tipo === 'bugs') {
+      dati.forEach((bug, i) => {
+        const tipoLabel = {
+          'visual': '🎨 Problema visivo',
+          'functional': '⚙️ Problema funzionale',
+          'loading': '🔄 Problema di caricamento',
+          'reader': '📖 Problema nel lettore',
+          'other': '📝 Altro'
+        };
+        messaggio += `【${i+1}】 ${bug.title}\n`;
+        messaggio += `   👤 Segnalato da: ${bug.reporter}\n`;
+        messaggio += `   🏷️ Tipo: ${tipoLabel[bug.type] || bug.type}\n`;
+        messaggio += `   📝 Descrizione: ${bug.description}\n`;
+        messaggio += `   📄 Pagina: ${bug.page || 'Non specificata'}\n`;
+        messaggio += `   🏷️ Stato locale: ${bug.status === 'pending' ? '⏳ In attesa' : '✅ Risolto'}\n`;
+        messaggio += `\n`;
+      });
+    }
+    
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = `https://formsubmit.co/${ADMIN_EMAIL}`;
+    form.style.display = 'none';
+    
+    const inputMessage = document.createElement('input');
+    inputMessage.name = 'message';
+    inputMessage.value = messaggio;
+    
+    const inputSubject = document.createElement('input');
+    inputSubject.name = '_subject';
+    inputSubject.value = `📬 KitsuManga - ${tipo === 'richieste' ? 'Nuove richieste' : 'Nuovi bug'}`;
+    
+    const inputFormat = document.createElement('input');
+    inputFormat.name = '_format';
+    inputFormat.value = 'text';
+    
+    const inputNext = document.createElement('input');
+    inputNext.name = '_next';
+    inputNext.value = window.location.href;
+    
+    form.appendChild(inputMessage);
+    form.appendChild(inputSubject);
+    form.appendChild(inputFormat);
+    form.appendChild(inputNext);
+    document.body.appendChild(form);
+    
+    form.submit();
+    document.body.removeChild(form);
+    
+    return true;
   }
-  
-  const form = document.createElement('form');
-  form.method = 'POST';
-  form.action = `https://formsubmit.co/${ADMIN_EMAIL}`;
-  form.style.display = 'none';
-  
-  const inputMessage = document.createElement('input');
-  inputMessage.name = 'message';
-  inputMessage.value = messaggio;
-  
-  const inputSubject = document.createElement('input');
-  inputSubject.name = '_subject';
-  inputSubject.value = `📬 KitsuManga - ${tipo === 'richieste' ? 'Nuove richieste' : 'Nuovi bug'}`;
-  
-  const inputFormat = document.createElement('input');
-  inputFormat.name = '_format';
-  inputFormat.value = 'text';
-  
-  const inputNext = document.createElement('input');
-  inputNext.name = '_next';
-  inputNext.value = window.location.href;
-  
-  form.appendChild(inputMessage);
-  form.appendChild(inputSubject);
-  form.appendChild(inputFormat);
-  form.appendChild(inputNext);
-  document.body.appendChild(form);
-  
-  form.submit();
-  document.body.removeChild(form);
-  
-  return true;
-}
 
   async function inviaTutteLeRichieste() {
     if (mangaRequests.length === 0) {
       showToast('❌ Non hai richieste da inviare', true);
       return;
     }
-    
     showToast('📧 Invio in corso...');
     await inviaEmail('richieste', mangaRequests);
-    showToast('✅ Richieste inviate! Controlla la tua email tra pochi secondi.');
+    showToast('✅ Richieste inviate!');
   }
   
   async function inviaTuttiIBug() {
@@ -850,13 +1167,11 @@
       showToast('❌ Non hai bug da inviare', true);
       return;
     }
-    
     showToast('📧 Invio in corso...');
     await inviaEmail('bugs', bugReports);
-    showToast('✅ Bug inviati! Controlla la tua email tra pochi secondi.');
+    showToast('✅ Bug inviati!');
   }
 
-  // Anteprima cover
   const reqCoverInput = document.getElementById('reqCover');
   const coverPreview = document.getElementById('coverPreview');
   
@@ -865,9 +1180,7 @@
     if (url && (url.startsWith('http://') || url.startsWith('https://'))) {
       coverPreview.src = url;
       coverPreview.classList.add('show');
-      coverPreview.onerror = () => {
-        coverPreview.classList.remove('show');
-      };
+      coverPreview.onerror = () => coverPreview.classList.remove('show');
     } else {
       coverPreview.classList.remove('show');
     }
@@ -875,20 +1188,12 @@
 
   function loadRequests() {
     const saved = localStorage.getItem('mangaRequests');
-    if (saved) {
-      mangaRequests = JSON.parse(saved);
-    } else {
-      mangaRequests = [];
-    }
+    mangaRequests = saved ? JSON.parse(saved) : [];
   }
 
   function loadBugs() {
     const saved = localStorage.getItem('bugReports');
-    if (saved) {
-      bugReports = JSON.parse(saved);
-    } else {
-      bugReports = [];
-    }
+    bugReports = saved ? JSON.parse(saved) : [];
   }
 
   function saveRequests() {
@@ -905,7 +1210,7 @@
     const toast = document.createElement('div');
     toast.className = 'toast';
     toast.textContent = message;
-    if (isError) toast.style.borderColor = '#ef4444';
+    if (isError) toast.style.background = '#ef4444';
     document.body.appendChild(toast);
     setTimeout(() => toast.remove(), 3000);
   }
@@ -948,9 +1253,9 @@
         <h3>${escapeHtml(req.title)}</h3>
         <p><strong>Richiedente:</strong> ${escapeHtml(req.requester)}</p>
         <p><strong>Autore:</strong> ${escapeHtml(req.author || 'Non specificato')}</p>
-        ${req.cover ? `<p><strong>Cover:</strong> <a href="${req.cover}" target="_blank" style="color:#c4b5fd;">Visualizza immagine</a><br><img src="${req.cover}" class="cover-thumb" onerror="this.style.display='none'"></p>` : '<p><strong>Cover:</strong> Non fornita</p>'}
-        <p><strong>URL:</strong> ${req.url ? `<a href="${req.url}" target="_blank" style="color:#c4b5fd;">${req.url.substring(0, 50)}...</a>` : 'Non specificato'}</p>
-        <p><strong>Motivo:</strong> ${escapeHtml(req.reason || 'Nessun motivo specificato')}</p>
+        ${req.cover ? `<p><strong>Cover:</strong> <a href="${req.cover}" target="_blank" style="color:#c4b5fd;">Visualizza</a><br><img src="${req.cover}" class="cover-thumb" onerror="this.style.display='none'"></p>` : '<p><strong>Cover:</strong> Non fornita</p>'}
+        <p><strong>URL:</strong> ${req.url ? `<a href="${req.url}" target="_blank" style="color:#c4b5fd;">Link</a>` : 'Non specificato'}</p>
+        <p><strong>Motivo:</strong> ${escapeHtml(req.reason || 'Nessuno')}</p>
         <p><strong>Data:</strong> ${new Date(req.date).toLocaleString()}</p>
         <p><strong>Stato:</strong> <span style="color:${req.status === 'approved' ? '#10b981' : (req.status === 'rejected' ? '#ef4444' : '#f59e0b')}">${req.status === 'approved' ? '✅ Approvata' : (req.status === 'rejected' ? '❌ Respinta' : '⏳ In attesa')}</span></p>
         <div class="request-actions">
@@ -963,19 +1268,12 @@
     });
     
     document.querySelectorAll('#adminRequestsList .approve-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const idx = parseInt(btn.dataset.index);
-        approveRequest(idx);
-      });
+      btn.addEventListener('click', () => approveRequest(parseInt(btn.dataset.index)));
     });
     document.querySelectorAll('#adminRequestsList .reject-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         const idx = parseInt(btn.dataset.index);
-        if (btn.dataset.delete) {
-          deleteRequest(idx);
-        } else {
-          rejectRequest(idx);
-        }
+        btn.dataset.delete ? deleteRequest(idx) : rejectRequest(idx);
       });
     });
   }
@@ -1015,16 +1313,10 @@
     });
     
     document.querySelectorAll('#adminBugsList .fix-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const idx = parseInt(btn.dataset.index);
-        fixBug(idx);
-      });
+      btn.addEventListener('click', () => fixBug(parseInt(btn.dataset.index)));
     });
     document.querySelectorAll('#adminBugsList .reject-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const idx = parseInt(btn.dataset.index);
-        deleteBug(idx);
-      });
+      btn.addEventListener('click', () => deleteBug(parseInt(btn.dataset.index)));
     });
   }
 
@@ -1067,265 +1359,221 @@
     if (currentTab === 'bugs') renderBugsTab();
     showToast('🗑️ Segnalazione eliminata');
   }
-  
+
   function importFromEmail() {
-  const text = document.getElementById('emailImportText').value;
-  if (!text.trim()) {
-    showToast('❌ Incolla prima il contenuto dell\'email', true);
-    return;
-  }
-  
-  let cleanText = text;
-  
-  if (!cleanText.includes('\n') || cleanText.split('\n').length < 3) {
-    cleanText = cleanText.replace(/([👤✍️🔗💬🖼️📖🏷️])/g, '\n$1');
-    cleanText = cleanText.replace(/(【\d+】)/g, '$1\n');
-    cleanText = cleanText.replace(/\n\s*\n/g, '\n');
-  }
-  
-  const lines = cleanText.split('\n');
-  let currentRequest = {};
-  let newRequests = [];
-  
-  for (let i = 0; i < lines.length; i++) {
-    let line = lines[i].trim();
-    if (line === '') continue;
+    const text = document.getElementById('emailImportText').value;
+    if (!text.trim()) {
+      showToast('❌ Incolla prima il contenuto dell\'email', true);
+      return;
+    }
     
-    if (line.match(/【\d+】/)) {
-      if (currentRequest.title && currentRequest.requester) {
-        newRequests.push(currentRequest);
+    let cleanText = text;
+    if (!cleanText.includes('\n') || cleanText.split('\n').length < 3) {
+      cleanText = cleanText.replace(/([👤✍️🔗💬🖼️📖🏷️])/g, '\n$1');
+      cleanText = cleanText.replace(/(【\d+】)/g, '$1\n');
+      cleanText = cleanText.replace(/\n\s*\n/g, '\n');
+    }
+    
+    const lines = cleanText.split('\n');
+    let currentRequest = {};
+    let newRequests = [];
+    
+    for (let i = 0; i < lines.length; i++) {
+      let line = lines[i].trim();
+      if (line === '') continue;
+      
+      if (line.match(/【\d+】/)) {
+        if (currentRequest.title && currentRequest.requester) newRequests.push(currentRequest);
+        currentRequest = {};
+        const titleMatch = line.match(/】\s*(.+)/);
+        if (titleMatch) currentRequest.title = titleMatch[1].trim();
+      } else if (line.includes('👤') && line.includes('Richiedente:')) {
+        let val = line.replace(/👤/, '').replace('Richiedente:', '').trim();
+        if (val && val !== 'Non specificato') currentRequest.requester = val;
+      } else if (line.includes('📖') && line.includes('Titolo:')) {
+        let val = line.replace(/📖/, '').replace('Titolo:', '').trim();
+        if (val && val !== 'Non specificato') currentRequest.title = val;
+      } else if (line.includes('✍️') && line.includes('Autore:')) {
+        let val = line.replace(/✍️/, '').replace('Autore:', '').trim();
+        if (val && val !== 'Non specificato') currentRequest.author = val;
+      } else if (line.includes('🔗') && line.includes('URL:')) {
+        let val = line.replace(/🔗/, '').replace('URL:', '').trim();
+        if (val && val !== 'Non specificato') currentRequest.url = val;
+      } else if (line.includes('💬') && line.includes('Motivo:')) {
+        let val = line.replace(/💬/, '').replace('Motivo:', '').trim();
+        if (val && val !== 'Nessuno') currentRequest.reason = val;
+      } else if (line.includes('🖼️') && line.includes('Cover:')) {
+        let val = line.replace(/🖼️/, '').replace('Cover:', '').trim();
+        if (val && val !== 'Non fornita') currentRequest.cover = val;
       }
-      currentRequest = {};
-      const titleMatch = line.match(/】\s*(.+)/);
-      if (titleMatch) currentRequest.title = titleMatch[1].trim();
     }
-    else if (line.includes('👤') && line.includes('Richiedente:')) {
-      let val = line.replace(/👤/, '').replace('Richiedente:', '').trim();
-      if (val && val !== 'Non specificato') currentRequest.requester = val;
+    
+    if (currentRequest.title && currentRequest.requester) newRequests.push(currentRequest);
+    
+    if (newRequests.length === 0) {
+      showToast('❌ Nessuna richiesta trovata', true);
+      return;
     }
-    else if (line.includes('📖') && line.includes('Titolo:')) {
-      let val = line.replace(/📖/, '').replace('Titolo:', '').trim();
-      if (val && val !== 'Non specificato') currentRequest.title = val;
+    
+    let importate = 0;
+    for (const req of newRequests) {
+      mangaRequests.unshift({
+        id: Date.now() + importate,
+        title: req.title,
+        author: req.author || '',
+        cover: req.cover || null,
+        url: req.url || '',
+        reason: req.reason || '',
+        requester: req.requester,
+        date: new Date().toISOString(),
+        status: 'pending'
+      });
+      importate++;
     }
-    else if (line.includes('✍️') && line.includes('Autore:')) {
-      let val = line.replace(/✍️/, '').replace('Autore:', '').trim();
-      if (val && val !== 'Non specificato') currentRequest.author = val;
-    }
-    else if (line.includes('🔗') && line.includes('URL:')) {
-      let val = line.replace(/🔗/, '').replace('URL:', '').trim();
-      if (val && val !== 'Non specificato' && val !== 'no') currentRequest.url = val;
-    }
-    else if (line.includes('💬') && line.includes('Motivo:')) {
-      let val = line.replace(/💬/, '').replace('Motivo:', '').trim();
-      if (val && val !== 'Nessuno') currentRequest.reason = val;
-    }
-    else if (line.includes('🖼️') && line.includes('Cover:')) {
-      let val = line.replace(/🖼️/, '').replace('Cover:', '').trim();
-      if (val && val !== 'Non fornita' && val !== 'non lo so') currentRequest.cover = val;
-    }
-  }
-  
-  if (currentRequest.title && currentRequest.requester) {
-    newRequests.push(currentRequest);
-  }
-  
-  if (newRequests.length === 0) {
-    showToast('❌ Nessuna richiesta trovata nel testo', true);
-    return;
-  }
-  
-  let importate = 0;
-  for (const req of newRequests) {
-    const newRequest = {
-      id: Date.now() + importate,
-      title: req.title,
-      author: req.author || '',
-      cover: req.cover || null,
-      url: req.url || '',
-      reason: req.reason || '',
-      requester: req.requester,
-      date: new Date().toISOString(),
-      status: 'pending'
-    };
-    mangaRequests.unshift(newRequest);
-    importate++;
-  }
-  
-  if (importate > 0) {
+    
     saveRequests();
     renderAdminRequests();
     if (currentTab === 'requests') renderRequestsTab();
     showToast(`✅ Importate ${importate} richieste!`);
     document.getElementById('emailImportText').value = '';
-  } else {
-    showToast('❌ Nessuna richiesta valida trovata', true);
   }
-}
 
   async function addRequest() {
-  const title = document.getElementById('reqTitle').value.trim();
-  const author = document.getElementById('reqAuthor').value.trim();
-  const cover = document.getElementById('reqCover').value.trim();
-  const url = document.getElementById('reqUrl').value.trim();
-  const reason = document.getElementById('reqReason').value.trim();
-  const requester = document.getElementById('reqRequester').value.trim();
-  
-  if (!title || !requester) {
-    showToast('❌ Titolo e nome richiedente sono obbligatori', true);
-    return;
+    const title = document.getElementById('reqTitle').value.trim();
+    const author = document.getElementById('reqAuthor').value.trim();
+    const cover = document.getElementById('reqCover').value.trim();
+    const url = document.getElementById('reqUrl').value.trim();
+    const reason = document.getElementById('reqReason').value.trim();
+    const requester = document.getElementById('reqRequester').value.trim();
+    
+    if (!title || !requester) {
+      showToast('❌ Titolo e nome richiedente sono obbligatori', true);
+      return;
+    }
+    
+    const newRequest = {
+      id: Date.now(),
+      title, author, cover: cover || null, url, reason, requester,
+      date: new Date().toISOString(),
+      status: 'pending'
+    };
+    
+    mangaRequests.push(newRequest);
+    saveRequests();
+    
+    const emailBody = `[1]📋 NUOVA RICHIESTA MANGA\n\n📅 Data: ${new Date().toLocaleString()}\n👤 Richiedente: ${requester}\n📖 Titolo: ${title}\n✍️ Autore: ${author || 'Non specificato'}\n🔗 URL: ${url || 'Non specificato'}\n💬 Motivo: ${reason || 'Nessuno'}\n🖼️ Cover: ${cover || 'Non fornita'}\n🏷️ Stato locale: ⏳ In attesa`;
+    
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = `https://formsubmit.co/${ADMIN_EMAIL}`;
+    form.style.display = 'none';
+    
+    const inputMessage = document.createElement('input');
+    inputMessage.name = 'message';
+    inputMessage.value = emailBody;
+    
+    const inputSubject = document.createElement('input');
+    inputSubject.name = '_subject';
+    inputSubject.value = `📬 KitsuManga - Nuova richiesta: ${title}`;
+    
+    const inputFormat = document.createElement('input');
+    inputFormat.name = '_format';
+    inputFormat.value = 'text';
+    
+    const inputNext = document.createElement('input');
+    inputNext.name = '_next';
+    inputNext.value = window.location.href;
+    
+    form.appendChild(inputMessage);
+    form.appendChild(inputSubject);
+    form.appendChild(inputFormat);
+    form.appendChild(inputNext);
+    document.body.appendChild(form);
+    form.submit();
+    document.body.removeChild(form);
+    
+    document.getElementById('reqTitle').value = '';
+    document.getElementById('reqAuthor').value = '';
+    document.getElementById('reqCover').value = '';
+    document.getElementById('reqUrl').value = '';
+    document.getElementById('reqReason').value = '';
+    document.getElementById('reqRequester').value = '';
+    coverPreview.classList.remove('show');
+    
+    requestModal.classList.remove('active');
+    showToast('✅ Richiesta inviata!');
   }
-  
-  const newRequest = {
-    id: Date.now(),
-    title: title,
-    author: author,
-    cover: cover || null,
-    url: url,
-    reason: reason,
-    requester: requester,
-    date: new Date().toISOString(),
-    status: 'pending'
-  };
-  
-  mangaRequests.push(newRequest);
-  saveRequests();
-  
-  const messaggio = `[1]📋 NUOVA RICHIESTA MANGA\n\n`;
-  const emailBody = `${messaggio}
-📅 Data: ${new Date().toLocaleString()}
-👤 Richiedente: ${requester}
-📖 Titolo: ${title}
-✍️ Autore: ${author || 'Non specificato'}
-🔗 URL: ${url || 'Non specificato'}
-💬 Motivo: ${reason || 'Nessuno'}
-🖼️ Cover: ${cover || 'Non fornita'}
-🏷️ Stato locale: ⏳ In attesa`;
-
-  const form = document.createElement('form');
-  form.method = 'POST';
-  form.action = `https://formsubmit.co/${ADMIN_EMAIL}`;
-  form.style.display = 'none';
-  
-  const inputMessage = document.createElement('input');
-  inputMessage.name = 'message';
-  inputMessage.value = emailBody;
-  
-  const inputSubject = document.createElement('input');
-  inputSubject.name = '_subject';
-  inputSubject.value = `📬 KitsuManga - Nuova richiesta: ${title}`;
-  
-  const inputFormat = document.createElement('input');
-  inputFormat.name = '_format';
-  inputFormat.value = 'text';
-  
-  const inputNext = document.createElement('input');
-  inputNext.name = '_next';
-  inputNext.value = window.location.href;
-
-  form.appendChild(inputMessage);
-  form.appendChild(inputSubject);
-  form.appendChild(inputFormat);
-  form.appendChild(inputNext);
-  document.body.appendChild(form);
-  
-  form.submit();
-  document.body.removeChild(form);
-  
-  document.getElementById('reqTitle').value = '';
-  document.getElementById('reqAuthor').value = '';
-  document.getElementById('reqCover').value = '';
-  document.getElementById('reqUrl').value = '';
-  document.getElementById('reqReason').value = '';
-  document.getElementById('reqRequester').value = '';
-  coverPreview.classList.remove('show');
-  
-  requestModal.classList.remove('active');
-  showToast('✅ Richiesta inviata! Riceverai una conferma via email.');
-}
 
   async function addBug() {
-  const type = document.getElementById('bugType').value;
-  const title = document.getElementById('bugTitle').value.trim();
-  const description = document.getElementById('bugDescription').value.trim();
-  const page = document.getElementById('bugPage').value.trim();
-  const reporter = document.getElementById('bugReporter').value.trim();
-  
-  if (!title || !description || !reporter) {
-    showToast('❌ Titolo, descrizione e nome sono obbligatori', true);
-    return;
+    const type = document.getElementById('bugType').value;
+    const title = document.getElementById('bugTitle').value.trim();
+    const description = document.getElementById('bugDescription').value.trim();
+    const page = document.getElementById('bugPage').value.trim();
+    const reporter = document.getElementById('bugReporter').value.trim();
+    
+    if (!title || !description || !reporter) {
+      showToast('❌ Titolo, descrizione e nome sono obbligatori', true);
+      return;
+    }
+    
+    const newBug = {
+      id: Date.now(),
+      type, title, description, page, reporter,
+      date: new Date().toISOString(),
+      status: 'pending'
+    };
+    
+    bugReports.push(newBug);
+    saveBugs();
+    
+    const tipoLabel = {
+      'visual': '🎨 Problema visivo',
+      'functional': '⚙️ Problema funzionale',
+      'loading': '🔄 Problema di caricamento',
+      'reader': '📖 Problema nel lettore',
+      'other': '📝 Altro'
+    };
+    
+    const emailBody = `🐛 NUOVA SEGNALAZIONE BUG\n\n📅 Data: ${new Date().toLocaleString()}\n👤 Segnalato da: ${reporter}\n🏷️ Tipo: ${tipoLabel[type] || type}\n📝 Titolo: ${title}\n📄 Descrizione: ${description}\n📍 Pagina: ${page || 'Non specificata'}\n🏷️ Stato locale: ⏳ In attesa`;
+    
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = `https://formsubmit.co/${ADMIN_EMAIL}`;
+    form.style.display = 'none';
+    
+    const inputMessage = document.createElement('input');
+    inputMessage.name = 'message';
+    inputMessage.value = emailBody;
+    
+    const inputSubject = document.createElement('input');
+    inputSubject.name = '_subject';
+    inputSubject.value = `📬 KitsuManga - Nuovo bug: ${title}`;
+    
+    const inputFormat = document.createElement('input');
+    inputFormat.name = '_format';
+    inputFormat.value = 'text';
+    
+    const inputNext = document.createElement('input');
+    inputNext.name = '_next';
+    inputNext.value = window.location.href;
+    
+    form.appendChild(inputMessage);
+    form.appendChild(inputSubject);
+    form.appendChild(inputFormat);
+    form.appendChild(inputNext);
+    document.body.appendChild(form);
+    form.submit();
+    document.body.removeChild(form);
+    
+    document.getElementById('bugType').value = 'visual';
+    document.getElementById('bugTitle').value = '';
+    document.getElementById('bugDescription').value = '';
+    document.getElementById('bugPage').value = '';
+    document.getElementById('bugReporter').value = '';
+    
+    bugModal.classList.remove('active');
+    showToast('✅ Segnalazione inviata!');
   }
-  
-  const newBug = {
-    id: Date.now(),
-    type: type,
-    title: title,
-    description: description,
-    page: page,
-    reporter: reporter,
-    date: new Date().toISOString(),
-    status: 'pending'
-  };
-  
-  bugReports.push(newBug);
-  saveBugs();
-  
-  const tipoLabel = {
-    'visual': '🎨 Problema visivo',
-    'functional': '⚙️ Problema funzionale',
-    'loading': '🔄 Problema di caricamento',
-    'reader': '📖 Problema nel lettore',
-    'other': '📝 Altro'
-  };
-  
-  const messaggio = `🐛 NUOVA SEGNALAZIONE BUG\n\n`;
-  const emailBody = `${messaggio}
-📅 Data: ${new Date().toLocaleString()}
-👤 Segnalato da: ${reporter}
-🏷️ Tipo: ${tipoLabel[type] || type}
-📝 Titolo: ${title}
-📄 Descrizione: ${description}
-📍 Pagina: ${page || 'Non specificata'}
-🏷️ Stato locale: ⏳ In attesa`;
-
-  const form = document.createElement('form');
-  form.method = 'POST';
-  form.action = `https://formsubmit.co/${ADMIN_EMAIL}`;
-  form.style.display = 'none';
-  
-  const inputMessage = document.createElement('input');
-  inputMessage.name = 'message';
-  inputMessage.value = emailBody;
-  
-  const inputSubject = document.createElement('input');
-  inputSubject.name = '_subject';
-  inputSubject.value = `📬 KitsuManga - Nuovo bug: ${title}`;
-  
-  const inputFormat = document.createElement('input');
-  inputFormat.name = '_format';
-  inputFormat.value = 'text';
-  
-  const inputNext = document.createElement('input');
-  inputNext.name = '_next';
-  inputNext.value = window.location.href;
-
-  form.appendChild(inputMessage);
-  form.appendChild(inputSubject);
-  form.appendChild(inputFormat);
-  form.appendChild(inputNext);
-  document.body.appendChild(form);
-  
-  form.submit();
-  document.body.removeChild(form);
-  
-  document.getElementById('bugType').value = 'visual';
-  document.getElementById('bugTitle').value = '';
-  document.getElementById('bugDescription').value = '';
-  document.getElementById('bugPage').value = '';
-  document.getElementById('bugReporter').value = '';
-  
-  bugModal.classList.remove('active');
-  showToast('✅ Segnalazione inviata! Riceverai una conferma via email.');
-}
 
   function renderRequestsTab() {
     const existingBtn = document.getElementById('sendRequestsEmailBtn');
@@ -1333,29 +1581,24 @@
       const btnContainer = document.createElement('div');
       btnContainer.style.textAlign = 'center';
       btnContainer.style.margin = '20px 0';
-      btnContainer.innerHTML = `
-        <button id="sendRequestsEmailBtn" style="background: #10b981; border: none; color: white; padding: 12px 30px; border-radius: 30px; cursor: pointer; font-size: 1rem; font-weight: bold; margin-right: 10px;">
-          📧 Invia tutte le richieste all'amministratore
-        </button>
-      `;
+      btnContainer.innerHTML = `<button id="sendRequestsEmailBtn" style="background: #10b981; border: none; color: white; padding: 12px 30px; border-radius: 30px; cursor: pointer; font-size: 1rem; font-weight: bold;">📧 Invia tutte le richieste all'amministratore</button>`;
       grid.parentNode.insertBefore(btnContainer, grid);
       document.getElementById('sendRequestsEmailBtn')?.addEventListener('click', inviaTutteLeRichieste);
     }
     
     if (mangaRequests.length === 0) {
-      grid.innerHTML = '<div class="no-results">📭 Nessuna richiesta inviata. Clicca sul pulsante + per richiedere un manga!</div>';
+      grid.innerHTML = '<div class="no-results">📭 Nessuna richiesta inviata.</div>';
       return;
     }
     
     grid.innerHTML = '';
-    
     const pending = mangaRequests.filter(r => r.status === 'pending');
     const approved = mangaRequests.filter(r => r.status === 'approved');
     const rejected = mangaRequests.filter(r => r.status === 'rejected');
     
-    if (pending.length > 0) pending.forEach(req => grid.appendChild(createRequestCard(req)));
-    if (approved.length > 0) approved.forEach(req => grid.appendChild(createRequestCard(req)));
-    if (rejected.length > 0) rejected.forEach(req => grid.appendChild(createRequestCard(req)));
+    pending.forEach(req => grid.appendChild(createRequestCard(req)));
+    approved.forEach(req => grid.appendChild(createRequestCard(req)));
+    rejected.forEach(req => grid.appendChild(createRequestCard(req)));
   }
 
   function renderBugsTab() {
@@ -1364,47 +1607,34 @@
       const btnContainer = document.createElement('div');
       btnContainer.style.textAlign = 'center';
       btnContainer.style.margin = '20px 0';
-      btnContainer.innerHTML = `
-        <button id="sendBugsEmailBtn" style="background: #10b981; border: none; color: white; padding: 12px 30px; border-radius: 30px; cursor: pointer; font-size: 1rem; font-weight: bold;">
-          📧 Invia tutte le segnalazioni all'amministratore
-        </button>
-      `;
+      btnContainer.innerHTML = `<button id="sendBugsEmailBtn" style="background: #10b981; border: none; color: white; padding: 12px 30px; border-radius: 30px; cursor: pointer; font-size: 1rem; font-weight: bold;">📧 Invia tutte le segnalazioni all'amministratore</button>`;
       grid.parentNode.insertBefore(btnContainer, grid);
       document.getElementById('sendBugsEmailBtn')?.addEventListener('click', inviaTuttiIBug);
     }
     
     if (bugReports.length === 0) {
-      grid.innerHTML = '<div class="no-results">🐛 Nessuna segnalazione bug. Clicca su "Segnala Bug" per inviarne uno!</div>';
+      grid.innerHTML = '<div class="no-results">🐛 Nessuna segnalazione bug.</div>';
       return;
     }
     
     grid.innerHTML = '';
-    
     const pending = bugReports.filter(b => b.status === 'pending');
     const fixed = bugReports.filter(b => b.status === 'fixed');
     
-    if (pending.length > 0) pending.forEach(bug => grid.appendChild(createBugCard(bug)));
-    if (fixed.length > 0) fixed.forEach(bug => grid.appendChild(createBugCard(bug)));
+    pending.forEach(bug => grid.appendChild(createBugCard(bug)));
+    fixed.forEach(bug => grid.appendChild(createBugCard(bug)));
   }
   
   function createRequestCard(req) {
     const card = document.createElement('div');
     card.className = 'card';
     
-    let statusClass = '';
-    let statusLabel = '';
-    if (req.status === 'pending') {
-      statusClass = 'status-pending';
-      statusLabel = '⏳ In attesa';
-    } else if (req.status === 'approved') {
-      statusClass = 'status-approved';
-      statusLabel = '✅ Approvata';
-    } else {
-      statusClass = 'status-rejected';
-      statusLabel = '❌ Respinta';
-    }
+    let statusClass = '', statusLabel = '';
+    if (req.status === 'pending') { statusClass = 'status-pending'; statusLabel = '⏳ In attesa'; }
+    else if (req.status === 'approved') { statusClass = 'status-approved'; statusLabel = '✅ Approvata'; }
+    else { statusClass = 'status-rejected'; statusLabel = '❌ Respinta'; }
     
-    const coverUrl = req.cover && req.cover.startsWith('http') ? req.cover : `https://placehold.co/300x400/1a1a2e/a78bfa?text=${encodeURIComponent(req.title)}`;
+    const coverUrl = req.cover?.startsWith('http') ? req.cover : `https://placehold.co/300x400/1a1a2e/a78bfa?text=${encodeURIComponent(req.title)}`;
     
     card.innerHTML = `
       <div class="request-badge">📋 RICHIESTO</div>
@@ -1414,10 +1644,8 @@
         <div class="title">${escapeHtml(req.title)}</div>
         <div class="chapter">Richiesto da: ${escapeHtml(req.requester)}</div>
         ${req.author ? `<div class="chapter" style="font-size: 11px;">✍️ ${escapeHtml(req.author)}</div>` : ''}
-        ${req.reason ? `<div class="chapter" style="font-size: 11px; margin-top: 5px;">💬 ${escapeHtml(req.reason.substring(0, 50))}${req.reason.length > 50 ? '...' : ''}</div>` : ''}
       </div>
     `;
-    
     return card;
   }
 
@@ -1425,14 +1653,7 @@
     const card = document.createElement('div');
     card.className = 'card';
     
-    const typeLabels = {
-      'visual': '🎨 Visivo',
-      'functional': '⚙️ Funzionale',
-      'loading': '🔄 Caricamento',
-      'reader': '📖 Lettore',
-      'other': '📝 Altro'
-    };
-    
+    const typeLabels = { 'visual': '🎨 Visivo', 'functional': '⚙️ Funzionale', 'loading': '🔄 Caricamento', 'reader': '📖 Lettore', 'other': '📝 Altro' };
     const statusClass = bug.status === 'fixed' ? 'status-approved' : 'status-pending';
     const statusLabel = bug.status === 'fixed' ? '✅ Risolto' : '⏳ In attesa';
     
@@ -1447,14 +1668,12 @@
         <div class="chapter" style="font-size: 11px; margin-top: 5px;">💬 ${escapeHtml(bug.description.substring(0, 60))}${bug.description.length > 60 ? '...' : ''}</div>
       </div>
     `;
-    
     return card;
   }
 
   async function loadLocalMangas() {
     try {
-      const timestamp = Date.now();
-      const res = await fetch(`manga.json?t=${timestamp}`);
+      const res = await fetch(`manga.json?t=${Date.now()}`);
       const data = await res.json();
       mangasLocal = data.map(m => ({ ...m, type: 'local' }));
     } catch (e) {
@@ -1464,31 +1683,18 @@
 
   async function loadExternalMangas(forceReload = false) {
     try {
-      const cacheBuster = forceReload ? Date.now() : Date.now();
-      const res = await fetch(`external.json?t=${cacheBuster}&_=${Date.now()}`);
+      const res = await fetch(`external.json?t=${Date.now()}`);
       if (res.ok) {
         const data = await res.json();
         mangasExternal = data.map(m => ({ ...m, type: 'external' }));
         sessionStorage.setItem('externalMangas', JSON.stringify(mangasExternal));
         return true;
-      } else {
-        const cached = sessionStorage.getItem('externalMangas');
-        if (cached) {
-          mangasExternal = JSON.parse(cached);
-        } else {
-          mangasExternal = [];
-        }
-        return false;
       }
-    } catch (e) {
-      const cached = sessionStorage.getItem('externalMangas');
-      if (cached) {
-        mangasExternal = JSON.parse(cached);
-      } else {
-        mangasExternal = [];
-      }
-      return false;
-    }
+    } catch (e) {}
+    
+    const cached = sessionStorage.getItem('externalMangas');
+    mangasExternal = cached ? JSON.parse(cached) : [];
+    return false;
   }
 
   function sortByTitle(a, b) { return a.title.localeCompare(b.title); }
@@ -1516,11 +1722,7 @@
 
   function renderMangas(mangas) {
     if (mangas.length === 0) {
-      if (currentTab === 'local') {
-        grid.innerHTML = '<div class="no-results">😕 Nessun manga locale trovato.</div>';
-      } else if (currentTab === 'external') {
-        grid.innerHTML = '<div class="no-results">🌐 Nessun manga esterno trovato.</div>';
-      }
+      grid.innerHTML = `<div class="no-results">😕 Nessun manga trovato.</div>`;
       return;
     }
 
@@ -1551,25 +1753,14 @@
 
   function escapeHtml(str) {
     if (!str) return '';
-    return str.replace(/[&<>]/g, function(m) {
-      if (m === '&') return '&amp;';
-      if (m === '<') return '&lt;';
-      if (m === '>') return '&gt;';
-      return m;
-    });
+    return str.replace(/[&<>]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' })[m]);
   }
 
   function updateResultsInfo(filteredCount, totalCount, searchTerm) {
-    let tabLabel = '';
-    if (currentTab === 'local') tabLabel = 'manga locali';
-    else if (currentTab === 'external') tabLabel = 'manga esterni';
-    else if (currentTab === 'requests') tabLabel = 'richieste';
-    else if (currentTab === 'bugs') tabLabel = 'segnalazioni bug';
-    else if (currentTab === 'reading') tabLabel = 'manga in lettura';
-    else if (currentTab === 'plan') tabLabel = 'manga da leggere';
-    else if (currentTab === 'completed') tabLabel = 'manga completati';
+    const tabLabels = { local: 'manga locali', external: 'manga esterni', requests: 'richieste', bugs: 'segnalazioni bug' };
+    const tabLabel = tabLabels[currentTab] || 'manga';
     
-    if (searchTerm && searchTerm.trim()) {
+    if (searchTerm?.trim()) {
       resultsInfo.innerHTML = `🔍 Trovati ${filteredCount} ${tabLabel} su ${totalCount} per "${escapeHtml(searchTerm.trim())}"`;
     } else {
       resultsInfo.innerHTML = `📚 Totale: ${totalCount} ${tabLabel}`;
@@ -1588,25 +1779,15 @@
   }
 
   function applySortAndFilter() {
-    if (currentTab === 'requests') {
+    if (currentTab === 'requests' || currentTab === 'bugs') {
       const items = getCurrentItems();
-      const totalCount = items.length;
-      let filtered = filterItems(items, currentSearchTerm);
-      renderRequestsTabContent(filtered);
-      updateResultsInfo(filtered.length, totalCount, currentSearchTerm);
+      const filtered = filterItems(items, currentSearchTerm);
+      if (currentTab === 'requests') renderRequestsTabContent(filtered);
+      else renderBugsTabContent(filtered);
+      updateResultsInfo(filtered.length, items.length, currentSearchTerm);
       return;
     }
     
-    if (currentTab === 'bugs') {
-      const items = getCurrentItems();
-      const totalCount = items.length;
-      let filtered = filterItems(items, currentSearchTerm);
-      renderBugsTabContent(filtered);
-      updateResultsInfo(filtered.length, totalCount, currentSearchTerm);
-      return;
-    }
-    
-    // Per le liste (reading, plan, completed) non applichiamo ordinamento complesso
     if (currentTab === 'reading' || currentTab === 'plan' || currentTab === 'completed') {
       renderListTab(currentTab);
       return;
@@ -1617,13 +1798,10 @@
     const totalCount = mangas.length;
     let filtered = filterItems(mangas, currentSearchTerm);
     
-    switch(sortType) {
-      case 'title': filtered.sort(sortByTitle); break;
-      case 'title-desc': filtered.sort(sortByTitleDesc); break;
-      case 'latest': filtered.sort(sortByLatest); break;
-      case 'latest-desc': filtered.sort(sortByLatestDesc); break;
-      default: break;
-    }
+    if (sortType === 'title') filtered.sort(sortByTitle);
+    else if (sortType === 'title-desc') filtered.sort(sortByTitleDesc);
+    else if (sortType === 'latest') filtered.sort(sortByLatest);
+    else if (sortType === 'latest-desc') filtered.sort(sortByLatestDesc);
     
     renderMangas(filtered);
     updateResultsInfo(filtered.length, totalCount, currentSearchTerm);
@@ -1635,12 +1813,7 @@
       return;
     }
     grid.innerHTML = '';
-    const pending = requests.filter(r => r.status === 'pending');
-    const approved = requests.filter(r => r.status === 'approved');
-    const rejected = requests.filter(r => r.status === 'rejected');
-    if (pending.length > 0) pending.forEach(req => grid.appendChild(createRequestCard(req)));
-    if (approved.length > 0) approved.forEach(req => grid.appendChild(createRequestCard(req)));
-    if (rejected.length > 0) rejected.forEach(req => grid.appendChild(createRequestCard(req)));
+    requests.forEach(req => grid.appendChild(createRequestCard(req)));
   }
 
   function renderBugsTabContent(bugs) {
@@ -1649,19 +1822,12 @@
       return;
     }
     grid.innerHTML = '';
-    const pending = bugs.filter(b => b.status === 'pending');
-    const fixed = bugs.filter(b => b.status === 'fixed');
-    if (pending.length > 0) pending.forEach(bug => grid.appendChild(createBugCard(bug)));
-    if (fixed.length > 0) fixed.forEach(bug => grid.appendChild(createBugCard(bug)));
+    bugs.forEach(bug => grid.appendChild(createBugCard(bug)));
   }
 
   function handleSearch() {
     currentSearchTerm = searchInput.value;
-    if (currentSearchTerm.length > 0) {
-      searchClear.style.display = 'flex';
-    } else {
-      searchClear.style.display = 'none';
-    }
+    searchClear.style.display = currentSearchTerm.length > 0 ? 'flex' : 'none';
     applySortAndFilter();
   }
 
@@ -1674,46 +1840,36 @@
   }
 
   function updateAddButton() {
-    if (currentTab === 'local' || currentTab === 'external' || currentTab === 'requests' || currentTab === 'bugs') {
-      addMangaBtn.style.display = 'flex';
-      addMangaBtn.title = 'Richiedi un manga';
-      addMangaBtn.style.background = '#8b5cf6';
-      addMangaBtn.onclick = () => { requestModal.classList.add('active'); };
-    } else {
-      addMangaBtn.style.display = 'none';
-    }
+    const showButton = ['local', 'external', 'requests', 'bugs'].includes(currentTab);
+    addMangaBtn.style.display = showButton ? 'flex' : 'none';
   }
 
   async function switchTab(tab) {
     currentTab = tab;
     tabs.forEach(btn => {
-      if (btn.dataset.tab === tab) btn.classList.add('active');
-      else btn.classList.remove('active');
+      btn.classList.toggle('active', btn.dataset.tab === tab);
     });
     
-    // Mostra/nascondi controlli
-    if (tab === 'reading' || tab === 'plan' || tab === 'completed') {
-      sortSelect.style.display = 'none';
-      addMangaBtn.style.display = 'none';
-      searchInput.value = '';
-      currentSearchTerm = '';
-      searchClear.style.display = 'none';
-      renderListTab(tab);
-      return;
-    } else {
-      sortSelect.style.display = 'block';
-      addMangaBtn.style.display = 'flex';
-    }
+    // Aggiorna sidebar e dropdown
+    document.querySelectorAll('.sidebar-item').forEach(item => item.classList.remove('active'));
+    document.querySelectorAll('.dropdown-item').forEach(item => item.classList.remove('active'));
+    
+    const isListTab = ['reading', 'plan', 'completed'].includes(tab);
+    sortSelect.style.display = isListTab ? 'none' : 'block';
     
     if (tab === 'external') await loadExternalMangas(true);
     if (tab === 'requests') loadRequests();
     if (tab === 'bugs') loadBugs();
-    
-    searchInput.value = '';
-    currentSearchTerm = '';
-    searchClear.style.display = 'none';
-    updateAddButton();
-    applySortAndFilter();
+    if (isListTab) {
+      setActiveList(tab);
+      renderListTab(tab);
+    } else {
+      searchInput.value = '';
+      currentSearchTerm = '';
+      searchClear.style.display = 'none';
+      updateAddButton();
+      applySortAndFilter();
+    }
   }
 
   async function reloadAllData() {
@@ -1722,11 +1878,11 @@
     await loadExternalMangas(true);
     loadRequests();
     loadBugs();
+    updateListCounts();
     applySortAndFilter();
     showToast('✅ Libreria ricaricata!');
   }
 
-  // Admin tab switching
   document.querySelectorAll('.admin-tab-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       currentAdminTab = btn.dataset.adminTab;
@@ -1750,6 +1906,7 @@
     await loadExternalMangas(true);
     loadRequests();
     loadBugs();
+    initListsUI();
     updateAddButton();
     applySortAndFilter();
   }
