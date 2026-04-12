@@ -1943,6 +1943,11 @@
   tabs.forEach(btn => {
     btn.addEventListener('click', () => switchTab(btn.dataset.tab));
   });
+
+// Fix per il pulsante "+"
+addMangaBtn.onclick = () => {
+  requestModal.classList.add('active');
+};
   
   loadAllMangas();
 </script>
