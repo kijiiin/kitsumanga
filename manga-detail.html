@@ -157,6 +157,11 @@
       background: #8b5cf6;
       transform: scale(1.05);
     }
+    .author-container {
+      font-size: 1rem;
+      color: #c4b5fd;
+      margin-bottom: 15px;
+    }
     .description {
       background: rgba(0,0,0,0.4);
       padding: 20px;
@@ -512,6 +517,7 @@
         <span class="meta-badge" id="yearBadge">📅 Anno sconosciuto</span>
       </div>
       <div class="genres" id="genresContainer"></div>
+<div class="author-container" id="authorContainer" style="margin-bottom: 15px;"></div>
       <div class="description" id="descriptionContainer">
         <p>Caricamento descrizione...</p>
       </div>
@@ -680,7 +686,7 @@
       title: mangaTitle,
       cover: coverImg.src || `${IMAGEKIT_BASE}/${mangaId}/cover.jpg`,
       latest: mangaDetails?.latest || '',
-      author: mangaDetails?.author || ''
+      author: mangaDetails?.author ? (Array.isArray(mangaDetails.author) ? mangaDetails.author.join(', ') : mangaDetails.author) : ''
     };
     
     ['reading', 'plan', 'completed'].forEach(type => {
@@ -743,6 +749,16 @@
           } else {
             genresContainer.innerHTML = '<span class="genre-tag">🎭 Generi non specificati</span>';
           }
+          // Mostra l'autore
+const authorContainer = document.getElementById('authorContainer');
+if (authorContainer) {
+  if (mangaDetails.author) {
+    const authorText = Array.isArray(mangaDetails.author) ? mangaDetails.author.join(', ') : mangaDetails.author;
+    authorContainer.innerHTML = `✍️ ${escapeHtml(authorText)}`;
+  } else {
+    authorContainer.innerHTML = '';
+  }
+}
           
           if (mangaDetails.status) {
             const statusMap = {
