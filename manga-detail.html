@@ -814,7 +814,7 @@ if (authorContainer) {
         return true;
       }
     } catch(e) {
-      console.log('manifest.json non trovato su ImageKit');
+      console.log('manifest.json non trovato su KitsuMangaUpload');
     }
     return false;
   }
@@ -826,7 +826,7 @@ if (authorContainer) {
     contentDiv.innerHTML = `
       <div class="empty">
         <h3>📝 File manifest.json mancante</h3>
-        <p>Crea il file su ImageKit:</p>
+        <p>Crea il file su KitsuMangaUpload:</p>
         <p><code style="background: #1a1a2e; padding: 2px 5px; border-radius: 3px;">${IMAGEKIT_BASE}/${mangaId}/manifest.json</code></p>
         <p>con questo contenuto:</p>
         <pre style="background: #1a1a2e; padding: 15px; margin: 15px 0; border-radius: 8px; text-align: left; overflow-x: auto;">{
@@ -888,7 +888,7 @@ if (authorContainer) {
     });
     
     html += `</div>`;
-    html += `<div class="info-manifest fade-up">📄 Basato su manifest.json da ImageKit</div>`;
+    html += `<div class="info-manifest fade-up">📄 Basato su manifest.json da KitsuMangaUpload</div>`;
     contentDiv.innerHTML = html;
     
     const fadeElements = document.querySelectorAll('.fade-up');
