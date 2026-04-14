@@ -1750,8 +1750,13 @@
   }
 
   function escapeHtml(str) {
-    if (!str) return '';
-    return str.replace(/[&<>]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' })[m]);
+  if (!str) return '';
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
   }
 
   function updateResultsInfo(filteredCount, totalCount, searchTerm) {
@@ -1877,7 +1882,11 @@
     loadBugs();
     updateListCounts();
     applySortAndFilter();
-    showToast('✅ Libreria ricaricata!');
+    showToast('✅ Dati ricaricati! Ricarico la pagina...');
+
+    setTimeout(() => {
+      window.location.reload(true);
+    }, 1000);
   }
 
   document.querySelectorAll('.admin-tab-btn').forEach(btn => {
